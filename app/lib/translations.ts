@@ -38,7 +38,7 @@ export const translations = {
         {
           tag: '2016 – 2024 · 8 years',
           heading: 'Then I built a business.',
-          body: 'I managed suppliers in China, grew a TikTok account from zero to 4,500 followers in three months, and kept the business profitable through Argentina\'s inflation and instability. In the last years I built and ran a full e-commerce operation — and then developed an AI-powered CRM from scratch using N8n and ChatGPT API, automating 50 daily conversations and cutting response time by 80%. By most measures, it was working. But at some point I stopped feeling it.',
+          body: 'Then I built a business for 8 years. Suppliers in China, TikTok growth from zero to 4,500 followers in three months, an e-commerce operation, and eventually a bot that handled leads and customers on its own while I focused elsewhere. It was profitable every year through Argentina\'s inflation and instability. By most measures, it was working. But at some point I stopped feeling it.',
         },
         {
           tag: 'The turning point',
