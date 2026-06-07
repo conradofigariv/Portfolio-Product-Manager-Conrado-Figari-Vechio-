@@ -60,7 +60,6 @@ export const translations = {
     projects: {
       title: 'Projects',
       subtitle: 'Real cases. Real impact.',
-      readMore: 'Read full case study',
       cta: {
         title: 'Want to know more?',
         description: "These are the projects I'm most proud of. Each one started with a real problem and ended with something people actually use.",
@@ -80,9 +79,9 @@ export const translations = {
           metrics: [
             { label: 'Tools built', value: '6' },
             { label: 'Time to impact', value: '4 months' },
-            { label: 'Daily users', value: 'All mgmt' },
+            { label: 'Teammates', value: '2 managers, 2 directors' },
           ],
-          tags: ['Internal tools', 'SaaS', 'Data visualization', 'EPEC'],
+          tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
         },
         {
           year: '2023',
@@ -281,7 +280,6 @@ export const translations = {
     projects: {
       title: 'Proyectos',
       subtitle: 'Casos reales. Impacto real.',
-      readMore: 'Leer caso de estudio completo',
       cta: {
         title: '¿Querés saber más?',
         description: 'Estos son los proyectos de los que más me enorgullezco. Cada uno empezó con un problema real y terminó con algo que la gente realmente usa.',

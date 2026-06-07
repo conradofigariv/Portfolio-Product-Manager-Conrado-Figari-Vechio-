@@ -122,18 +122,13 @@ export default function ProjectTimeline() {
                     </div>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="flex flex-wrap gap-2">
                       {project.tags.map((tag) => (
                         <span key={tag} className="px-3 py-1 bg-dark-700/60 text-dark-300 text-xs rounded-full border border-dark-600">
                           {tag}
                         </span>
                       ))}
                     </div>
-
-                    <button className="group text-dark-400 hover:text-dark-50 transition text-sm flex items-center gap-2">
-                      {p.readMore}
-                      <span className="group-hover:translate-x-1 transition">→</span>
-                    </button>
                   </div>
                 </div>
               </div>
