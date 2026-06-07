@@ -9,7 +9,7 @@ const CHAPTER_PHOTOS: Record<number, { src: string; alt: string; position: strin
   1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team', position: 'object-center' },
   2: { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,500 followers', position: 'object-left' },
   3: { src: '/reading-book-park.jpeg', alt: 'Conrado reading in the park', position: 'object-center' },
-  4: { src: '/EPEC.jpg', alt: 'EPEC building', position: 'object-center' },
+  4: { src: '/EPEC.jpg', alt: 'EPEC building', position: 'object-right' },
 }
 
 export default function Journey() {
