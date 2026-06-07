@@ -96,7 +96,7 @@ export const translations = {
           metrics: [
             { label: 'Team size', value: '8 people' },
             { label: 'Time to ship', value: '6 weeks' },
-            { label: 'Role', value: 'PO + Developer' },
+            { label: 'Role', value: 'PO + Dev' },
           ],
           tags: ['React', 'Claude API', 'Alpaca API', 'Agile'],
         },
@@ -350,7 +350,7 @@ export const translations = {
           metrics: [
             { label: 'Tamaño del equipo', value: '8 personas' },
             { label: 'Tiempo de lanzamiento', value: '6 semanas' },
-            { label: 'Rol', value: 'PO + Developer' },
+            { label: 'Rol', value: 'PO + Dev' },
           ],
           tags: ['React', 'Claude API', 'Alpaca API', 'Agile'],
         },

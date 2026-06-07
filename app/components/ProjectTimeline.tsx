@@ -9,10 +9,10 @@ const poses: Array<'left' | 'right'> = ['right', 'left', 'right', 'left', 'right
 const PROJECT_PHOTOS: Record<number, { src: string; alt: string; position?: string }> = {
   0: { src: '/epec-saas-dashboard.png', alt: 'One of the SaaS tools built at EPEC' },
   1: { src: '/cramer-trading.png', alt: 'CramerBot AI trading platform' },
-  2: { src: '/trackr-app.jpeg', alt: 'Trackr personal finance app' },
+  2: { src: '/trackr-app.jpeg', alt: 'Trackr personal finance app', position: 'object-[center_40%]' },
   3: { src: '/crm-n8n-workflow.png', alt: 'N8n workflow powering the AI CRM' },
   4: { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,000+ followers' },
-  5: { src: '/plug-inventory.jpg', alt: 'Plug business inventory', position: 'object-bottom' },
+  5: { src: '/plug-inventory.jpg', alt: 'Plug business inventory', position: 'object-[center_65%]' },
   6: { src: '/aveit-team.png', alt: 'AVEIT team' },
 }
 
