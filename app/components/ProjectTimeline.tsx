@@ -4,12 +4,12 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 
-const poses: Array<'left' | 'right'> = ['right', 'left', 'right']
+const poses: Array<'left' | 'right'> = ['right', 'left', 'right', 'left', 'right', 'left', 'right']
 
 const PROJECT_PHOTOS: Record<number, { src: string; alt: string }> = {
   0: { src: '/epec-saas-dashboard.png', alt: 'One of the SaaS tools built at EPEC' },
-  1: { src: '/crm-n8n-workflow.png', alt: 'N8n workflow powering the AI CRM' },
-  2: { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,000+ followers' },
+  3: { src: '/crm-n8n-workflow.png', alt: 'N8n workflow powering the AI CRM' },
+  4: { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,000+ followers' },
 }
 
 export default function ProjectTimeline() {

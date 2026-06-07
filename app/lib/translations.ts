@@ -84,6 +84,40 @@ export const translations = {
           tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
         },
         {
+          year: '2026',
+          tag: 'AI · Product Leadership',
+          title: 'CramerBot — AI Trading Bot',
+          narrative: [
+            'Our Chingu team had no designer and development was stalled halfway through.',
+            'I stepped in, built the React frontend myself, and fixed backend logic errors.',
+            'Defined the product vision, ran sprints, and led a remote team of 8 as Product Owner.',
+            'AI trading platform with LLM sentiment analysis shipped in 6 weeks.',
+          ],
+          metrics: [
+            { label: 'Team size', value: '8 people' },
+            { label: 'Time to ship', value: '6 weeks' },
+            { label: 'Role', value: 'PO + Developer' },
+          ],
+          tags: ['React', 'Claude API', 'Alpaca API', 'Agile'],
+        },
+        {
+          year: '2026',
+          tag: 'SaaS · Solo Build',
+          title: 'Trackr — Personal Finance SaaS',
+          narrative: [
+            'I needed a solo project to qualify as team lead at Chingu.',
+            'Built a full personal finance SaaS from scratch in 3 months.',
+            'Multi-currency support, budgeting, savings goals, and financial projections.',
+            'Shipped end to end as a solo product owner and developer.',
+          ],
+          metrics: [
+            { label: 'Build time', value: '3 months' },
+            { label: 'Role', value: 'Solo' },
+            { label: 'Type', value: 'Full SaaS' },
+          ],
+          tags: ['React', 'TypeScript', 'Supabase', 'Claude Code'],
+        },
+        {
           year: '2023',
           tag: 'AI · Automation',
           title: 'AI-Powered CRM from Scratch',
@@ -302,6 +336,40 @@ export const translations = {
             { label: 'Usuarios', value: '8 personas' },
           ],
           tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
+        },
+        {
+          year: '2026',
+          tag: 'IA · Liderazgo de Producto',
+          title: 'CramerBot — Bot de Trading con IA',
+          narrative: [
+            'Nuestro equipo de Chingu no tenía designer y el desarrollo estaba estancado a mitad de camino.',
+            'Me metí, construí el frontend de React yo mismo, y arreglé los errores de lógica del backend.',
+            'Definí la visión del producto, corrí sprints, y lideré un equipo remoto de 8 como Product Owner.',
+            'Plataforma de trading con análisis de sentimiento de LLM lanzada en 6 semanas.',
+          ],
+          metrics: [
+            { label: 'Tamaño del equipo', value: '8 personas' },
+            { label: 'Tiempo de lanzamiento', value: '6 semanas' },
+            { label: 'Rol', value: 'PO + Developer' },
+          ],
+          tags: ['React', 'Claude API', 'Alpaca API', 'Agile'],
+        },
+        {
+          year: '2026',
+          tag: 'SaaS · Construcción Solo',
+          title: 'Trackr — SaaS de Finanzas Personales',
+          narrative: [
+            'Necesitaba un proyecto solo para calificar como team lead en Chingu.',
+            'Construí un SaaS completo de finanzas personales desde cero en 3 meses.',
+            'Soporte multi-moneda, presupuestos, metas de ahorro, y proyecciones financieras.',
+            'Lanzado de punta a punta como product owner y developer solo.',
+          ],
+          metrics: [
+            { label: 'Tiempo de construcción', value: '3 meses' },
+            { label: 'Rol', value: 'Solo' },
+            { label: 'Tipo', value: 'SaaS Completo' },
+          ],
+          tags: ['React', 'TypeScript', 'Supabase', 'Claude Code'],
         },
         {
           year: '2023',
