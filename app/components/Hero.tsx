@@ -32,17 +32,9 @@ export default function Hero() {
             <p className="text-2xl md:text-3xl text-dark-200 mb-6 leading-tight font-light">
               {t.hero.tagline}
             </p>
-            <p className="text-base text-dark-400 max-w-xl mb-10 leading-relaxed">
+            <p className="text-base text-dark-400 max-w-xl mb-16 leading-relaxed">
               {t.hero.description}
             </p>
-            <div className="flex flex-wrap gap-4">
-              <a href="#projects" className="button-primary">
-                {t.hero.cta}
-              </a>
-              <a href="#contact" className="button-secondary">
-                {t.hero.ctaSecondary}
-              </a>
-            </div>
 
             {/* Stats */}
             <div className="mt-12 pt-8 border-t border-dark-700 grid grid-cols-3 gap-6">

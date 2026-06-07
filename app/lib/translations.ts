@@ -13,14 +13,13 @@ export const translations = {
       greeting: "Hi, I'm",
       name: 'Conrado Figari',
       tagline: "I didn't plan to be a Product Manager. I built the role.",
-      description:
-        'Electronic Engineer turned PM. I spent 8 years building a business, then joined EPEC as an engineer — and ended up building 6 internal SaaS tools in 4 months that replaced workflows nobody had questioned in years.',
-      cta: 'Read my story',
+      description: 'Electronic Engineer turned PM. I spent 8 years building a business, then joined EPEC as an engineer.',
+      cta: 'See my projects',
       ctaSecondary: 'Contact me',
       stats: {
         years: { value: '8y', label: 'Building businesses' },
-        tools: { value: '6', label: 'SaaS tools built at EPEC' },
-        crm: { value: '−80%', label: 'Response time with AI CRM' },
+        people: { value: '50+', label: 'People led' },
+        tools: { value: '6', label: 'SaaS tools at EPEC' },
       },
     },
     journey: {
@@ -218,14 +217,13 @@ export const translations = {
       greeting: 'Hola, soy',
       name: 'Conrado Figari',
       tagline: 'No planifiqué ser Product Manager. Construí el rol.',
-      description:
-        'Ingeniero Electrónico devenido PM. Pasé 8 años construyendo un negocio, entré a EPEC como ingeniero — y terminé construyendo 6 herramientas SaaS internas en 4 meses que reemplazaron procesos que nadie había cuestionado en años.',
-      cta: 'Leer mi historia',
+      description: 'Ingeniero Electrónico devenido PM. Pasé 8 años construyendo un negocio, entré a EPEC como ingeniero.',
+      cta: 'Ver mis proyectos',
       ctaSecondary: 'Contactarme',
       stats: {
         years: { value: '8a', label: 'Construyendo negocios' },
+        people: { value: '50+', label: 'Personas lideradas' },
         tools: { value: '6', label: 'Herramientas SaaS en EPEC' },
-        crm: { value: '−80%', label: 'Tiempo de respuesta con CRM IA' },
       },
     },
     journey: {
