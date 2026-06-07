@@ -6,6 +6,10 @@ import { useLang } from '../context/LanguageContext'
 
 const poses: Array<'left' | 'right'> = ['right', 'left', 'right']
 
+const PROJECT_PHOTOS: Record<number, { src: string; alt: string }> = {
+  0: { src: '/epec-saas-dashboard.png', alt: 'One of the SaaS tools built at EPEC' },
+}
+
 export default function ProjectTimeline() {
   const { t } = useLang()
   const p = t.projects
@@ -46,6 +50,7 @@ export default function ProjectTimeline() {
           {p.items.map((project, idx) => {
             const isRight = poses[idx] === 'right'
             const isVisible = visibleItems.has(idx)
+            const photo = PROJECT_PHOTOS[idx]
 
             return (
               <div
@@ -68,12 +73,15 @@ export default function ProjectTimeline() {
                     {/* Project visual - photo as background (blurred/darkened) */}
                     <div className="absolute inset-0 bg-gradient-to-br from-dark-700 to-dark-800">
                       <Image
-                        src="/conrado.jpg"
-                        alt={project.title}
+                        src={photo ? photo.src : '/conrado.jpg'}
+                        alt={photo ? photo.alt : project.title}
                         fill
-                        className="object-cover object-top opacity-20 scale-110"
+                        className={photo ? 'object-cover object-center opacity-50' : 'object-cover object-top opacity-20 scale-110'}
                       />
                     </div>
+
+                    {/* Gradient for text legibility over photo */}
+                    {photo && <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-dark-900/20 to-transparent" />}
 
                     {/* Year + title overlay */}
                     <div className="absolute inset-0 flex flex-col justify-end p-8">
