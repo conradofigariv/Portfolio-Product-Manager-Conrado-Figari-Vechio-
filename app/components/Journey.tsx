@@ -66,8 +66,22 @@ export default function Journey() {
                     />
                   </div>
 
-                  <div className={`grid gap-8 ${photo ? 'md:grid-cols-[1fr_auto]' : ''} items-start`}>
-                    <div>
+                  <div className={`grid grid-cols-1 gap-4 md:gap-8 ${photo ? 'md:grid-cols-[1fr_auto]' : ''} items-start`}>
+                    {/* Photo (selected chapters) */}
+                    {photo && (
+                      <div className="order-1 md:order-2">
+                        <div className="w-full h-44 md:w-48 md:h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
+                          <Image
+                            src={photo.src}
+                            alt={photo.alt}
+                            fill
+                            className={`object-cover ${photo.position}`}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="order-2 md:order-1">
                       {/* Tag */}
                       <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
                         {chapter.tag}
@@ -87,20 +101,6 @@ export default function Journey() {
                         {chapter.body}
                       </p>
                     </div>
-
-                    {/* Photo (selected chapters) */}
-                    {photo && (
-                      <div className="hidden md:block">
-                        <div className="w-48 h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
-                          <Image
-                            src={photo.src}
-                            alt={photo.alt}
-                            fill
-                            className={`object-cover ${photo.position}`}
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )
