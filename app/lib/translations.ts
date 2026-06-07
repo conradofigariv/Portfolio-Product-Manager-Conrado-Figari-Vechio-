@@ -79,7 +79,7 @@ export const translations = {
           metrics: [
             { label: 'Tools built', value: '6' },
             { label: 'Time to impact', value: '4 months' },
-            { label: 'Teammates', value: '2 managers, 2 directors' },
+            { label: 'Users', value: '2 managers and various teammates' },
           ],
           tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
         },
@@ -299,9 +299,9 @@ export const translations = {
           metrics: [
             { label: 'Herramientas', value: '6' },
             { label: 'Tiempo', value: '4 meses' },
-            { label: 'Usuarios diarios', value: 'Toda la gerencia' },
+            { label: 'Usuarios', value: '2 gerentes y varios compañeros' },
           ],
-          tags: ['Herramientas internas', 'SaaS', 'Visualización de datos', 'EPEC'],
+          tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
         },
         {
           year: '2023',
