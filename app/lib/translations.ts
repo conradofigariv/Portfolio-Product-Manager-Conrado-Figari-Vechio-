@@ -11,9 +11,9 @@ export const translations = {
     },
     hero: {
       greeting: "Hi, I'm",
-      name: 'Conrado Figari',
-      tagline: "I didn't plan to be a Product Manager. I built the role.",
-      description: 'Electronic Engineer turned PM. I spent 8 years building a business, then joined EPEC as an engineer.',
+      name: 'Conrado Figari Vechio',
+      tagline: 'The intersection between developers, stakeholders, and product.',
+      description: 'From raffle tickets to 6 SaaS tools at a 2,500+ employee energetic company.',
       cta: 'See my projects',
       ctaSecondary: 'Contact me',
       stats: {
@@ -215,9 +215,9 @@ export const translations = {
     },
     hero: {
       greeting: 'Hola, soy',
-      name: 'Conrado Figari',
-      tagline: 'No planifiqué ser Product Manager. Construí el rol.',
-      description: 'Ingeniero Electrónico devenido PM. Pasé 8 años construyendo un negocio, entré a EPEC como ingeniero.',
+      name: 'Conrado Figari Vechio',
+      tagline: 'La intersección entre desarrolladores, stakeholders y producto.',
+      description: 'De rifas a 6 herramientas SaaS en una empresa de 2,500+ personas llena de energía.',
       cta: 'Ver mis proyectos',
       ctaSecondary: 'Contactarme',
       stats: {
