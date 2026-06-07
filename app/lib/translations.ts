@@ -89,7 +89,7 @@ export const translations = {
           title: 'AI-Powered CRM from Scratch',
           narrative: [
             'Managing 50 daily customer conversations manually was unsustainable.',
-            'Built an automated CRM using N8n and ChatGPT API — from zero.',
+            'Built an automated CRM using N8n and ChatGPT API.',
             'The bot handled conversations, qualified leads, and updated records automatically.',
             'Response time dropped by 80%. I could focus on what actually mattered.',
           ],
@@ -309,7 +309,7 @@ export const translations = {
           title: 'CRM con IA desde Cero',
           narrative: [
             'Gestionar 50 conversaciones diarias de clientes a mano era insostenible.',
-            'Construí un CRM automatizado usando N8n y la API de ChatGPT — desde cero.',
+            'Construí un CRM automatizado usando N8n y la API de ChatGPT.',
             'El bot manejaba conversaciones, calificaba leads y actualizaba registros automáticamente.',
             'El tiempo de respuesta bajó un 80%. Yo me podía enfocar en lo que realmente importaba.',
           ],

@@ -8,6 +8,7 @@ const poses: Array<'left' | 'right'> = ['right', 'left', 'right']
 
 const PROJECT_PHOTOS: Record<number, { src: string; alt: string }> = {
   0: { src: '/epec-saas-dashboard.png', alt: 'One of the SaaS tools built at EPEC' },
+  1: { src: '/crm-n8n-workflow.png', alt: 'N8n workflow powering the AI CRM' },
 }
 
 export default function ProjectTimeline() {
@@ -76,7 +77,7 @@ export default function ProjectTimeline() {
                         src={photo ? photo.src : '/conrado.jpg'}
                         alt={photo ? photo.alt : project.title}
                         fill
-                        className={photo ? 'object-cover object-left opacity-50' : 'object-cover object-top opacity-20 scale-110'}
+                        className={photo ? 'object-cover object-left opacity-90' : 'object-cover object-top opacity-20 scale-110'}
                       />
                     </div>
 
