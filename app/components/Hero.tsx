@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 
+const VIDEOS = ['/videos/video-1.mp4', '/videos/video-2.mp4']
+
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [videoIndex, setVideoIndex] = useState(0)
   const { t } = useLang()
 
   useEffect(() => {
@@ -13,8 +16,31 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="min-h-[calc(100vh-4rem)] flex items-center section-padding bg-gradient-to-b from-dark-900 via-dark-900 to-dark-800/50">
-      <div className="container-main w-full">
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-center section-padding overflow-hidden">
+      {/* Background video */}
+      <video
+        key={VIDEOS[videoIndex]}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src={VIDEOS[videoIndex]} type="video/mp4" />
+      </video>
+
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-dark-900/80 via-dark-900/70 to-dark-900/90" />
+
+      {/* Video toggle button */}
+      <button
+        onClick={() => setVideoIndex((i) => (i + 1) % VIDEOS.length)}
+        className="absolute top-6 right-6 z-20 px-3 py-1.5 rounded-lg border border-dark-400/40 bg-dark-900/40 backdrop-blur text-dark-200 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
+      >
+        Video {videoIndex + 1} / {VIDEOS.length}
+      </button>
+
+      <div className="container-main w-full relative z-10">
         <div className="grid md:grid-cols-2 gap-16 items-center">
 
           {/* Left: Content */}
@@ -68,11 +94,6 @@ export default function Hero() {
                 />
                 {/* Subtle gradient overlay at bottom */}
                 <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-dark-900/60 to-transparent" />
-              </div>
-
-              {/* Floating badge */}
-              <div className="absolute -bottom-4 -right-4 bg-dark-50 text-dark-900 px-4 py-2 rounded-xl font-semibold text-sm shadow-xl">
-                Product Manager 🚀
               </div>
             </div>
           </div>
