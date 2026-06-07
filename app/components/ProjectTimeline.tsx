@@ -154,8 +154,9 @@ export default function ProjectTimeline() {
         <div className="mt-32 text-center max-w-2xl mx-auto">
           <h3 className="text-2xl font-bold mb-4">{p.cta.title}</h3>
           <p className="text-dark-400 mb-8">{p.cta.description}</p>
-          <a href="#contact" className="button-primary inline-block">
-            {p.cta.button}
+          <p className="text-dark-400 mb-8">Everything is detailed in my CV.</p>
+          <a href="/cv.pdf" download className="button-primary inline-block">
+            Download CV
           </a>
         </div>
       </div>
