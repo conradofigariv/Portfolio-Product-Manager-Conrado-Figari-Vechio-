@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 
-const CHAPTER_PHOTOS: Record<number, { src: string; alt: string }> = {
-  0: { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets' },
-  1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team' },
-  4: { src: '/conrado.jpg', alt: 'Conrado Figari' },
+const CHAPTER_PHOTOS: Record<number, { src: string; alt: string; position: string }> = {
+  0: { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets', position: 'object-center' },
+  1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team', position: 'object-center' },
+  4: { src: '/conrado.jpg', alt: 'Conrado Figari', position: 'object-top' },
 }
 
 export default function Journey() {
@@ -89,12 +89,12 @@ export default function Journey() {
                     {/* Photo (selected chapters) */}
                     {photo && (
                       <div className="hidden md:block">
-                        <div className="w-40 h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
+                        <div className="w-48 h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
                           <Image
                             src={photo.src}
                             alt={photo.alt}
                             fill
-                            className="object-cover object-top"
+                            className={`object-cover ${photo.position}`}
                           />
                         </div>
                       </div>
