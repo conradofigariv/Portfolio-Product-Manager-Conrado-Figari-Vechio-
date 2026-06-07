@@ -76,7 +76,7 @@ export default function ProjectTimeline() {
                         src={photo ? photo.src : '/conrado.jpg'}
                         alt={photo ? photo.alt : project.title}
                         fill
-                        className={photo ? 'object-cover object-center opacity-50' : 'object-cover object-top opacity-20 scale-110'}
+                        className={photo ? 'object-cover object-left opacity-50' : 'object-cover object-top opacity-20 scale-110'}
                       />
                     </div>
 
