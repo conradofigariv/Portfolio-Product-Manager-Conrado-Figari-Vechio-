@@ -7,6 +7,7 @@ import { useLang } from '../context/LanguageContext'
 const CHAPTER_PHOTOS: Record<number, { src: string; alt: string; position: string }> = {
   0: { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets', position: 'object-center' },
   1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team', position: 'object-center' },
+  2: { src: '/business-office.jpeg', alt: 'Conrado at his e-commerce business', position: 'object-center' },
   4: { src: '/conrado.jpg', alt: 'Conrado Figari', position: 'object-top' },
 }
 
