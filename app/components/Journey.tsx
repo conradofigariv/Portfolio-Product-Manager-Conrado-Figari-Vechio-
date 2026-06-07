@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 
-const PHOTO_CHAPTERS = [1, 4] // indices where photo appears
+const CHAPTER_PHOTOS: Record<number, { src: string; alt: string }> = {
+  0: { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets' },
+  1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team' },
+  4: { src: '/conrado.jpg', alt: 'Conrado Figari' },
+}
 
 export default function Journey() {
   const { t } = useLang()
@@ -40,7 +44,7 @@ export default function Journey() {
           <div className="space-y-24">
             {chapters.map((chapter, i) => {
               const isVisible = visible.has(i)
-              const showPhoto = PHOTO_CHAPTERS.includes(i)
+              const photo = CHAPTER_PHOTOS[i]
               const isLast = i === chapters.length - 1
 
               return (
@@ -60,7 +64,7 @@ export default function Journey() {
                     />
                   </div>
 
-                  <div className={`grid gap-8 ${showPhoto ? 'md:grid-cols-[1fr_auto]' : ''} items-start`}>
+                  <div className={`grid gap-8 ${photo ? 'md:grid-cols-[1fr_auto]' : ''} items-start`}>
                     <div>
                       {/* Tag */}
                       <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
@@ -83,12 +87,12 @@ export default function Journey() {
                     </div>
 
                     {/* Photo (selected chapters) */}
-                    {showPhoto && (
+                    {photo && (
                       <div className="hidden md:block">
                         <div className="w-40 h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
                           <Image
-                            src="/conrado.jpg"
-                            alt="Conrado Figari"
+                            src={photo.src}
+                            alt={photo.alt}
                             fill
                             className="object-cover object-top"
                           />
