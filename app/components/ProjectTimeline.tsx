@@ -52,7 +52,7 @@ export default function ProjectTimeline() {
           <p className="text-dark-400 text-lg max-w-2xl">{p.subtitle}</p>
         </div>
 
-        <div className="space-y-32">
+        <div className="space-y-16 md:space-y-32">
           {p.items.map((project, idx) => {
             const isRight = poses[idx] === 'right'
             const isVisible = visibleItems.has(idx)
@@ -64,16 +64,16 @@ export default function ProjectTimeline() {
                 id={`project-item-${idx}`}
                 className="relative"
               >
-                <div className={`grid md:grid-cols-2 gap-12 items-center ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
 
                   {/* Visual side */}
                   <div
-                    className={`relative h-[22rem] rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
+                    className={`relative h-64 md:h-[22rem] rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
                       isVisible
-                        ? 'opacity-100 translate-x-0'
+                        ? 'opacity-100 translate-x-0 translate-y-0'
                         : isRight
-                        ? 'opacity-0 -translate-x-12'
-                        : 'opacity-0 translate-x-12'
+                        ? 'md:opacity-0 md:-translate-x-12 opacity-0 -translate-y-8'
+                        : 'md:opacity-0 md:translate-x-12 opacity-0 -translate-y-8'
                     }`}
                   >
                     {/* Project visual - photo as background (blurred/darkened) */}
@@ -90,34 +90,34 @@ export default function ProjectTimeline() {
                     {photo && <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-dark-900/20 to-transparent" />}
 
                     {/* Year + title overlay */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-8">
-                      <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-2">
+                    <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8">
+                      <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2">
                         {project.year}
                       </span>
-                      <h3 className="text-3xl font-bold text-dark-50 leading-tight">
+                      <h3 className="text-xl md:text-3xl font-bold text-dark-50 leading-tight">
                         {project.title}
                       </h3>
                     </div>
 
                     {/* Decorative line */}
-                    <div className="absolute top-8 left-8 w-8 h-0.5 bg-dark-50/40" />
+                    <div className="absolute top-4 md:top-8 left-4 md:left-8 w-6 md:w-8 h-0.5 bg-dark-50/40" />
                   </div>
 
                   {/* Content side */}
                   <div
                     className={`transition-all duration-700 delay-150 ${
                       isVisible
-                        ? 'opacity-100 translate-x-0'
+                        ? 'opacity-100 translate-x-0 translate-y-0'
                         : isRight
-                        ? 'opacity-0 translate-x-12'
-                        : 'opacity-0 -translate-x-12'
+                        ? 'md:opacity-0 md:translate-x-12 opacity-0 translate-y-8'
+                        : 'md:opacity-0 md:-translate-x-12 opacity-0 translate-y-8'
                     }`}
                   >
                     {/* Narrative */}
-                    <div className="space-y-3 mb-7">
+                    <div className="space-y-2 md:space-y-3 mb-5 md:mb-7">
                       {project.narrative.map((line, i) => (
-                        <p key={i} className="text-dark-300 text-base leading-relaxed flex items-start gap-3">
-                          <span className="text-dark-500 font-light mt-0.5 text-sm select-none">
+                        <p key={i} className="text-dark-300 text-sm md:text-base leading-relaxed flex items-start gap-2 md:gap-3">
+                          <span className="text-dark-500 font-light mt-0.5 text-xs md:text-sm select-none flex-shrink-0">
                             {String(i + 1).padStart(2, '0')}
                           </span>
                           <span>{line}</span>
@@ -126,11 +126,11 @@ export default function ProjectTimeline() {
                     </div>
 
                     {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-4 mb-7 py-5 border-y border-dark-700">
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 mb-5 md:mb-7 py-4 md:py-5 border-y border-dark-700">
                       {project.metrics.map((metric, i) => (
                         <div key={i}>
-                          <p className="text-dark-400 text-xs uppercase tracking-wider mb-2">{metric.label}</p>
-                          <p className="text-2xl font-bold text-dark-50">{metric.value}</p>
+                          <p className="text-dark-400 text-xs uppercase tracking-wider mb-1 md:mb-2">{metric.label}</p>
+                          <p className="text-lg md:text-2xl font-bold text-dark-50">{metric.value}</p>
                         </div>
                       ))}
                     </div>
@@ -138,7 +138,7 @@ export default function ProjectTimeline() {
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
                       {project.tags.map((tag) => (
-                        <span key={tag} className="px-3 py-1 bg-dark-700/60 text-dark-300 text-xs rounded-full border border-dark-600">
+                        <span key={tag} className="px-2 md:px-3 py-1 bg-dark-700/60 text-dark-300 text-xs rounded-full border border-dark-600">
                           {tag}
                         </span>
                       ))}

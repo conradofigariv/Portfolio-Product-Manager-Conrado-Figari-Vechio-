@@ -41,7 +41,7 @@ export default function Hero() {
       </button>
 
       <div className="container-main w-full relative z-10">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
 
           {/* Left: Content */}
           <div
@@ -49,25 +49,25 @@ export default function Hero() {
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
           >
-            <p className="text-dark-400 text-base mb-3 font-mono tracking-widest uppercase text-sm">
+            <p className="text-dark-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-2 md:mb-3">
               {t.hero.greeting}
             </p>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-dark-50">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight text-dark-50">
               {t.hero.name}
             </h1>
-            <p className="text-2xl md:text-3xl text-dark-200 mb-6 leading-tight font-light">
+            <p className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
               {t.hero.tagline}
             </p>
-            <p className="text-base text-dark-400 max-w-xl mb-16 leading-relaxed">
+            <p className="text-sm md:text-base text-dark-400 max-w-xl mb-10 md:mb-16 leading-relaxed">
               {t.hero.description}
             </p>
 
             {/* Stats */}
-            <div className="mt-12 pt-8 border-t border-dark-700 grid grid-cols-3 gap-6">
+            <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
               {Object.values(t.hero.stats).map((stat) => (
                 <div key={stat.label}>
-                  <p className="text-2xl font-bold text-dark-50">{stat.value}</p>
-                  <p className="text-dark-400 text-sm mt-1">{stat.label}</p>
+                  <p className="text-xl md:text-2xl font-bold text-dark-50">{stat.value}</p>
+                  <p className="text-dark-400 text-xs md:text-sm mt-1">{stat.label}</p>
                 </div>
               ))}
             </div>

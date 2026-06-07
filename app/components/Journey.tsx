@@ -37,13 +37,13 @@ export default function Journey() {
   return (
     <section id="about" className="section-padding">
       <div className="container-main">
-        <h2 className="heading-md mb-20">{t.journey.title}</h2>
+        <h2 className="heading-md mb-12 md:mb-20">{t.journey.title}</h2>
 
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-dark-600 via-dark-700 to-transparent hidden md:block" />
 
-          <div className="space-y-24">
+          <div className="space-y-12 md:space-y-24">
             {chapters.map((chapter, i) => {
               const isVisible = visible.has(i)
               const photo = CHAPTER_PHOTOS[i]

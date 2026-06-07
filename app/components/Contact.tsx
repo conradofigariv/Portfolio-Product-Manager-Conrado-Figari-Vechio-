@@ -25,9 +25,9 @@ export default function Contact() {
     <section id="contact" className="section-padding">
       <div className="container-main">
         <h2 className="heading-md mb-4">{c.title}</h2>
-        <p className="text-dark-400 text-lg mb-16 max-w-2xl">{c.subtitle}</p>
+        <p className="text-dark-400 text-base md:text-lg mb-8 md:mb-16 max-w-2xl">{c.subtitle}</p>
 
-        <div className="grid lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
