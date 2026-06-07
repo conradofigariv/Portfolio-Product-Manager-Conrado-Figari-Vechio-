@@ -91,23 +91,12 @@ export default function Contact() {
                 <div>
                   <p className="text-dark-400 text-xs uppercase tracking-wider mb-1">LinkedIn</p>
                   <a
-                    href="https://linkedin.com/in/conradofigari"
+                    href="https://www.linkedin.com/in/conradofigarivechio/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-dark-50 hover:text-dark-100 transition font-medium flex items-center gap-1"
                   >
-                    linkedin.com/in/conradofigari ↗
-                  </a>
-                </div>
-                <div>
-                  <p className="text-dark-400 text-xs uppercase tracking-wider mb-1">Twitter / X</p>
-                  <a
-                    href="https://twitter.com/conradofigari"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-dark-50 hover:text-dark-100 transition font-medium flex items-center gap-1"
-                  >
-                    @conradofigari ↗
+                    linkedin.com/in/conradofigarivechio ↗
                   </a>
                 </div>
               </div>

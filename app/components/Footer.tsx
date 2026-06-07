@@ -34,9 +34,8 @@ export default function Footer() {
             <h4 className="text-dark-50 font-semibold mb-4 text-sm">{f.social}</h4>
             <ul className="space-y-2 text-sm text-dark-400">
               {[
-                { label: 'LinkedIn', href: 'https://linkedin.com/in/conradofigari' },
-                { label: 'Twitter / X', href: 'https://twitter.com/conradofigari' },
-                { label: 'GitHub', href: 'https://github.com/conradofigari' },
+                { label: 'LinkedIn', href: 'https://www.linkedin.com/in/conradofigarivechio/' },
+                { label: 'GitHub', href: 'https://github.com/conradofigariv' },
               ].map((link) => (
                 <li key={link.label}>
                   <a href={link.href} target="_blank" rel="noopener noreferrer" className="hover:text-dark-50 transition">

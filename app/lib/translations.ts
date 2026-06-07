@@ -219,7 +219,9 @@ export const translations = {
       certifications: 'Certifications',
       certs: [
         { title: 'Professional Scrum Product Owner I (PSPO I)', issuer: 'Scrum.org' },
-        { title: 'Electronic Engineering', issuer: 'Universidad Nacional de Córdoba' },
+        { title: 'Electronic Engineering', issuer: 'Universidad Tecnológica Nacional, FRC' },
+        { title: 'Google Project Management Certificate', issuer: 'Coursera' },
+        { title: 'Data Analysis with Qlik Sense', issuer: 'Udemy' },
       ],
     },
     contact: {
@@ -473,7 +475,9 @@ export const translations = {
       certifications: 'Certificaciones',
       certs: [
         { title: 'Professional Scrum Product Owner I (PSPO I)', issuer: 'Scrum.org' },
-        { title: 'Ingeniería Electrónica', issuer: 'Universidad Nacional de Córdoba' },
+        { title: 'Ingeniería Electrónica', issuer: 'Universidad Tecnológica Nacional, FRC' },
+        { title: 'Google Project Management Certificate', issuer: 'Coursera' },
+        { title: 'Data Analysis with Qlik Sense', issuer: 'Udemy' },
       ],
     },
     contact: {
