@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Avatar from './Avatar'
+import Image from 'next/image'
+import { useLang } from '../context/LanguageContext'
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false)
+  const { t } = useLang()
 
   useEffect(() => {
     setIsLoaded(true)
@@ -13,67 +15,73 @@ export default function Hero() {
   return (
     <section className="min-h-[calc(100vh-4rem)] flex items-center section-padding bg-gradient-to-b from-dark-900 via-dark-900 to-dark-800/50">
       <div className="container-main w-full">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+
           {/* Left: Content */}
           <div
             className={`transition-all duration-1000 ${
-              isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
+              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
           >
-            <p className="text-dark-400 text-lg mb-4 font-mono">Hola, me llamo</p>
-            <h1 className="heading-lg mb-6 bg-gradient-to-r from-dark-50 to-dark-300 bg-clip-text text-transparent">
-              Conrado Figari
-            </h1>
-            <p className="text-2xl md:text-3xl text-dark-200 mb-8 leading-tight">
-              Creo <span className="text-dark-50 font-semibold">productos</span> que resuelven problemas reales.
+            <p className="text-dark-400 text-base mb-3 font-mono tracking-widest uppercase text-sm">
+              {t.hero.greeting}
             </p>
-            <p className="text-lg text-dark-400 max-w-xl mb-12 leading-relaxed">
-              Producto Manager especializado en estrategia digital, experiencia de usuario y liderazgo de equipos.
-              Transformo ideas en productos de impacto.
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-dark-50">
+              {t.hero.name}
+            </h1>
+            <p className="text-2xl md:text-3xl text-dark-200 mb-6 leading-tight font-light">
+              {t.hero.tagline}
+            </p>
+            <p className="text-base text-dark-400 max-w-xl mb-10 leading-relaxed">
+              {t.hero.description}
             </p>
             <div className="flex flex-wrap gap-4">
               <a href="#projects" className="button-primary">
-                Ver mis proyectos
+                {t.hero.cta}
               </a>
               <a href="#contact" className="button-secondary">
-                Contactarme
+                {t.hero.ctaSecondary}
               </a>
             </div>
 
-            {/* Social proof */}
+            {/* Stats */}
             <div className="mt-12 pt-8 border-t border-dark-700 grid grid-cols-3 gap-6">
-              <div>
-                <p className="text-2xl font-bold text-dark-50">5+</p>
-                <p className="text-dark-400 text-sm">Años en PM</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-dark-50">500K+</p>
-                <p className="text-dark-400 text-sm">Usuarios impactados</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-dark-50">100%</p>
-                <p className="text-dark-400 text-sm">Productos lanzados</p>
-              </div>
+              {Object.values(t.hero.stats).map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl font-bold text-dark-50">{stat.value}</p>
+                  <p className="text-dark-400 text-sm mt-1">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Right: Avatar */}
+          {/* Right: Real photo */}
           <div
-            className={`relative h-96 hidden md:flex items-center justify-center transition-all duration-1000 delay-200 ${
-              isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
+            className={`hidden md:flex items-center justify-center transition-all duration-1000 delay-300 ${
+              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
           >
-            {/* Gradient bg */}
-            <div className="absolute inset-0 bg-gradient-to-br from-dark-700/50 to-dark-800/50 rounded-3xl blur-3xl" />
+            <div className="relative">
+              {/* Subtle glow */}
+              <div className="absolute inset-0 bg-dark-50/5 rounded-2xl blur-2xl scale-110" />
 
-            {/* Avatar container */}
-            <div className="relative z-10 w-64 h-80 bg-gradient-to-br from-dark-700 to-dark-800 rounded-2xl border border-dark-600 p-8 flex items-center justify-center hover:border-dark-500 transition">
-              <Avatar pose="presenting" className="w-full h-full" />
-            </div>
+              {/* Photo */}
+              <div className="relative w-72 h-96 rounded-2xl overflow-hidden border border-dark-600">
+                <Image
+                  src="/conrado.jpg"
+                  alt="Conrado Figari"
+                  fill
+                  className="object-cover object-top"
+                  priority
+                />
+                {/* Subtle gradient overlay at bottom */}
+                <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-dark-900/60 to-transparent" />
+              </div>
 
-            {/* Floating element */}
-            <div className="absolute -bottom-4 -right-4 bg-dark-50 text-dark-900 px-4 py-2 rounded-lg font-semibold text-sm shadow-lg">
-              Hola 👋
+              {/* Floating badge */}
+              <div className="absolute -bottom-4 -right-4 bg-dark-50 text-dark-900 px-4 py-2 rounded-xl font-semibold text-sm shadow-xl">
+                Product Manager 🚀
+              </div>
             </div>
           </div>
         </div>

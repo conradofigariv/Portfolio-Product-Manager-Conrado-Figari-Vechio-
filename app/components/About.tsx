@@ -1,58 +1,58 @@
-export default function About() {
-  return (
-    <section id="about" className="bg-dark-800/50 section-padding">
-      <div className="container-main">
-        <h2 className="heading-md mb-12">Sobre mí</h2>
+'use client'
 
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+import { useLang } from '../context/LanguageContext'
+
+export default function About() {
+  const { t, lang } = useLang()
+  const a = t.about
+
+  return (
+    <section id="about" className="bg-dark-800/40 section-padding">
+      <div className="container-main">
+        <h2 className="heading-md mb-12">{a.title}</h2>
+
+        <div className="grid md:grid-cols-2 gap-12 items-start">
           <div>
-            <p className="text-lg text-dark-300 mb-6 leading-relaxed">
-              Soy un Product Manager con más de 5 años de experiencia creando productos digitales que impactan a millones de usuarios.
-            </p>
-            <p className="text-lg text-dark-300 mb-6 leading-relaxed">
-              Mi enfoque combina research profundo de usuarios, análisis de datos y pensamiento estratégico para identificar oportunidades de impacto.
-              He trabajado en startups ágiles y grandes organizaciones, siempre enfocado en resolver problemas reales.
-            </p>
-            <p className="text-lg text-dark-300 mb-6 leading-relaxed">
-              Actualmente trabajo en <span className="text-dark-50 font-semibold">[Nombre Empresa Actual]</span> como Product Manager, liderando el desarrollo de features que mejoran la experiencia de nuestros usuarios.
+            <p className="text-lg text-dark-300 mb-5 leading-relaxed">{a.bio1}</p>
+            <p className="text-lg text-dark-300 mb-5 leading-relaxed">{a.bio2}</p>
+            <p className="text-lg text-dark-300 mb-5 leading-relaxed">
+              {a.bio3}{' '}
+              <span className="text-dark-50 font-semibold">{a.currentRole}</span>{' '}
+              {a.currentRoleAs}
             </p>
 
             <div className="mt-8 pt-8 border-t border-dark-700">
-              <h3 className="heading-sm mb-4 text-dark-50">Experiencia</h3>
+              <h3 className="text-lg font-semibold mb-4 text-dark-50">{a.experience}</h3>
               <ul className="space-y-3 text-dark-300">
-                <li className="flex items-start gap-3">
-                  <span className="text-dark-50 font-bold">•</span>
-                  <span>Product Manager en [Empresa] (2023 - Presente)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-dark-50 font-bold">•</span>
-                  <span>Senior Product Manager en [Empresa] (2021 - 2023)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-dark-50 font-bold">•</span>
-                  <span>Product Manager en [Startup] (2019 - 2021)</span>
-                </li>
+                {a.jobs.map((job) => (
+                  <li key={job.period} className="flex items-start gap-3">
+                    <span className="text-dark-50 mt-1">•</span>
+                    <span>
+                      <span className="text-dark-100 font-medium">{job.role}</span>{' '}
+                      {lang === 'en' ? 'at' : 'en'}{' '}
+                      {job.company} — {job.period}
+                    </span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
 
           <div className="bg-dark-900/50 rounded-xl p-8 border border-dark-700">
-            <h3 className="heading-sm mb-6 text-dark-50">Educación</h3>
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-dark-50 font-semibold mb-1">Carrera en Administración de Empresas</h4>
-                <p className="text-dark-400 text-sm">Universidad Nacional (2015 - 2019)</p>
-              </div>
-              <div>
-                <h4 className="text-dark-50 font-semibold mb-1">Product Management Certificate</h4>
-                <p className="text-dark-400 text-sm">Product School (2020)</p>
-              </div>
+            <h3 className="text-lg font-semibold mb-6 text-dark-50">{a.education}</h3>
+            <div className="space-y-6 mb-8">
+              {a.degrees.map((d) => (
+                <div key={d.title}>
+                  <h4 className="text-dark-50 font-semibold mb-1">{d.title}</h4>
+                  <p className="text-dark-400 text-sm">{d.institution} · {d.years}</p>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-8 pt-8 border-t border-dark-700">
-              <h3 className="heading-sm mb-4 text-dark-50">Ubicación</h3>
-              <p className="text-dark-300">Buenos Aires, Argentina</p>
-              <p className="text-dark-400 text-sm mt-2">Disponible para trabajo remoto</p>
+            <div className="pt-8 border-t border-dark-700">
+              <h3 className="text-lg font-semibold mb-3 text-dark-50">{a.location}</h3>
+              <p className="text-dark-300">{a.city}</p>
+              <p className="text-dark-400 text-sm mt-1">{a.remote}</p>
             </div>
           </div>
         </div>
