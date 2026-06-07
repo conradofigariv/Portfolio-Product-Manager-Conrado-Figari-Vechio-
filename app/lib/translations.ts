@@ -38,7 +38,7 @@ export const translations = {
         {
           tag: '2016 – 2024 · 8 years',
           heading: 'Then I built a business.',
-          body: 'For 8 years: suppliers in China, TikTok growth from zero to 4,500 followers in three months, an e-commerce operation, and eventually a bot that handled leads and customers on its own while I focused elsewhere. It was profitable every year through Argentina\'s inflation and instability. By most measures, it was working. But at some point I stopped feeling it.',
+          body: 'For 8 years: suppliers in China, TikTok growth from zero to over 4,000 followers in three months, an e-commerce operation, and eventually a bot that handled leads and customers on its own while I focused elsewhere. It was profitable every year through Argentina\'s inflation and instability. By most measures, it was working. But at some point I stopped feeling it.',
         },
         {
           tag: 'The turning point',
@@ -103,15 +103,15 @@ export const translations = {
         {
           year: '2022',
           tag: 'Growth · E-commerce',
-          title: 'TikTok 0 → 4,500 in 3 Months',
+          title: 'TikTok 0 → 4,000+ in 3 Months',
           narrative: [
             'Needed to grow the brand without a marketing budget.',
             'Studied the platform, tested formats, doubled down on what worked.',
-            '0 to 4,500 followers in 3 months — organic, no ads.',
+            '0 to over 4,000 followers in 3 months — organic, no ads.',
             'Content became a consistent acquisition channel for the e-commerce.',
           ],
           metrics: [
-            { label: 'Followers', value: '4,500' },
+            { label: 'Followers', value: '4,000+' },
             { label: 'Time', value: '3 months' },
             { label: 'Budget', value: '$0 ads' },
           ],
@@ -258,7 +258,7 @@ export const translations = {
         {
           tag: '2016 – 2024 · 8 años',
           heading: 'Después construí un negocio.',
-          body: 'Manejé proveedores en China, llevé una cuenta de TikTok de cero a 4.500 seguidores en tres meses, y mantuve el negocio rentable a pesar de la inflación y la inestabilidad de Argentina. En los últimos años armé el e-commerce y lo gestioné de punta a punta, y después construí un bot automático con N8n y la API de ChatGPT que automatizó 50 conversaciones diarias y redujo el tiempo de respuesta un 80%. Por cualquier métrica, funcionaba. Pero en algún momento dejó de llenarme.',
+          body: 'Manejé proveedores en China, llevé una cuenta de TikTok de cero a más de 4.000 seguidores en tres meses, y mantuve el negocio rentable a pesar de la inflación y la inestabilidad de Argentina. En los últimos años armé el e-commerce y lo gestioné de punta a punta, y después construí un bot automático con N8n y la API de ChatGPT que automatizó 50 conversaciones diarias y redujo el tiempo de respuesta un 80%. Por cualquier métrica, funcionaba. Pero en algún momento dejó de llenarme.',
         },
         {
           tag: 'El punto de quiebre',
@@ -323,15 +323,15 @@ export const translations = {
         {
           year: '2022',
           tag: 'Crecimiento · E-commerce',
-          title: 'TikTok 0 → 4.500 en 3 Meses',
+          title: 'TikTok 0 → 4.000+ en 3 Meses',
           narrative: [
             'Necesitaba hacer crecer la marca sin presupuesto de marketing.',
             'Estudié la plataforma, probé formatos, dupliqué lo que funcionaba.',
-            'De 0 a 4.500 seguidores en 3 meses — orgánico, sin publicidad.',
+            'De 0 a más de 4.000 seguidores en 3 meses — orgánico, sin publicidad.',
             'El contenido se convirtió en un canal de adquisición constante para el e-commerce.',
           ],
           metrics: [
-            { label: 'Seguidores', value: '4.500' },
+            { label: 'Seguidores', value: '4.000+' },
             { label: 'Tiempo', value: '3 meses' },
             { label: 'Inversión en ads', value: '$0' },
           ],
