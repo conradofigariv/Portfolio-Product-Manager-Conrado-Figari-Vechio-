@@ -79,7 +79,7 @@ export const translations = {
           metrics: [
             { label: 'Tools built', value: '6' },
             { label: 'Time to impact', value: '4 months' },
-            { label: 'Users', value: '2 managers and various teammates' },
+            { label: 'Users', value: '2 managers and teammates' },
           ],
           tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
         },
@@ -299,7 +299,7 @@ export const translations = {
           metrics: [
             { label: 'Herramientas', value: '6' },
             { label: 'Tiempo', value: '4 meses' },
-            { label: 'Usuarios', value: '2 gerentes y varios compañeros' },
+            { label: 'Usuarios', value: '2 gerentes y compañeros' },
           ],
           tags: ['Supabase', 'React', 'Next.js', 'Vercel', 'Claude Code'],
         },
