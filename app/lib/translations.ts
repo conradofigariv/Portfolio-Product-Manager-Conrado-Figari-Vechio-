@@ -19,7 +19,7 @@ export const translations = {
       stats: {
         years: { value: '8y', label: 'Building businesses' },
         people: { value: '50+', label: 'People led' },
-        tools: { value: '6', label: 'SaaS tools at EPEC' },
+        tools: { value: '6 SaaS', label: 'Tools built at EPEC' },
       },
     },
     journey: {
@@ -223,7 +223,7 @@ export const translations = {
       stats: {
         years: { value: '8a', label: 'Construyendo negocios' },
         people: { value: '50+', label: 'Personas lideradas' },
-        tools: { value: '6', label: 'Herramientas SaaS en EPEC' },
+        tools: { value: '6 SaaS', label: 'Herramientas en EPEC' },
       },
     },
     journey: {
