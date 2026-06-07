@@ -135,6 +135,23 @@ export const translations = {
           ],
           tags: ['Entrepreneurship', 'Operations', 'E-commerce', 'Supply chain'],
         },
+        {
+          year: '2015',
+          tag: 'Leadership · AVEIT',
+          title: 'Leading 50 People to Record-Breaking Results',
+          narrative: [
+            'Took over leadership of 50 people across HR and sales at AVEIT.',
+            'That year, we broke the organization\'s all-time record for advertising sales.',
+            'We also set a new record for member sign-ups — the highest in the organization\'s history.',
+            'On top of that, I led the full migration and loading of the entire member database, digitizing every record the organization had up to that point.',
+          ],
+          metrics: [
+            { label: 'People led', value: '50' },
+            { label: 'Sales record', value: 'All-time high' },
+            { label: 'Sign-ups record', value: 'All-time high' },
+          ],
+          tags: ['Leadership', 'HR & Sales', 'AVEIT', 'Operations'],
+        },
       ],
     },
     skills: {
@@ -338,6 +355,23 @@ export const translations = {
             { label: 'Cadena de suministro', value: 'China' },
           ],
           tags: ['Emprendimiento', 'Operaciones', 'E-commerce', 'Supply chain'],
+        },
+        {
+          year: '2015',
+          tag: 'Liderazgo · AVEIT',
+          title: 'Liderando 50 Personas hacia Récords Históricos',
+          narrative: [
+            'Asumí el liderazgo de 50 personas entre RRHH y ventas en AVEIT.',
+            'Ese año, rompimos el récord histórico de venta de publicidad de la organización.',
+            'También establecimos un nuevo récord de incorporación de socios — el más alto en la historia de la organización.',
+            'Además, lideré la migración y carga completa de la base de datos de socios, digitalizando cada registro que la organización tenía hasta ese momento.',
+          ],
+          metrics: [
+            { label: 'Personas lideradas', value: '50' },
+            { label: 'Récord de ventas', value: 'Histórico' },
+            { label: 'Récord de socios', value: 'Histórico' },
+          ],
+          tags: ['Liderazgo', 'RRHH y Ventas', 'AVEIT', 'Operaciones'],
         },
       ],
     },
