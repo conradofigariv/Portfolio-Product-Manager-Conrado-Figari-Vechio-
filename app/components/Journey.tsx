@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 
-const CHAPTER_PHOTOS: Record<number, { src: string; alt: string; position: string }> = {
-  0: { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets', position: 'object-center' },
-  1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team', position: 'object-center' },
-  2: { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,500 followers', position: 'object-left' },
-  3: { src: '/reading-book-park.jpeg', alt: 'Conrado reading in the park', position: 'object-center' },
-  4: { src: '/EPEC.jpg', alt: 'EPEC building', position: 'object-right' },
+const CHAPTER_PHOTOS: Record<number, { src: string; alt: string; position: string; positionMobile?: string }> = {
+  0: { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets', position: 'center center' },
+  1: { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team', position: 'center center' },
+  2: { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,500 followers', position: 'left center', positionMobile: 'center top' },
+  3: { src: '/reading-book-park.jpeg', alt: 'Conrado reading in the park', position: 'center center', positionMobile: 'center bottom' },
+  4: { src: '/EPEC.jpg', alt: 'EPEC building', position: 'right center' },
 }
 
 export default function Journey() {
@@ -71,12 +71,26 @@ export default function Journey() {
                     {photo && (
                       <div className="order-1 md:order-2">
                         <div className="w-full h-44 md:w-48 md:h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
-                          <Image
-                            src={photo.src}
-                            alt={photo.alt}
-                            fill
-                            className={`object-cover ${photo.position}`}
-                          />
+                          {/* Mobile position */}
+                          <div className="md:hidden absolute inset-0">
+                            <Image
+                              src={photo.src}
+                              alt={photo.alt}
+                              fill
+                              className="object-cover"
+                              style={{ objectPosition: photo.positionMobile || photo.position }}
+                            />
+                          </div>
+                          {/* Desktop position */}
+                          <div className="hidden md:block absolute inset-0">
+                            <Image
+                              src={photo.src}
+                              alt={photo.alt}
+                              fill
+                              className="object-cover"
+                              style={{ objectPosition: photo.position }}
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
