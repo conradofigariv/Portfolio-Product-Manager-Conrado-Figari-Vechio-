@@ -62,7 +62,7 @@ export default function ProjectTimeline() {
 
                   {/* Visual side */}
                   <div
-                    className={`relative h-72 rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
+                    className={`relative h-[22rem] rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
                       isVisible
                         ? 'opacity-100 translate-x-0'
                         : isRight
@@ -88,7 +88,7 @@ export default function ProjectTimeline() {
                       <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-2">
                         {project.year}
                       </span>
-                      <h3 className="text-2xl font-bold text-dark-50 leading-tight">
+                      <h3 className="text-3xl font-bold text-dark-50 leading-tight">
                         {project.title}
                       </h3>
                     </div>
@@ -108,10 +108,10 @@ export default function ProjectTimeline() {
                     }`}
                   >
                     {/* Narrative */}
-                    <div className="space-y-2.5 mb-6">
+                    <div className="space-y-3 mb-7">
                       {project.narrative.map((line, i) => (
-                        <p key={i} className="text-dark-300 text-sm leading-snug flex items-start gap-3">
-                          <span className="text-dark-500 font-light mt-0.5 text-xs select-none">
+                        <p key={i} className="text-dark-300 text-base leading-relaxed flex items-start gap-3">
+                          <span className="text-dark-500 font-light mt-0.5 text-sm select-none">
                             {String(i + 1).padStart(2, '0')}
                           </span>
                           <span>{line}</span>
@@ -120,11 +120,11 @@ export default function ProjectTimeline() {
                     </div>
 
                     {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-3 mb-6 py-4 border-y border-dark-700">
+                    <div className="grid grid-cols-3 gap-4 mb-7 py-5 border-y border-dark-700">
                       {project.metrics.map((metric, i) => (
                         <div key={i}>
-                          <p className="text-dark-400 text-xs uppercase tracking-wider mb-1.5">{metric.label}</p>
-                          <p className="text-xl font-bold text-dark-50">{metric.value}</p>
+                          <p className="text-dark-400 text-xs uppercase tracking-wider mb-2">{metric.label}</p>
+                          <p className="text-2xl font-bold text-dark-50">{metric.value}</p>
                         </div>
                       ))}
                     </div>
