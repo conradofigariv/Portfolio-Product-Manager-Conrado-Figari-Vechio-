@@ -58,11 +58,11 @@ export default function ProjectTimeline() {
                 id={`project-item-${idx}`}
                 className="relative"
               >
-                <div className={`grid md:grid-cols-2 gap-16 items-center ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
+                <div className={`grid md:grid-cols-2 gap-16 items-stretch ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
 
                   {/* Visual side */}
                   <div
-                    className={`relative h-80 rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
+                    className={`relative min-h-[22rem] h-full rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
                       isVisible
                         ? 'opacity-100 translate-x-0'
                         : isRight
