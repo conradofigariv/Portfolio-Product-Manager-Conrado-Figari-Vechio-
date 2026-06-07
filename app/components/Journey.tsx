@@ -66,10 +66,25 @@ export default function Journey() {
                     />
                   </div>
 
-                  <div className={`grid grid-cols-1 gap-4 md:gap-8 ${photo ? 'md:grid-cols-[1fr_auto]' : ''} items-start`}>
+                  <div className={`journey-chapter-grid ${photo ? 'journey-chapter-grid--with-photo' : 'journey-chapter-grid--no-photo'}`}>
+                    {/* Tag + Heading */}
+                    <div style={{ gridArea: 'header' }}>
+                      <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
+                        {chapter.tag}
+                      </span>
+
+                      <h3
+                        className={`mt-2 mb-0 md:mb-5 font-bold leading-tight ${
+                          isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
+                        }`}
+                      >
+                        {chapter.heading}
+                      </h3>
+                    </div>
+
                     {/* Photo (selected chapters) */}
                     {photo && (
-                      <div className="order-1 md:order-2">
+                      <div style={{ gridArea: 'photo' }}>
                         <div className="w-full h-44 md:w-48 md:h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
                           {/* Mobile position */}
                           <div className="md:hidden absolute inset-0">
@@ -95,22 +110,8 @@ export default function Journey() {
                       </div>
                     )}
 
-                    <div className="order-2 md:order-1">
-                      {/* Tag */}
-                      <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
-                        {chapter.tag}
-                      </span>
-
-                      {/* Heading */}
-                      <h3
-                        className={`mt-2 mb-5 font-bold leading-tight ${
-                          isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
-                        }`}
-                      >
-                        {chapter.heading}
-                      </h3>
-
-                      {/* Body */}
+                    {/* Body */}
+                    <div style={{ gridArea: 'body' }}>
                       <p className="text-dark-300 leading-relaxed text-base md:text-lg max-w-2xl">
                         {chapter.body}
                       </p>

@@ -40,4 +40,23 @@
   .button-secondary {
     @apply px-6 py-3 border border-dark-400 text-dark-50 font-semibold rounded-lg transition-all hover:border-dark-50 hover:bg-dark-800;
   }
+
+  .journey-chapter-grid {
+    @apply grid grid-cols-1 gap-4 items-start;
+  }
+
+  .journey-chapter-grid--no-photo {
+    grid-template-areas: 'header' 'body';
+  }
+
+  .journey-chapter-grid--with-photo {
+    @apply md:grid-cols-[1fr_auto] md:gap-8;
+    grid-template-areas: 'header' 'photo' 'body';
+  }
+
+  @media (min-width: 768px) {
+    .journey-chapter-grid--with-photo {
+      grid-template-areas: 'header photo' 'body photo';
+    }
+  }
 }
