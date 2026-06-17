@@ -116,7 +116,7 @@ export default function Navbar() {
             onClick={() => setIsCVOpen(false)}
           >
             <div
-              className="bg-dark-800 border border-dark-700 rounded-xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden"
+              className="bg-dark-800 border border-dark-700 rounded-xl w-full max-w-5xl h-[92vh] flex flex-col overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
@@ -146,7 +146,7 @@ export default function Navbar() {
                 </div>
               </div>
               <iframe
-                src="/cv-conrado-figari.pdf"
+                src="/cv-conrado-figari.pdf#view=FitH"
                 title="CV"
                 className="flex-1 w-full bg-white"
               />
