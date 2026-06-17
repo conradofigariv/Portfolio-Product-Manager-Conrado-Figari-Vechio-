@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isCVOpen, setIsCVOpen] = useState(false)
   const { t, lang, toggleLang } = useLang()
 
   const navLinks = [
@@ -48,9 +50,12 @@ export default function Navbar() {
             <span className={lang === 'es' ? 'text-dark-50 font-bold' : ''}>ES</span>
           </button>
 
-          <a href="/cv-conrado-figari.pdf" className="button-secondary text-sm py-2">
-            {t.nav.downloadCV}
-          </a>
+          <button
+            onClick={() => setIsCVOpen(true)}
+            className="button-secondary text-sm py-2"
+          >
+            {t.nav.viewCV}
+          </button>
         </div>
 
         {/* Mobile: lang toggle + hamburger */}
@@ -91,12 +96,64 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
-            <a href="/cv-conrado-figari.pdf" className="button-secondary inline-block text-center text-sm">
-              {t.nav.downloadCV}
-            </a>
+            <button
+              onClick={() => {
+                setIsOpen(false)
+                setIsCVOpen(true)
+              }}
+              className="button-secondary inline-block text-center text-sm"
+            >
+              {t.nav.viewCV}
+            </button>
           </div>
         </div>
       )}
+
+      {isCVOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setIsCVOpen(false)}
+          >
+            <div
+              className="bg-dark-800 border border-dark-700 rounded-xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
+                <span className="text-dark-50 font-semibold text-sm">CV</span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/cv-conrado-figari.pdf"
+                    download
+                    className="button-secondary text-sm py-1.5"
+                  >
+                    {t.nav.downloadCVAction}
+                  </a>
+                  <button
+                    onClick={() => setIsCVOpen(false)}
+                    aria-label={t.nav.closeCV}
+                    className="text-dark-300 hover:text-dark-50 transition p-1.5"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <iframe
+                src="/cv-conrado-figari.pdf"
+                title="CV"
+                className="flex-1 w-full bg-white"
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </nav>
   )
 }
