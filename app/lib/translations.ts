@@ -8,6 +8,9 @@ export const translations = {
       skills: 'Skills',
       contact: 'Contact',
       downloadCV: 'Download CV',
+      viewCV: 'CV',
+      downloadCVAction: 'Download CV',
+      closeCV: 'Close',
     },
     hero: {
       greeting: "Hi, I'm",
@@ -264,6 +267,9 @@ export const translations = {
       skills: 'Habilidades',
       contact: 'Contacto',
       downloadCV: 'Descargar CV',
+      viewCV: 'CV',
+      downloadCVAction: 'Descargar CV',
+      closeCV: 'Cerrar',
     },
     hero: {
       greeting: 'Hola, soy',
