@@ -51,7 +51,7 @@ export const translations = {
         {
           tag: 'EPEC · 2024 – Present',
           heading: "I didn't find the role. I built it.",
-          body: "I was hired at EPEC as an Electronic Engineer, not as a PM. My job was to help management visualize data. But when I started asking my managers how they actually wanted to see the information and what decisions they needed to make faster, the role changed. Those conversations turned into requirements, requirements turned into modules, and before long I had built six internal SaaS tools that replaced workflows nobody had questioned in years. Four months in, my managers use them every day and the difference is visible across the board.",
+          body: "I was hired at EPEC as an Electronic Engineer. My job was to help management visualize data. But when I started asking my managers how they actually wanted to see the information and what decisions they needed to make faster, the role changed. Those conversations turned into requirements, requirements turned into modules, and before long I had built six internal SaaS tools that replaced workflows nobody had questioned in years. Four months in, my managers use them every day and the difference is visible across the board.",
         },
         {
           tag: 'Today',
@@ -310,7 +310,7 @@ export const translations = {
         {
           tag: 'EPEC · 2024 – Presente',
           heading: 'No encontré el rol. Lo construí.',
-          body: 'Me contrataron en EPEC como Ingeniero Electrónico, no como PM. Mi trabajo era ayudar a la gerencia a visualizar datos. Pero cuando empecé a preguntarles cómo querían ver la información y qué decisiones necesitaban tomar más rápido, el rol cambió. Esas conversaciones se convirtieron en requerimientos, los requerimientos en módulos, y sin darme cuenta había construido seis herramientas SaaS internas que reemplazaron procesos que nadie había cuestionado en años. A cuatro meses de trabajo, mis jefes las usan todos los días y la diferencia se nota.',
+          body: 'Me contrataron en EPEC como Ingeniero Electrónico. Mi trabajo era ayudar a la gerencia a visualizar datos. Pero cuando empecé a preguntarles cómo querían ver la información y qué decisiones necesitaban tomar más rápido, el rol cambió. Esas conversaciones se convirtieron en requerimientos, los requerimientos en módulos, y sin darme cuenta había construido seis herramientas SaaS internas que reemplazaron procesos que nadie había cuestionado en años. A cuatro meses de trabajo, mis jefes las usan todos los días y la diferencia se nota.',
         },
         {
           tag: 'Hoy',
