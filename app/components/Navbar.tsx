@@ -123,7 +123,7 @@ export default function Navbar() {
                 <span className="text-dark-50 font-semibold text-sm">CV</span>
                 <div className="flex items-center gap-2">
                   <a
-                    href="/cv-conrado-figari.pdf"
+                    href="/PO_ConradoFigariVechio_ENG.pdf"
                     download
                     className="button-secondary text-sm py-1.5"
                   >
@@ -146,7 +146,7 @@ export default function Navbar() {
                 </div>
               </div>
               <iframe
-                src="/cv-conrado-figari.pdf#view=FitH"
+                src="/PO_ConradoFigariVechio_ENG.pdf#view=FitH"
                 title="CV"
                 className="flex-1 w-full bg-white"
               />
