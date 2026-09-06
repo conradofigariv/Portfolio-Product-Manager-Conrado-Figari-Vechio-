@@ -1,8 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import { LanguageProvider } from './context/LanguageContext'
 
 export const metadata: Metadata = {
   title: 'Conrado Figari — Product Manager',
@@ -20,13 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-dark-900">
-        <LanguageProvider>
-          <Navbar />
-          {children}
-          <Footer />
-        </LanguageProvider>
-      </body>
+      <body className="bg-dark-900">{children}</body>
     </html>
   )
 }

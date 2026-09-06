@@ -1,5 +1,6 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 import { slugifyUsername, withSuffix } from '../username'
+import { starterContent } from '../starter-content'
 
 const UNIQUE_VIOLATION = '23505'
 const CHECK_VIOLATION = '23514' // reserved username or bad format
@@ -22,6 +23,7 @@ export async function ensureProfile(supabase: SupabaseClient, user: User) {
     user.email?.split('@')[0] ||
     'user'
   const base = slugifyUsername(seed)
+  const displayName = (user.user_metadata?.full_name as string | undefined) ?? null
 
   const MAX_ATTEMPTS = 25
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -29,14 +31,18 @@ export async function ensureProfile(supabase: SupabaseClient, user: User) {
     const { error } = await supabase.from('profiles').insert({
       id: user.id,
       username,
-      display_name: (user.user_metadata?.full_name as string | undefined) ?? null,
+      display_name: displayName,
       avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? null,
     })
 
     if (!error) {
       // Best-effort: a failure here leaves a profile without a portfolio row,
       // which the editor can create lazily on first save.
-      await supabase.from('portfolios').insert({ user_id: user.id, published: false, content: {} })
+      await supabase.from('portfolios').insert({
+        user_id: user.id,
+        published: false,
+        content: starterContent(displayName ?? seed),
+      })
       return
     }
 

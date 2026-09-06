@@ -1,17 +1,8 @@
-import Hero from './components/Hero'
-import Journey from './components/Journey'
-import ProjectTimeline from './components/ProjectTimeline'
-import Skills from './components/Skills'
-import Contact from './components/Contact'
+import PortfolioShell from './components/PortfolioShell'
+import { defaultPortfolio } from './lib/portfolio'
 
+// Conrado's portfolio stays at the root so the URL already shared on his CV
+// keeps working; other people's live at /[username].
 export default function Home() {
-  return (
-    <main>
-      <Hero />
-      <Journey />
-      <ProjectTimeline />
-      <Skills />
-      <Contact />
-    </main>
-  )
+  return <PortfolioShell portfolio={defaultPortfolio} />
 }
