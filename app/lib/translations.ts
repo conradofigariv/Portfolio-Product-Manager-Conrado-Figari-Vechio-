@@ -68,6 +68,13 @@ export const translations = {
         description: "These are the projects I'm most proud of. Each one started with a real problem and ended with something people actually use.",
         button: "Let's talk",
       },
+      gallery: {
+        viewGallery: 'View gallery',
+        viewPhoto: 'View photo',
+        close: 'Close',
+        previous: 'Previous photo',
+        next: 'Next photo',
+      },
       items: [
         {
           year: '2024',
@@ -119,6 +126,23 @@ export const translations = {
             { label: 'Type', value: 'Full SaaS' },
           ],
           tags: ['React', 'TypeScript', 'Supabase', 'Claude Code'],
+        },
+        {
+          year: '2026',
+          tag: 'Marketplace · Solo Build',
+          title: 'Dealr — Marketplace PWA for Used Goods',
+          narrative: [
+            'Built a full peer-to-peer marketplace for used goods in Córdoba, Argentina, solo, from database schema to production deploy.',
+            'Real-time auctions with anti-snipe protection, in-app chat, geolocation with privacy-safe fuzzing, and a personalized recommendation feed.',
+            'Architected 50+ Postgres migrations (RLS policies, triggers, security-definer RPCs) — all product logic lives in the database, not the client.',
+            'Cut storage egress ~90% through lazy-loaded photo carousels, auto-generated thumbnails, and tuned image compression — turned a cost problem into a non-issue.',
+          ],
+          metrics: [
+            { label: 'Build time', value: 'In progress' },
+            { label: 'Role', value: 'Solo' },
+            { label: 'Type', value: 'Full Marketplace' },
+          ],
+          tags: ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Vercel', 'Claude Code'],
         },
         {
           year: '2023',
@@ -327,6 +351,13 @@ export const translations = {
         description: 'Estos son los proyectos de los que más me enorgullezco. Cada uno empezó con un problema real y terminó con algo que la gente realmente usa.',
         button: 'Hablemos',
       },
+      gallery: {
+        viewGallery: 'Ver galería',
+        viewPhoto: 'Ver foto',
+        close: 'Cerrar',
+        previous: 'Foto anterior',
+        next: 'Foto siguiente',
+      },
       items: [
         {
           year: '2024',
@@ -378,6 +409,23 @@ export const translations = {
             { label: 'Tipo', value: 'SaaS Completo' },
           ],
           tags: ['React', 'TypeScript', 'Supabase', 'Claude Code'],
+        },
+        {
+          year: '2026',
+          tag: 'Marketplace · Construcción Solo',
+          title: 'Dealr — Marketplace PWA para Usados',
+          narrative: [
+            'Construí un marketplace completo peer-to-peer para artículos usados en Córdoba, Argentina, en solitario, desde el esquema de base de datos hasta el deploy en producción.',
+            'Subastas en tiempo real con protección anti-snipe, chat integrado, geolocalización con difuminado que protege la privacidad, y un feed de recomendaciones personalizado.',
+            'Diseñé más de 50 migraciones de Postgres (políticas RLS, triggers, RPCs security-definer) — toda la lógica del producto vive en la base de datos, no en el cliente.',
+            'Reduje el egress de storage ~90% mediante carruseles de fotos con carga diferida, miniaturas autogeneradas, y compresión de imágenes optimizada — convertí un problema de costos en algo irrelevante.',
+          ],
+          metrics: [
+            { label: 'Tiempo de construcción', value: 'En desarrollo' },
+            { label: 'Rol', value: 'Solo' },
+            { label: 'Tipo', value: 'Marketplace Completo' },
+          ],
+          tags: ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Vercel', 'Claude Code'],
         },
         {
           year: '2023',
