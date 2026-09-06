@@ -15,15 +15,25 @@ export default function GoogleSignInButton() {
   async function signIn() {
     setPending(true)
 
-    // Vercel renders secret values as bullet characters. Saving that masked
-    // display back into the field stores literal bullets, which only surface
-    // later as an opaque ByteString error when the key goes into a header.
+    // Vercel renders secret values as bullet characters, and saving that masked
+    // display stores literal bullets. NEXT_PUBLIC_* values are also baked in at
+    // build time, so a redeploy that reuses the build cache can keep serving an
+    // old one. Both only surface as an opaque ByteString error otherwise, so
+    // report what the bundle actually contains.
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-    if (!/^[\x20-\x7E]*$/.test(anonKey)) {
+    const isPrintableAscii = /^[\x20-\x7E]*$/.test(anonKey)
+    const looksLikeKey = anonKey.startsWith('eyJ') || anonKey.startsWith('sb_')
+
+    if (!isPrintableAscii || !looksLikeKey) {
       setPending(false)
+      const shape = anonKey
+        ? `${anonKey.length} chars, starts with "${anonKey.slice(0, 6)}"${
+            isPrintableAscii ? '' : ', contains non-ASCII characters'
+          }`
+        : 'not set'
       router.push(
         `/login?error=bad_key&reason=${encodeURIComponent(
-          'The Supabase key is not a real key — it looks like a masked placeholder was saved. Re-enter NEXT_PUBLIC_SUPABASE_ANON_KEY in the hosting environment.'
+          `NEXT_PUBLIC_SUPABASE_ANON_KEY is not a valid key (${shape}). A real key starts with "eyJ". Re-enter it in the hosting environment and redeploy WITHOUT the build cache — this value is baked in at build time.`
         )}`
       )
       return
