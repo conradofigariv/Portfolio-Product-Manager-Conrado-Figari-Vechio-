@@ -47,5 +47,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|mp4|pdf)$).*)'],
+  // /auth is excluded on purpose: refreshing the session mid sign-in can clear
+  // the PKCE cookies the callback still needs to exchange the code.
+  matcher: [
+    '/((?!auth/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|mp4|pdf)$).*)',
+  ],
 }
