@@ -8,7 +8,15 @@ import { useLang } from '../context/LanguageContext'
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isCVOpen, setIsCVOpen] = useState(false)
-  const { t, lang, toggleLang } = useLang()
+  const { t, lang, toggleLang, content, media } = useLang()
+
+  const initials = content.hero.name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
 
   const navLinks = [
     { label: t.nav.about, href: '#about' },
@@ -21,7 +29,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-dark-900/95 backdrop-blur border-b border-dark-700">
       <div className="container-main flex items-center justify-between h-16">
         <Link href="/" className="text-xl font-bold hover:text-dark-100 transition tracking-tight">
-          CF
+          {initials}
         </Link>
 
         {/* Desktop Navigation */}
@@ -50,12 +58,14 @@ export default function Navbar() {
             <span className={lang === 'es' ? 'text-dark-50 font-bold' : ''}>ES</span>
           </button>
 
-          <button
-            onClick={() => setIsCVOpen(true)}
-            className="button-secondary text-sm py-2"
-          >
-            {t.nav.viewCV}
-          </button>
+          {media.cv && (
+            <button
+              onClick={() => setIsCVOpen(true)}
+              className="button-secondary text-sm py-2"
+            >
+              {t.nav.viewCV}
+            </button>
+          )}
         </div>
 
         {/* Mobile: lang toggle + hamburger */}
@@ -96,20 +106,23 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
-            <button
-              onClick={() => {
-                setIsOpen(false)
-                setIsCVOpen(true)
-              }}
-              className="button-secondary inline-block text-center text-sm"
-            >
-              {t.nav.viewCV}
-            </button>
+            {media.cv && (
+              <button
+                onClick={() => {
+                  setIsOpen(false)
+                  setIsCVOpen(true)
+                }}
+                className="button-secondary inline-block text-center text-sm"
+              >
+                {t.nav.viewCV}
+              </button>
+            )}
           </div>
         </div>
       )}
 
       {isCVOpen &&
+        media.cv &&
         createPortal(
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
@@ -123,7 +136,7 @@ export default function Navbar() {
                 <span className="text-dark-50 font-semibold text-sm">CV</span>
                 <div className="flex items-center gap-2">
                   <a
-                    href="/PO_ConradoFigariVechio_ENG.pdf"
+                    href={media.cv}
                     download
                     className="button-secondary text-sm py-1.5"
                   >
@@ -146,7 +159,7 @@ export default function Navbar() {
                 </div>
               </div>
               <iframe
-                src="/PO_ConradoFigariVechio_ENG.pdf#view=FitH"
+                src={`${media.cv}#view=FitH`}
                 title="CV"
                 className="flex-1 w-full bg-white"
               />

@@ -3,8 +3,8 @@
 import { useLang } from '../context/LanguageContext'
 
 export default function Skills() {
-  const { t } = useLang()
-  const s = t.skills
+  const { t, content } = useLang()
+  const s = content.skills
 
   return (
     <section id="skills" className="bg-dark-800/40 section-padding">
@@ -33,7 +33,7 @@ export default function Skills() {
 
         {/* Certifications */}
         <div className="mt-8 md:mt-16 pt-8 md:pt-16 border-t border-dark-700">
-          <h3 className="text-lg md:text-xl font-semibold mb-6 md:mb-8 text-dark-50">{s.certifications}</h3>
+          <h3 className="text-lg md:text-xl font-semibold mb-6 md:mb-8 text-dark-50">{t.skills.certifications}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {s.certs.map((cert) => (
               <div

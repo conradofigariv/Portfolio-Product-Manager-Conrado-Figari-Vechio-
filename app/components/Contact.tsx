@@ -3,8 +3,8 @@
 import { useLang } from '../context/LanguageContext'
 
 export default function Contact() {
-  const { t } = useLang()
-  const c = t.contact
+  const { t, content } = useLang()
+  const c = content.contact
 
   return (
     <section id="contact" className="section-padding">
@@ -16,7 +16,7 @@ export default function Contact() {
           {/* Contact Info */}
           <div className="flex flex-col gap-8">
             <div className="bg-dark-800/50 border border-dark-700 rounded-xl p-8">
-              <h3 className="font-semibold text-dark-50 mb-6">{c.otherWays}</h3>
+              <h3 className="font-semibold text-dark-50 mb-6">{t.contact.otherWays}</h3>
               <div className="space-y-5">
                 <div>
                   <p className="text-dark-400 text-xs uppercase tracking-wider mb-1">Email</p>
@@ -53,8 +53,8 @@ export default function Contact() {
             </div>
 
             <div className="bg-dark-800/50 border border-dark-700 rounded-xl p-8">
-              <h3 className="font-semibold text-dark-50 mb-4">{c.availability}</h3>
-              <p className="text-dark-400 text-sm mb-4">{c.availableFor}</p>
+              <h3 className="font-semibold text-dark-50 mb-4">{t.contact.availability}</h3>
+              <p className="text-dark-400 text-sm mb-4">{t.contact.availableFor}</p>
               <ul className="space-y-2">
                 {c.availableItems.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-dark-300 text-sm">
