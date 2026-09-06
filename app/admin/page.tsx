@@ -26,11 +26,18 @@ export default async function AdminPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center section-padding">
+    <main className="min-h-screen flex items-center justify-center section-padding">
       <div className="w-full max-w-sm text-center">
         <h1 className="text-2xl font-bold text-dark-50 mb-2">Portfolio App</h1>
         <p className="text-dark-400 text-sm mb-1">Signed in as {user.email}</p>
-        {username && <p className="text-dark-500 text-sm mb-1">Username: {username}</p>}
+        {username && (
+          <p className="text-dark-500 text-sm mb-1">
+            Your portfolio:{' '}
+            <a href={`/${username}`} className="text-dark-300 underline hover:text-dark-50">
+              /{username}
+            </a>
+          </p>
+        )}
 
         {profileError ? (
           <p className="text-red-400 text-sm mb-8">{profileError}</p>

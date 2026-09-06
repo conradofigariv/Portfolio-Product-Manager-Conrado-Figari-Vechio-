@@ -13,7 +13,7 @@ export default async function LoginPage({
   const { error, reason } = await searchParams
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center section-padding">
+    <main className="min-h-screen flex items-center justify-center section-padding">
       <div className="w-full max-w-sm text-center">
         <h1 className="text-2xl font-bold text-dark-50 mb-2">Portfolio App</h1>
         <p className="text-dark-400 text-sm mb-8">Build and edit your portfolio.</p>

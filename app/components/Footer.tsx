@@ -48,10 +48,6 @@ export default function Footer() {
         </div>
         <div className="border-t border-dark-700 pt-8 flex flex-col md:flex-row justify-between items-center text-dark-400 text-xs gap-4">
           <p>{f.rights}</p>
-          <div className="flex gap-6">
-            <a href="/privacy" className="hover:text-dark-50 transition">{t.footer.privacy}</a>
-            <a href="/terms" className="hover:text-dark-50 transition">{t.footer.terms}</a>
-          </div>
         </div>
       </div>
     </footer>
