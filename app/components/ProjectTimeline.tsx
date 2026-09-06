@@ -5,33 +5,12 @@ import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 
-const poses: Array<'left' | 'right'> = ['right', 'left', 'right', 'left', 'right', 'left', 'right', 'left']
-
-type Photo = { src: string; alt: string; position?: string }
-
-const PROJECT_GALLERY: Record<number, Photo[]> = {
-  0: [
-    { src: '/epec-saas-dashboard.png', alt: 'One of the SaaS tools built at EPEC' },
-    { src: '/EPEC.jpg', alt: 'EPEC building' },
-  ],
-  1: [
-    { src: '/cramer-trading.png', alt: 'CramerBot AI trading platform' },
-    { src: '/cramerbot-office.jpeg', alt: 'CramerBot team working session' },
-  ],
-  2: [{ src: '/trackr-app.jpeg', alt: 'Trackr personal finance app', position: 'object-[center_40%]' }],
-  4: [{ src: '/crm-n8n-workflow.png', alt: 'N8n workflow powering the AI CRM' }],
-  5: [{ src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,000+ followers' }],
-  6: [{ src: '/plug-inventory.jpg', alt: 'Plug business inventory', position: 'object-[center_65%]' }],
-  7: [
-    { src: '/aveit-team.png', alt: 'AVEIT team' },
-    { src: '/aveit-hr-team.jpeg', alt: 'AVEIT HR team' },
-    { src: '/aveit-raffle.png', alt: 'AVEIT raffle tickets' },
-  ],
-}
+// Alternating sides; index into this by position, not by project identity.
+const poses: Array<'left' | 'right'> = ['right', 'left']
 
 export default function ProjectTimeline() {
-  const { t } = useLang()
-  const p = t.projects
+  const { t, content, media } = useLang()
+  const p = content.projects
   const sectionRef = useRef<HTMLDivElement>(null)
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set())
   const [openProject, setOpenProject] = useState<number | null>(null)
@@ -59,7 +38,8 @@ export default function ProjectTimeline() {
     return () => observers.forEach((o) => o.disconnect())
   }, [p.items])
 
-  const gallery = openProject !== null ? PROJECT_GALLERY[openProject] || [] : []
+  const gallery =
+    openProject !== null ? media.projectImages[p.items[openProject].id] || [] : []
 
   const closeGallery = () => setOpenProject(null)
   const prevPhoto = () => setPhotoIdx((i) => (i - 1 + gallery.length) % gallery.length)
@@ -87,15 +67,15 @@ export default function ProjectTimeline() {
 
         <div className="space-y-16 md:space-y-32">
           {p.items.map((project, idx) => {
-            const isRight = poses[idx] === 'right'
+            const isRight = poses[idx % poses.length] === 'right'
             const isVisible = visibleItems.has(idx)
-            const projectGallery = PROJECT_GALLERY[idx]
+            const projectGallery = media.projectImages[project.id]
             const photo = projectGallery?.[0]
             const hasGallery = !!projectGallery && projectGallery.length > 0
 
             return (
               <div
-                key={idx}
+                key={project.id}
                 id={`project-item-${idx}`}
                 className="relative"
               >
@@ -128,16 +108,20 @@ export default function ProjectTimeline() {
                         : 'md:opacity-0 md:translate-x-12 opacity-0 -translate-y-8'
                     }`}
                   >
-                    {/* Project visual - photo as background (blurred/darkened) */}
+                    {/* Project visual - photo, or the portrait faded back when a project has none */}
                     <div className="absolute inset-0 bg-gradient-to-br from-dark-700 to-dark-800">
-                      <Image
-                        src={photo ? photo.src : '/conrado.jpg'}
-                        alt={photo ? photo.alt : project.title}
-                        fill
-                        className={`transition-transform duration-500 ${hasGallery ? 'group-hover:scale-105' : ''} ${
-                          photo ? `object-cover ${photo.position || 'object-left'} opacity-90` : 'object-cover object-top opacity-20 scale-110'
-                        }`}
-                      />
+                      {(photo || media.portrait) && (
+                        <Image
+                          src={photo ? photo.src : media.portrait!.src}
+                          alt={photo ? photo.alt : project.title}
+                          fill
+                          className={`transition-transform duration-500 ${hasGallery ? 'group-hover:scale-105' : ''} ${
+                            photo
+                              ? `object-cover ${photo.position || 'object-left'} opacity-90`
+                              : 'object-cover object-top opacity-20 scale-110'
+                          }`}
+                        />
+                      )}
                     </div>
 
                     {/* Gradient for text legibility over photo */}
@@ -154,7 +138,9 @@ export default function ProjectTimeline() {
                             d="M3 16l5-5 4 4 5-6 4 5M3 5h18v14H3V5z"
                           />
                         </svg>
-                        {projectGallery.length > 1 ? `${p.gallery.viewGallery} · ${projectGallery.length}` : p.gallery.viewPhoto}
+                        {projectGallery.length > 1
+                          ? `${t.projects.gallery.viewGallery} · ${projectGallery.length}`
+                          : t.projects.gallery.viewPhoto}
                       </div>
                     )}
 
@@ -221,8 +207,8 @@ export default function ProjectTimeline() {
 
         {/* Bottom CTA */}
         <div className="mt-32 text-center max-w-2xl mx-auto">
-          <h3 className="text-2xl font-bold mb-4">{p.cta.title}</h3>
-          <p className="text-dark-400 mb-8">{p.cta.description}</p>
+          <h3 className="text-2xl font-bold mb-4">{p.ctaTitle}</h3>
+          <p className="text-dark-400 mb-8">{p.ctaDescription}</p>
         </div>
       </div>
 
@@ -248,7 +234,7 @@ export default function ProjectTimeline() {
                 </span>
                 <button
                   onClick={closeGallery}
-                  aria-label={p.gallery.close}
+                  aria-label={t.projects.gallery.close}
                   className="text-dark-300 hover:text-dark-50 transition p-1.5"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,7 +256,7 @@ export default function ProjectTimeline() {
                   <>
                     <button
                       onClick={prevPhoto}
-                      aria-label={p.gallery.previous}
+                      aria-label={t.projects.gallery.previous}
                       className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-dark-900/70 border border-dark-600 text-dark-100 hover:bg-dark-900 transition"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,7 +265,7 @@ export default function ProjectTimeline() {
                     </button>
                     <button
                       onClick={nextPhoto}
-                      aria-label={p.gallery.next}
+                      aria-label={t.projects.gallery.next}
                       className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-dark-900/70 border border-dark-600 text-dark-100 hover:bg-dark-900 transition"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -3,8 +3,8 @@
 import { useLang } from '../context/LanguageContext'
 
 export default function Footer() {
-  const { t } = useLang()
-  const f = t.footer
+  const { t, content } = useLang()
+  const f = content.footer
   const n = t.nav
 
   return (
@@ -16,7 +16,7 @@ export default function Footer() {
             <p className="text-dark-400 text-sm leading-relaxed">{f.tagline}</p>
           </div>
           <div>
-            <h4 className="text-dark-50 font-semibold mb-4 text-sm">{f.quickLinks}</h4>
+            <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.quickLinks}</h4>
             <ul className="space-y-2 text-sm text-dark-400">
               {[
                 { label: n.about, href: '#about' },
@@ -31,7 +31,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-dark-50 font-semibold mb-4 text-sm">{f.social}</h4>
+            <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.social}</h4>
             <ul className="space-y-2 text-sm text-dark-400">
               {[
                 { label: 'LinkedIn', href: 'https://www.linkedin.com/in/conradofigarivechio/' },
@@ -49,8 +49,8 @@ export default function Footer() {
         <div className="border-t border-dark-700 pt-8 flex flex-col md:flex-row justify-between items-center text-dark-400 text-xs gap-4">
           <p>{f.rights}</p>
           <div className="flex gap-6">
-            <a href="/privacy" className="hover:text-dark-50 transition">{f.privacy}</a>
-            <a href="/terms" className="hover:text-dark-50 transition">{f.terms}</a>
+            <a href="/privacy" className="hover:text-dark-50 transition">{t.footer.privacy}</a>
+            <a href="/terms" className="hover:text-dark-50 transition">{t.footer.terms}</a>
           </div>
         </div>
       </div>
