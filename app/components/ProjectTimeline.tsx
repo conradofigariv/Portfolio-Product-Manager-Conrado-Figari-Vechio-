@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
@@ -41,9 +41,16 @@ export default function ProjectTimeline() {
   const gallery =
     openProject !== null ? media.projectImages[p.items[openProject].id] || [] : []
 
-  const closeGallery = () => setOpenProject(null)
-  const prevPhoto = () => setPhotoIdx((i) => (i - 1 + gallery.length) % gallery.length)
-  const nextPhoto = () => setPhotoIdx((i) => (i + 1) % gallery.length)
+  const galleryLength = gallery.length
+  const closeGallery = useCallback(() => setOpenProject(null), [])
+  const prevPhoto = useCallback(
+    () => setPhotoIdx((i) => (i - 1 + galleryLength) % galleryLength),
+    [galleryLength]
+  )
+  const nextPhoto = useCallback(
+    () => setPhotoIdx((i) => (i + 1) % galleryLength),
+    [galleryLength]
+  )
 
   useEffect(() => {
     if (openProject === null) return
@@ -55,7 +62,7 @@ export default function ProjectTimeline() {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [openProject, gallery.length])
+  }, [openProject, closeGallery, prevPhoto, nextPhoto])
 
   return (
     <section id="projects" ref={sectionRef} className="section-padding bg-gradient-to-b from-dark-900 to-dark-800/30">
