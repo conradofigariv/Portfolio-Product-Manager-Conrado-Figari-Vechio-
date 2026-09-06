@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient, getUser } from '../lib/supabase/server'
+import { getSiteOrigin } from '../lib/site-url'
 
 export default async function LoginPage({
   searchParams,
@@ -15,9 +16,10 @@ export default async function LoginPage({
     'use server'
 
     const supabase = await createClient()
+    const origin = await getSiteOrigin()
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` },
+      options: { redirectTo: `${origin}/auth/callback` },
     })
 
     if (error || !data.url) {
