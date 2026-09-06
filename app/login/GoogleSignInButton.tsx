@@ -14,6 +14,21 @@ export default function GoogleSignInButton() {
 
   async function signIn() {
     setPending(true)
+
+    // Vercel renders secret values as bullet characters. Saving that masked
+    // display back into the field stores literal bullets, which only surface
+    // later as an opaque ByteString error when the key goes into a header.
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+    if (!/^[\x20-\x7E]*$/.test(anonKey)) {
+      setPending(false)
+      router.push(
+        `/login?error=bad_key&reason=${encodeURIComponent(
+          'The Supabase key is not a real key — it looks like a masked placeholder was saved. Re-enter NEXT_PUBLIC_SUPABASE_ANON_KEY in the hosting environment.'
+        )}`
+      )
+      return
+    }
+
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
