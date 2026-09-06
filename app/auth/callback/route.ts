@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     }
 
     console.error('exchangeCodeForSession failed', error)
+    const reason = encodeURIComponent(`${error.code ?? error.status ?? ''}: ${error.message}`)
+    return NextResponse.redirect(`${origin}/login?error=auth_failed&reason=${reason}`)
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+  return NextResponse.redirect(`${origin}/login?error=missing_code`)
 }
