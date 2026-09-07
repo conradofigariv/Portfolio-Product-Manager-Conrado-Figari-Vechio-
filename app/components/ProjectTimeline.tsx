@@ -241,7 +241,7 @@ export default function ProjectTimeline() {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
-                      <span className="text-sm md:text-base font-mono text-dark-400 uppercase tracking-widest">
+                      <span className="text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
                         <EditableText path={`projects.items.${idx}.tag`} placeholder="Category" />
                       </span>
                       {editing && (
