@@ -6,6 +6,9 @@ import EditableText from './EditableText'
 export default function Footer() {
   const { t, content } = useLang()
   const n = t.nav
+  // Defensive: same reasoning as Contact.tsx — an older stored document may
+  // predate this field.
+  const socials = content.contact.socials ?? []
 
   return (
     <footer className="bg-dark-800/40 border-t border-dark-700">
@@ -32,11 +35,11 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-          {content.contact.socials.length > 0 && (
+          {socials.length > 0 && (
             <div>
               <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.social}</h4>
               <ul className="space-y-2 text-sm text-dark-400">
-                {content.contact.socials.map((social) => (
+                {socials.map((social) => (
                   <li key={social.url}>
                     <a
                       href={social.url}
