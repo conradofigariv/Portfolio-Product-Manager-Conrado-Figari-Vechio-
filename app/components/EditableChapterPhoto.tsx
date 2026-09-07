@@ -80,8 +80,8 @@ export default function EditableChapterPhoto({
   const unoptimized = !!src?.startsWith('blob:')
 
   return (
-    <div>
-      <div className="w-full h-44 md:w-48 md:h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0 group">
+    <div className="h-full">
+      <div className="w-full h-44 md:w-48 md:h-full md:min-h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0 group">
         {src ? (
           <>
             {/* Mobile position */}
