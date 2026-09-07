@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
 import EditablePortrait from './EditablePortrait'
+import BackgroundPicker from './BackgroundPicker'
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -34,15 +35,18 @@ export default function Hero() {
       {/* Overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-dark-900/80 via-dark-900/70 to-dark-900/90" />
 
-      {/* Video toggle button */}
-      {videos.length > 1 && (
-        <button
-          onClick={() => setVideoIndex((i) => (i + 1) % videos.length)}
-          className="absolute top-6 right-6 z-20 px-3 py-1.5 rounded-lg border border-dark-400/40 bg-dark-900/40 backdrop-blur text-dark-200 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
-        >
-          Video {(videoIndex % videos.length) + 1} / {videos.length}
-        </button>
-      )}
+      {/* Top-right controls, stacked so the picker and the toggle never overlap */}
+      <div className="absolute top-6 right-6 z-30 flex flex-col items-end gap-2">
+        {videos.length > 1 && (
+          <button
+            onClick={() => setVideoIndex((i) => (i + 1) % videos.length)}
+            className="px-3 py-1.5 rounded-lg border border-dark-400/40 bg-dark-900/40 backdrop-blur text-dark-200 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
+          >
+            Video {(videoIndex % videos.length) + 1} / {videos.length}
+          </button>
+        )}
+        <BackgroundPicker />
+      </div>
 
       <div className="container-main w-full relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">

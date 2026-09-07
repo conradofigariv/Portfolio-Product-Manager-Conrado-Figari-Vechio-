@@ -29,7 +29,11 @@ function buildMedia(rows: MediaRow[], publicUrl: (path: string) => string): Port
   }
 
   for (const row of [...rows].sort((a, b) => a.sort_order - b.sort_order)) {
-    const url = publicUrl(row.storage_path)
+    // A path is either an object in storage or, for media shipped with the
+    // deployment itself, a file served straight from /public.
+    const url = row.storage_path.startsWith('/')
+      ? row.storage_path
+      : publicUrl(row.storage_path)
     const image: MediaImage = { src: url, alt: row.alt }
 
     switch (row.kind) {
@@ -63,7 +67,7 @@ function buildMedia(rows: MediaRow[], publicUrl: (path: string) => string): Port
 export async function loadPortfolio(
   supabase: SupabaseClient,
   username: string
-): Promise<(Portfolio & { published: boolean; ownerId: string }) | null> {
+): Promise<(Portfolio & { published: boolean; ownerId: string; portfolioId: string }) | null> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, username')
@@ -96,6 +100,7 @@ export async function loadPortfolio(
     content: { en: content.en, es: content.es },
     published: !!portfolio.published,
     ownerId: profile.id,
+    portfolioId: portfolio.id,
   }
 }
 

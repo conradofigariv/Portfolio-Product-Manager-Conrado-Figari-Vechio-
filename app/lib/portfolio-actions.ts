@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from './supabase/server'
 import type { Lang, PortfolioContent } from './portfolio'
+import { MAX_BACKGROUND_VIDEOS, isPresetVideo } from './preset-media'
 
 // Caps exist so a malformed or hostile payload cannot store an unbounded
 // document. They are generous enough that no real portfolio hits them.
@@ -216,6 +217,75 @@ export async function savePortrait(
   })
 
   if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+/**
+ * Replaces the background videos with a selection from the presets that ship
+ * with the site. Only presets are accepted: video is the heaviest asset here,
+ * and letting every account store its own would exhaust the storage tier long
+ * before anything else. Enforced here rather than only in the interface.
+ */
+export async function setBackgroundVideos(
+  paths: string[]
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const wanted = paths.slice(0, MAX_BACKGROUND_VIDEOS)
+  if (wanted.some((path) => !isPresetVideo(path))) {
+    return { ok: false, error: 'Backgrounds can only be chosen from the built-in set.' }
+  }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { data: existing } = await supabase
+    .from('portfolio_media')
+    .select('id, storage_path')
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'background_video')
+
+  // Clear first: the database caps background videos, so inserting alongside
+  // the old rows would be rejected.
+  if (existing?.length) {
+    await supabase
+      .from('portfolio_media')
+      .delete()
+      .in('id', existing.map((row) => row.id))
+
+    // Anything that was not a preset predates this rule; drop the file too so
+    // deselecting it actually frees the space.
+    const orphaned = existing
+      .map((row) => row.storage_path)
+      .filter((path) => !isPresetVideo(path) && !path.startsWith('/'))
+    if (orphaned.length) await supabase.storage.from(BUCKET).remove(orphaned)
+  }
+
+  if (wanted.length) {
+    const { error } = await supabase.from('portfolio_media').insert(
+      wanted.map((path, index) => ({
+        portfolio_id: portfolio.id,
+        kind: 'background_video',
+        target_id: null,
+        storage_path: path,
+        alt: '',
+        sort_order: index,
+      }))
+    )
+    if (error) return { ok: false, error: error.message }
+  }
 
   revalidatePath('/', 'layout')
   return { ok: true }
