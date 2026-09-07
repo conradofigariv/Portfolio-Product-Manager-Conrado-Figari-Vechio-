@@ -86,41 +86,47 @@ export default function Journey() {
                     />
                   </div>
 
-                  <div className={`journey-chapter-grid ${showPhotoColumn ? 'journey-chapter-grid--with-photo' : 'journey-chapter-grid--no-photo'}`}>
-                    {/* Tag + Heading */}
-                    <div style={{ gridArea: 'header' }} className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
-                          <EditableText path={`journey.chapters.${i}.tag`} placeholder="Tag" />
-                        </span>
+                  {/* A flat two-column layout (text | photo), not a spanning
+                      grid area: with the photo's height stretched to match
+                      the text column (items-stretch below), a spanning grid
+                      area would inflate whichever text row falls short,
+                      opening a gap between the heading and the body that has
+                      nothing to do with either one's own margin. */}
+                  <div className={`grid grid-cols-1 items-stretch ${showPhotoColumn ? 'md:grid-cols-[1fr_auto] md:gap-8' : ''}`}>
+                    <div>
+                      {/* Tag + Heading */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className="text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
+                            <EditableText path={`journey.chapters.${i}.tag`} placeholder="Tag" />
+                          </span>
 
-                        <h3
-                          className={`mt-2 mb-0 md:mb-5 font-bold leading-tight ${
-                            isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
-                          }`}
-                        >
-                          <EditableText path={`journey.chapters.${i}.heading`} placeholder="Heading" />
-                        </h3>
+                          <h3
+                            className={`mt-2 mb-0 md:mb-3 font-bold leading-tight ${
+                              isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
+                            }`}
+                          >
+                            <EditableText path={`journey.chapters.${i}.heading`} placeholder="Heading" />
+                          </h3>
+                        </div>
+
+                        {editing && (
+                          <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
+                        )}
                       </div>
 
-                      {editing && (
-                        <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
-                      )}
-                    </div>
-
-                    {/* Photo */}
-                    {showPhotoColumn && (
-                      <div style={{ gridArea: 'photo' }}>
-                        <EditableChapterPhoto chapterId={chapter.id} heading={chapter.heading} />
-                      </div>
-                    )}
-
-                    {/* Body */}
-                    <div style={{ gridArea: 'body' }}>
+                      {/* Body */}
                       <p className="text-dark-300 leading-relaxed text-base md:text-lg max-w-2xl">
                         <EditableText path={`journey.chapters.${i}.body`} placeholder="Body" />
                       </p>
                     </div>
+
+                    {/* Photo */}
+                    {showPhotoColumn && (
+                      <div className="mt-4 md:mt-0">
+                        <EditableChapterPhoto chapterId={chapter.id} heading={chapter.heading} />
+                      </div>
+                    )}
                   </div>
                 </div>
               )
