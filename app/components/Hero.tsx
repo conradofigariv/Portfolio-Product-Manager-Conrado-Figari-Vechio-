@@ -49,9 +49,12 @@ export default function Hero() {
       )}
 
       <div className="container-main w-full relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-stretch">
 
-          {/* Left: Content */}
+          {/* Left: Content. The portrait stretches to match this column's
+              natural height (see the grid's items-stretch + EditablePortrait's
+              h-full), so its bottom lines up with the stats no matter how
+              long the name/tagline/description run. */}
           <div
             className={`transition-all duration-1000 ${
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
@@ -71,7 +74,7 @@ export default function Hero() {
             </p>
 
             {/* Stats */}
-            <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
+            <div className="pt-4 md:pt-6 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
               {content.stats.map((_, i) => (
                 <div key={i}>
                   <p className="text-xl md:text-2xl font-bold text-dark-50">
@@ -88,7 +91,7 @@ export default function Hero() {
           {/* Right: Real photo */}
           {(media.portrait || editing) && (
             <div
-              className={`hidden md:flex items-center justify-center transition-all duration-1000 delay-300 ${
+              className={`hidden md:flex justify-center transition-all duration-1000 delay-300 ${
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
