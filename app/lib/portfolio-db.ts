@@ -63,7 +63,7 @@ function buildMedia(rows: MediaRow[], publicUrl: (path: string) => string): Port
 export async function loadPortfolio(
   supabase: SupabaseClient,
   username: string
-): Promise<Portfolio | null> {
+): Promise<(Portfolio & { published: boolean; ownerId: string }) | null> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, username')
@@ -74,7 +74,7 @@ export async function loadPortfolio(
 
   const { data: portfolio } = await supabase
     .from('portfolios')
-    .select('id, content')
+    .select('id, content, published')
     .eq('user_id', profile.id)
     .maybeSingle()
 
@@ -94,5 +94,17 @@ export async function loadPortfolio(
     username: profile.username,
     media: buildMedia((mediaRows ?? []) as MediaRow[], publicUrl),
     content: { en: content.en, es: content.es },
+    published: !!portfolio.published,
+    ownerId: profile.id,
   }
+}
+
+export function hasAnyMedia(media: PortfolioMedia): boolean {
+  return (
+    !!media.portrait ||
+    !!media.cv ||
+    media.backgroundVideos.length > 0 ||
+    Object.keys(media.projectImages).length > 0 ||
+    Object.keys(media.chapterPhotos).length > 0
+  )
 }

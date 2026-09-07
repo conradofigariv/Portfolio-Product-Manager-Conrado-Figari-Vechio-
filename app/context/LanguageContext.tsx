@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
 import { Portfolio, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
+import { setAtPath } from '../lib/content-path'
 
 interface LanguageContextType {
   lang: Lang
@@ -12,6 +13,12 @@ interface LanguageContextType {
   content: PortfolioContent
   media: PortfolioMedia
   toggleLang: () => void
+  // Editing, only ever true for the portfolio's owner.
+  editing: boolean
+  dirty: boolean
+  draft: Record<Lang, PortfolioContent>
+  setField: (path: string, value: string) => void
+  markSaved: () => void
 }
 
 const LanguageContext = createContext<LanguageContextType | null>(null)
@@ -19,22 +26,41 @@ const LanguageContext = createContext<LanguageContextType | null>(null)
 export function LanguageProvider({
   children,
   portfolio = defaultPortfolio,
+  editing = false,
 }: {
   children: ReactNode
   portfolio?: Portfolio
+  editing?: boolean
 }) {
   const [lang, setLang] = useState<Lang>('en')
+  const [draft, setDraft] = useState(portfolio.content)
+  const [dirty, setDirty] = useState(false)
 
   const toggleLang = () => setLang((l) => (l === 'en' ? 'es' : 'en'))
+
+  // Edits land on the language being viewed; the other one is untouched.
+  function setField(path: string, value: string) {
+    setDraft((prev) => {
+      const current = prev[lang]
+      const next = setAtPath(current, path, value)
+      return { ...prev, [lang]: next }
+    })
+    setDirty(true)
+  }
 
   return (
     <LanguageContext.Provider
       value={{
         lang,
         t: translations[lang],
-        content: portfolio.content[lang],
+        content: draft[lang],
         media: portfolio.media,
         toggleLang,
+        editing,
+        dirty,
+        draft,
+        setField,
+        markSaved: () => setDirty(false),
       }}
     >
       {children}

@@ -1,7 +1,8 @@
 'use server'
 
-import { createClient } from '../lib/supabase/server'
-import type { Lang, PortfolioContent } from '../lib/portfolio'
+import { revalidatePath } from 'next/cache'
+import { createClient } from './supabase/server'
+import type { Lang, PortfolioContent } from './portfolio'
 
 // Caps exist so a malformed or hostile payload cannot store an unbounded
 // document. They are generous enough that no real portfolio hits them.
@@ -154,5 +155,68 @@ export async function savePortfolio(payload: {
 
   if (error) return { ok: false, error: error.message }
 
+  return { ok: true }
+}
+
+const BUCKET = 'portfolio-media'
+
+/**
+ * Points the portfolio at a newly uploaded portrait. The file itself is
+ * uploaded from the browser straight to storage, where the bucket policy
+ * already restricts writes to the caller's own folder; this records it and
+ * clears the previous one so a single portrait is kept.
+ */
+export async function savePortrait(
+  storagePath: string,
+  alt: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  // Storage policies key off the first path segment, so a path outside the
+  // caller's own folder could never have been written in the first place.
+  if (!storagePath.startsWith(`${user.id}/`)) {
+    return { ok: false, error: 'That file does not belong to your account.' }
+  }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { data: previous } = await supabase
+    .from('portfolio_media')
+    .select('id, storage_path')
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'portrait')
+
+  // Remove the old row first: the database allows only one portrait, so an
+  // insert alongside a leftover row would be rejected.
+  if (previous?.length) {
+    await supabase
+      .from('portfolio_media')
+      .delete()
+      .in('id', previous.map((row) => row.id))
+    await supabase.storage.from(BUCKET).remove(previous.map((row) => row.storage_path))
+  }
+
+  const { error } = await supabase.from('portfolio_media').insert({
+    portfolio_id: portfolio.id,
+    kind: 'portrait',
+    target_id: null,
+    storage_path: storagePath,
+    alt: alt.slice(0, 200),
+  })
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
   return { ok: true }
 }
