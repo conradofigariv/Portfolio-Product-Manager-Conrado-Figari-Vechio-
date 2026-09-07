@@ -99,6 +99,7 @@ export default function EditableChapterPhoto({
                 src={src}
                 alt={alt}
                 fill
+                quality={90}
                 unoptimized={unoptimized}
                 className="object-cover"
                 style={{ objectPosition: existing?.positionMobile || resolvedPosition }}
@@ -110,6 +111,7 @@ export default function EditableChapterPhoto({
                 src={src}
                 alt={alt}
                 fill
+                quality={90}
                 unoptimized={unoptimized}
                 className="object-cover"
                 style={{ objectPosition: resolvedPosition }}

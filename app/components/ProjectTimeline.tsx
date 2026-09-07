@@ -184,6 +184,7 @@ export default function ProjectTimeline() {
                           src={photo ? photo.src : media.portrait!.src}
                           alt={photo ? photo.alt : project.title}
                           fill
+                          quality={90}
                           unoptimized={photo?.src.startsWith('blob:')}
                           style={photo ? { objectPosition: photo.position || 'left center' } : undefined}
                           className={`transition-transform duration-500 ${hasGallery ? 'group-hover:scale-105' : ''} ${
@@ -240,7 +241,7 @@ export default function ProjectTimeline() {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
-                      <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
+                      <span className="text-sm md:text-base font-mono text-dark-400 uppercase tracking-widest">
                         <EditableText path={`projects.items.${idx}.tag`} placeholder="Category" />
                       </span>
                       {editing && (
@@ -400,6 +401,7 @@ export default function ProjectTimeline() {
                   src={gallery[photoIdx].src}
                   alt={gallery[photoIdx].alt}
                   fill
+                  quality={90}
                   className="object-contain"
                 />
 
