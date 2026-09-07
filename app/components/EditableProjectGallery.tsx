@@ -115,7 +115,7 @@ export default function EditableProjectGallery({
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-dark-900/70 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                   <button
                     type="button"
-                    onClick={() => onRemove(photo.src)}
+                    onClick={() => onRemove(storagePath ?? photo.src)}
                     disabled={busy}
                     className="text-xs font-medium text-red-400"
                   >
