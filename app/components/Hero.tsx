@@ -16,7 +16,10 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center section-padding overflow-hidden">
+    <section
+      className="relative min-h-[calc(100vh-4rem)] flex items-center section-padding overflow-hidden"
+      style={editing ? { paddingBottom: '6rem' } : undefined}
+    >
       {/* Background video */}
       {videos.length > 0 && (
         <video
