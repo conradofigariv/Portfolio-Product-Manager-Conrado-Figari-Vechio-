@@ -76,7 +76,7 @@ export default function Hero() {
             {/* Stats */}
             <div className="pt-3 md:pt-4 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
               {content.stats.map((_, i) => (
-                <div key={i}>
+                <div key={i} className="text-center">
                   <p className="text-xl md:text-2xl font-bold text-dark-50">
                     <EditableText path={`stats.${i}.value`} placeholder="Value" />
                   </p>
