@@ -38,7 +38,10 @@ export default function EditBar({ published }: { published: boolean }) {
           {dirty ? 'Unsaved changes' : 'Click any text to edit'}
         </span>
 
-        <label className="flex items-center gap-2 text-xs text-dark-300">
+        <label
+          className="flex items-center gap-2 text-xs text-dark-300"
+          title="Si está tildado, tu portfolio es visible para cualquiera en tu link. Si lo destildás, queda privado y solo vos lo ves."
+        >
           <input
             type="checkbox"
             checked={isPublished}
@@ -59,12 +62,6 @@ export default function EditBar({ published }: { published: boolean }) {
         >
           {state === 'saving' ? 'Saving…' : dirty ? 'Save' : 'Saved'}
         </button>
-
-        <form action="/auth/signout" method="post">
-          <button type="submit" className="text-xs text-dark-400 hover:text-dark-50">
-            Cerrar sesión
-          </button>
-        </form>
 
         {error && <p className="w-full text-xs text-red-400">{error}</p>}
       </div>
