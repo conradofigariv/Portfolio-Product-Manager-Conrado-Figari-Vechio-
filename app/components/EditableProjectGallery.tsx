@@ -1,0 +1,142 @@
+'use client'
+
+import { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { createClient } from '../lib/supabase/client'
+import { addProjectPhoto, removeProjectPhoto } from '../lib/portfolio-actions'
+import { compressImage, validateImageFile } from '../lib/image-upload'
+import type { MediaImage } from '../lib/portfolio'
+
+const MAX_PHOTOS = 4
+
+// The management panel a project's owner sees instead of the public lightbox:
+// thumbnails with a remove control, and an upload tile up to the 4 the
+// database allows.
+export default function EditableProjectGallery({
+  projectId,
+  title,
+  photos,
+  onClose,
+}: {
+  projectId: string
+  title: string
+  photos: MediaImage[]
+  onClose: () => void
+}) {
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  async function onPick(file: File) {
+    setError(null)
+    const invalid = validateImageFile(file)
+    if (invalid) {
+      setError(invalid)
+      return
+    }
+
+    setBusy(true)
+    try {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error('Your session expired. Sign in again.')
+
+      const image = await compressImage(file)
+      const path = `${user.id}/project-${projectId}-${Date.now()}.webp`
+
+      const upload = await supabase.storage
+        .from('portfolio-media')
+        .upload(path, image, { contentType: 'image/webp', upsert: false })
+      if (upload.error) throw upload.error
+
+      const saved = await addProjectPhoto(projectId, path, title)
+      if (!saved.ok) throw new Error(saved.error)
+
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not upload that photo.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onRemove(src: string) {
+    setBusy(true)
+    setError(null)
+    const result = await removeProjectPhoto(projectId, src)
+    setBusy(false)
+    if (result.ok) router.refresh()
+    else setError(result.error)
+  }
+
+  // Portalled to <body>: the project card is a transform/animation target
+  // (scale, translate), and any of those on an ancestor would trap a plain
+  // `fixed` element inside the card instead of the viewport — the same
+  // containing-block issue the public lightbox below already works around.
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-dark-800 border border-dark-700 rounded-xl w-full max-w-lg p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm font-semibold text-dark-50">Photos — {title || 'Untitled'}</span>
+          <button type="button" onClick={onClose} className="text-dark-400 hover:text-dark-50 text-sm">
+            Done
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {photos.map((photo) => (
+            <div key={photo.src} className="relative aspect-square rounded-lg overflow-hidden border border-dark-600 group">
+              <Image src={photo.src} alt={photo.alt} fill className="object-cover" />
+              <button
+                type="button"
+                onClick={() => onRemove(photo.src)}
+                disabled={busy}
+                className="absolute inset-0 bg-dark-900/70 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-xs font-medium text-red-400"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          {photos.length < MAX_PHOTOS && (
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={busy}
+              className="aspect-square rounded-lg border border-dashed border-dark-600 hover:border-dark-400 text-dark-400 hover:text-dark-50 text-xs transition disabled:opacity-50"
+            >
+              {busy ? 'Uploading…' : '+ Add photo'}
+            </button>
+          )}
+        </div>
+
+        <p className="text-xs text-dark-500 mt-3">Up to {MAX_PHOTOS} photos.</p>
+        {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            e.target.value = ''
+            if (file) onPick(file)
+          }}
+        />
+      </div>
+    </div>,
+    document.body
+  )
+}

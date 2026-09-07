@@ -78,6 +78,8 @@ function starter(lang: Lang, displayName: string): PortfolioContent {
         ? 'Si tenés un problema interesante para resolver, me encantaría escucharlo.'
         : "If you have an interesting problem to solve, I'd love to hear about it.",
       availableItems: [es ? 'Contá qué estás buscando' : 'Say what you are looking for'],
+      email: '',
+      socials: [],
     },
     footer: {
       tagline: es ? 'Tu frase de cierre.' : 'Your closing line.',

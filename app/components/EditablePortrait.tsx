@@ -6,40 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useLang } from '../context/LanguageContext'
 import { createClient } from '../lib/supabase/client'
 import { savePortrait } from '../lib/portfolio-actions'
-
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
-const MAX_EDGE = 1400
-const TARGET_BYTES = 600 * 1024
-
-// Resizes and re-encodes in the browser, so what reaches storage is a couple of
-// hundred kilobytes rather than the original. A 10MB phone photo is what the
-// person may pick; it is not what gets stored or what visitors download.
-async function compress(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height))
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.round(bitmap.width * scale)
-  canvas.height = Math.round(bitmap.height * scale)
-
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('This browser cannot process images. Try another one.')
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-
-  // Step the quality down rather than ever falling back to the original file,
-  // so a stored portrait has a predictable ceiling.
-  let best: Blob | null = null
-  for (const quality of [0.85, 0.7, 0.55]) {
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, 'image/webp', quality)
-    )
-    if (!blob) continue
-    best = blob
-    if (blob.size <= TARGET_BYTES) break
-  }
-
-  if (!best) throw new Error('Could not process that image. Try a different one.')
-  return best
-}
+import { compressImage, validateImageFile } from '../lib/image-upload'
 
 export default function EditablePortrait() {
   const { editing, media, content } = useLang()
@@ -53,13 +20,9 @@ export default function EditablePortrait() {
 
   async function onPick(file: File) {
     setError(null)
-
-    if (!file.type.startsWith('image/')) {
-      setError('That file is not an image.')
-      return
-    }
-    if (file.size > MAX_UPLOAD_BYTES) {
-      setError('That image is over 10MB. Pick a smaller one.')
+    const invalid = validateImageFile(file)
+    if (invalid) {
+      setError(invalid)
       return
     }
 
@@ -71,7 +34,7 @@ export default function EditablePortrait() {
       } = await supabase.auth.getUser()
       if (!user) throw new Error('Your session expired. Sign in again.')
 
-      const image = await compress(file)
+      const image = await compressImage(file)
       const path = `${user.id}/portrait-${Date.now()}.webp`
 
       const upload = await supabase.storage

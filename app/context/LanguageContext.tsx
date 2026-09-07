@@ -18,6 +18,14 @@ interface LanguageContextType {
   dirty: boolean
   draft: Record<Lang, PortfolioContent>
   setField: (path: string, value: string) => void
+  // Structural edits (add/remove list items) that only ever touch the language
+  // being viewed — used for narrative lines, tags, skills, categories, certs
+  // and contact items, none of which anything else is keyed to.
+  updateActive: (update: (content: PortfolioContent) => PortfolioContent) => void
+  // Structural edits that must land on both languages at once, because
+  // chapter and project ids are what photos attach to and the two language
+  // documents have to keep matching ids.
+  updateBoth: (update: (content: PortfolioContent, lang: Lang) => PortfolioContent) => void
   markSaved: () => void
 }
 
@@ -38,14 +46,19 @@ export function LanguageProvider({
 
   const toggleLang = () => setLang((l) => (l === 'en' ? 'es' : 'en'))
 
+  function updateActive(update: (content: PortfolioContent) => PortfolioContent) {
+    setDraft((prev) => ({ ...prev, [lang]: update(prev[lang]) }))
+    setDirty(true)
+  }
+
+  function updateBoth(update: (content: PortfolioContent, lang: Lang) => PortfolioContent) {
+    setDraft((prev) => ({ en: update(prev.en, 'en'), es: update(prev.es, 'es') }))
+    setDirty(true)
+  }
+
   // Edits land on the language being viewed; the other one is untouched.
   function setField(path: string, value: string) {
-    setDraft((prev) => {
-      const current = prev[lang]
-      const next = setAtPath(current, path, value)
-      return { ...prev, [lang]: next }
-    })
-    setDirty(true)
+    updateActive((current) => setAtPath(current, path, value))
   }
 
   return (
@@ -60,6 +73,8 @@ export function LanguageProvider({
         dirty,
         draft,
         setField,
+        updateActive,
+        updateBoth,
         markSaved: () => setDirty(false),
       }}
     >

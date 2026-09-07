@@ -1,11 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
+import EditableText from './EditableText'
+import EditableChapterPhoto from './EditableChapterPhoto'
+import { AddButton, RemoveButton } from './EditControls'
+
+function newChapterId() {
+  return `chapter-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+}
 
 export default function Journey() {
-  const { content, media } = useLang()
+  const { content, media, editing, updateBoth } = useLang()
   const chapters = content.journey.chapters
   const [visible, setVisible] = useState<Set<number>>(new Set())
   const refs = useRef<(HTMLDivElement | null)[]>([])
@@ -26,10 +32,30 @@ export default function Journey() {
     return () => observers.forEach((o) => o.disconnect())
   }, [chapters.length])
 
+  function addChapter() {
+    const id = newChapterId()
+    updateBoth((c) => ({
+      ...c,
+      journey: {
+        ...c.journey,
+        chapters: [...c.journey.chapters, { id, tag: '', heading: 'New chapter', body: '' }],
+      },
+    }))
+  }
+
+  function removeChapter(id: string) {
+    updateBoth((c) => ({
+      ...c,
+      journey: { ...c.journey, chapters: c.journey.chapters.filter((ch) => ch.id !== id) },
+    }))
+  }
+
   return (
     <section id="about" className="section-padding">
       <div className="container-main">
-        <h2 className="heading-md mb-12 md:mb-20">{content.journey.title}</h2>
+        <h2 className="heading-md mb-12 md:mb-20">
+          <EditableText path="journey.title" placeholder="Section title" />
+        </h2>
 
         <div className="relative">
           {/* Vertical line */}
@@ -38,8 +64,10 @@ export default function Journey() {
           <div className="space-y-12 md:space-y-24">
             {chapters.map((chapter, i) => {
               const isVisible = visible.has(i)
-              const photo = media.chapterPhotos[chapter.id]
               const isLast = i === chapters.length - 1
+              // Editing shows the photo slot for every chapter, including an
+              // "Add photo" placeholder, not only the ones that already have one.
+              const showPhotoColumn = editing || !!media.chapterPhotos[chapter.id]
 
               return (
                 <div
@@ -58,11 +86,17 @@ export default function Journey() {
                     />
                   </div>
 
-                  <div className={`journey-chapter-grid ${photo ? 'journey-chapter-grid--with-photo' : 'journey-chapter-grid--no-photo'}`}>
+                  {editing && (
+                    <div className="mb-3">
+                      <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
+                    </div>
+                  )}
+
+                  <div className={`journey-chapter-grid ${showPhotoColumn ? 'journey-chapter-grid--with-photo' : 'journey-chapter-grid--no-photo'}`}>
                     {/* Tag + Heading */}
                     <div style={{ gridArea: 'header' }}>
                       <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
-                        {chapter.tag}
+                        <EditableText path={`journey.chapters.${i}.tag`} placeholder="Tag" />
                       </span>
 
                       <h3
@@ -70,42 +104,21 @@ export default function Journey() {
                           isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
                         }`}
                       >
-                        {chapter.heading}
+                        <EditableText path={`journey.chapters.${i}.heading`} placeholder="Heading" />
                       </h3>
                     </div>
 
-                    {/* Photo (selected chapters) */}
-                    {photo && (
+                    {/* Photo */}
+                    {showPhotoColumn && (
                       <div style={{ gridArea: 'photo' }}>
-                        <div className="w-full h-44 md:w-48 md:h-52 rounded-xl overflow-hidden border border-dark-700 relative flex-shrink-0">
-                          {/* Mobile position */}
-                          <div className="md:hidden absolute inset-0">
-                            <Image
-                              src={photo.src}
-                              alt={photo.alt}
-                              fill
-                              className="object-cover"
-                              style={{ objectPosition: photo.positionMobile || photo.position }}
-                            />
-                          </div>
-                          {/* Desktop position */}
-                          <div className="hidden md:block absolute inset-0">
-                            <Image
-                              src={photo.src}
-                              alt={photo.alt}
-                              fill
-                              className="object-cover"
-                              style={{ objectPosition: photo.position }}
-                            />
-                          </div>
-                        </div>
+                        <EditableChapterPhoto chapterId={chapter.id} heading={chapter.heading} />
                       </div>
                     )}
 
                     {/* Body */}
                     <div style={{ gridArea: 'body' }}>
                       <p className="text-dark-300 leading-relaxed text-base md:text-lg max-w-2xl">
-                        {chapter.body}
+                        <EditableText path={`journey.chapters.${i}.body`} placeholder="Body" />
                       </p>
                     </div>
                   </div>
@@ -113,6 +126,12 @@ export default function Journey() {
               )
             })}
           </div>
+
+          {editing && (
+            <div className="mt-8 md:pl-12">
+              <AddButton onClick={addChapter} label="Add chapter" />
+            </div>
+          )}
         </div>
       </div>
     </section>

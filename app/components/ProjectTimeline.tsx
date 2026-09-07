@@ -4,16 +4,24 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
+import EditableText from './EditableText'
+import EditableProjectGallery from './EditableProjectGallery'
+import { AddButton, RemoveButton } from './EditControls'
 
 // Alternating sides; index into this by position, not by project identity.
 const poses: Array<'left' | 'right'> = ['right', 'left']
 
+function newProjectId() {
+  return `project-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+}
+
 export default function ProjectTimeline() {
-  const { t, content, media } = useLang()
+  const { t, content, media, editing, updateActive, updateBoth } = useLang()
   const p = content.projects
   const sectionRef = useRef<HTMLDivElement>(null)
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set())
   const [openProject, setOpenProject] = useState<number | null>(null)
+  const [managingProject, setManagingProject] = useState<number | null>(null)
   const [photoIdx, setPhotoIdx] = useState(0)
 
   useEffect(() => {
@@ -64,21 +72,68 @@ export default function ProjectTimeline() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [openProject, closeGallery, prevPhoto, nextPhoto])
 
+  function addProject() {
+    const id = newProjectId()
+    updateBoth((c) => ({
+      ...c,
+      projects: {
+        ...c.projects,
+        items: [
+          ...c.projects.items,
+          {
+            id,
+            year: new Date().getFullYear().toString(),
+            tag: '',
+            title: 'New project',
+            narrative: ['What the problem was.'],
+            metrics: [
+              { label: 'Metric', value: '—' },
+              { label: 'Metric', value: '—' },
+              { label: 'Metric', value: '—' },
+            ],
+            tags: [],
+          },
+        ],
+      },
+    }))
+  }
+
+  function removeProject(id: string) {
+    updateBoth((c) => ({
+      ...c,
+      projects: { ...c.projects, items: c.projects.items.filter((item) => item.id !== id) },
+    }))
+  }
+
+  function updateProjectAt(idx: number, patch: (item: (typeof p.items)[number]) => (typeof p.items)[number]) {
+    updateActive((c) => ({
+      ...c,
+      projects: {
+        ...c.projects,
+        items: c.projects.items.map((item, i) => (i === idx ? patch(item) : item)),
+      },
+    }))
+  }
+
   return (
     <section id="projects" ref={sectionRef} className="section-padding bg-gradient-to-b from-dark-900 to-dark-800/30">
       <div className="container-main">
         <div className="mb-20">
-          <h2 className="heading-md mb-4">{p.title}</h2>
-          <p className="text-dark-400 text-lg max-w-2xl">{p.subtitle}</p>
+          <h2 className="heading-md mb-4">
+            <EditableText path="projects.title" placeholder="Section title" />
+          </h2>
+          <p className="text-dark-400 text-lg max-w-2xl">
+            <EditableText path="projects.subtitle" placeholder="Subtitle" />
+          </p>
         </div>
 
         <div className="space-y-16 md:space-y-32">
           {p.items.map((project, idx) => {
             const isRight = poses[idx % poses.length] === 'right'
             const isVisible = visibleItems.has(idx)
-            const projectGallery = media.projectImages[project.id]
-            const photo = projectGallery?.[0]
-            const hasGallery = !!projectGallery && projectGallery.length > 0
+            const projectGallery = media.projectImages[project.id] ?? []
+            const photo = projectGallery[0]
+            const hasGallery = projectGallery.length > 0
 
             return (
               <div
@@ -86,27 +141,40 @@ export default function ProjectTimeline() {
                 id={`project-item-${idx}`}
                 className="relative"
               >
+                {editing && (
+                  <div className="mb-3">
+                    <RemoveButton onClick={() => removeProject(project.id)} label="Remove project" />
+                  </div>
+                )}
+
                 <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
 
                   {/* Visual side */}
                   <div
-                    role={hasGallery ? 'button' : undefined}
-                    tabIndex={hasGallery ? 0 : undefined}
+                    role={hasGallery || editing ? 'button' : undefined}
+                    tabIndex={hasGallery || editing ? 0 : undefined}
                     onClick={() => {
+                      if (editing) {
+                        setManagingProject(idx)
+                        return
+                      }
                       if (!hasGallery) return
                       setPhotoIdx(0)
                       setOpenProject(idx)
                     }}
                     onKeyDown={(e) => {
-                      if (!hasGallery) return
+                      if (!hasGallery && !editing) return
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
-                        setPhotoIdx(0)
-                        setOpenProject(idx)
+                        if (editing) setManagingProject(idx)
+                        else {
+                          setPhotoIdx(0)
+                          setOpenProject(idx)
+                        }
                       }
                     }}
                     className={`group relative h-64 md:h-[22rem] rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
-                      hasGallery ? 'cursor-pointer' : ''
+                      hasGallery || editing ? 'cursor-pointer' : ''
                     } ${
                       isVisible
                         ? 'opacity-100 translate-x-0 translate-y-0'
@@ -122,6 +190,7 @@ export default function ProjectTimeline() {
                           src={photo ? photo.src : media.portrait!.src}
                           alt={photo ? photo.alt : project.title}
                           fill
+                          unoptimized={photo?.src.startsWith('blob:')}
                           className={`transition-transform duration-500 ${hasGallery ? 'group-hover:scale-105' : ''} ${
                             photo
                               ? `object-cover ${photo.position || 'object-left'} opacity-90`
@@ -135,7 +204,7 @@ export default function ProjectTimeline() {
                     {photo && <div className="absolute inset-0 bg-gradient-to-t from-dark-900/90 via-dark-900/20 to-transparent" />}
 
                     {/* Gallery affordance badge */}
-                    {hasGallery && (
+                    {(hasGallery || editing) && (
                       <div className="absolute top-4 md:top-8 right-4 md:right-8 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-dark-900/70 backdrop-blur border border-dark-600 text-dark-100 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
@@ -145,7 +214,9 @@ export default function ProjectTimeline() {
                             d="M3 16l5-5 4 4 5-6 4 5M3 5h18v14H3V5z"
                           />
                         </svg>
-                        {projectGallery.length > 1
+                        {editing
+                          ? `Edit photos${projectGallery.length ? ` · ${projectGallery.length}` : ''}`
+                          : projectGallery.length > 1
                           ? `${t.projects.gallery.viewGallery} · ${projectGallery.length}`
                           : t.projects.gallery.viewPhoto}
                       </div>
@@ -154,10 +225,10 @@ export default function ProjectTimeline() {
                     {/* Year + title overlay */}
                     <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8">
                       <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2">
-                        {project.year}
+                        <EditableText path={`projects.items.${idx}.year`} placeholder="Year" />
                       </span>
                       <h3 className="text-xl md:text-3xl font-bold text-dark-50 leading-tight">
-                        {project.title}
+                        <EditableText path={`projects.items.${idx}.title`} placeholder="Title" />
                       </h3>
                     </div>
 
@@ -175,35 +246,89 @@ export default function ProjectTimeline() {
                         : 'md:opacity-0 md:-translate-x-12 opacity-0 translate-y-8'
                     }`}
                   >
+                    <span className="block text-xs font-mono text-dark-500 uppercase tracking-widest mb-2">
+                      <EditableText path={`projects.items.${idx}.tag`} placeholder="Category" />
+                    </span>
+
                     {/* Narrative */}
                     <div className="space-y-2 md:space-y-3 mb-5 md:mb-7">
-                      {project.narrative.map((line, i) => (
+                      {project.narrative.map((_, i) => (
                         <p key={i} className="text-dark-300 text-sm md:text-base leading-relaxed flex items-start gap-2 md:gap-3">
                           <span className="text-dark-500 font-light mt-0.5 text-xs md:text-sm select-none flex-shrink-0">
                             {String(i + 1).padStart(2, '0')}
                           </span>
-                          <span>{line}</span>
+                          <span className="flex-1">
+                            <EditableText path={`projects.items.${idx}.narrative.${i}`} placeholder="Line" />
+                          </span>
+                          {editing && (
+                            <RemoveButton
+                              label="Remove line"
+                              onClick={() =>
+                                updateProjectAt(idx, (item) => ({
+                                  ...item,
+                                  narrative: item.narrative.filter((_, j) => j !== i),
+                                }))
+                              }
+                            />
+                          )}
                         </p>
                       ))}
+                      {editing && (
+                        <AddButton
+                          label="Add line"
+                          onClick={() =>
+                            updateProjectAt(idx, (item) => ({
+                              ...item,
+                              narrative: [...item.narrative, ''],
+                            }))
+                          }
+                        />
+                      )}
                     </div>
 
                     {/* Metrics */}
                     <div className="grid grid-cols-3 gap-2 md:gap-4 mb-5 md:mb-7 py-4 md:py-5 border-y border-dark-700">
-                      {project.metrics.map((metric, i) => (
+                      {project.metrics.map((_, i) => (
                         <div key={i}>
-                          <p className="text-dark-400 text-xs uppercase tracking-wider mb-1 md:mb-2">{metric.label}</p>
-                          <p className="text-lg md:text-2xl font-bold text-dark-50">{metric.value}</p>
+                          <p className="text-dark-400 text-xs uppercase tracking-wider mb-1 md:mb-2">
+                            <EditableText path={`projects.items.${idx}.metrics.${i}.label`} placeholder="Metric" />
+                          </p>
+                          <p className="text-lg md:text-2xl font-bold text-dark-50">
+                            <EditableText path={`projects.items.${idx}.metrics.${i}.value`} placeholder="Value" />
+                          </p>
                         </div>
                       ))}
                     </div>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.map((tag) => (
-                        <span key={tag} className="px-2 md:px-3 py-1 bg-dark-700/60 text-dark-300 text-xs rounded-full border border-dark-600">
-                          {tag}
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {project.tags.map((_, i) => (
+                        <span
+                          key={i}
+                          className="flex items-center gap-1.5 px-2 md:px-3 py-1 bg-dark-700/60 text-dark-300 text-xs rounded-full border border-dark-600"
+                        >
+                          <EditableText path={`projects.items.${idx}.tags.${i}`} placeholder="Tag" />
+                          {editing && (
+                            <RemoveButton
+                              label="Remove tag"
+                              onClick={() =>
+                                updateProjectAt(idx, (item) => ({
+                                  ...item,
+                                  tags: item.tags.filter((_, j) => j !== i),
+                                }))
+                              }
+                            />
+                          )}
                         </span>
                       ))}
+                      {editing && (
+                        <AddButton
+                          label="Add tag"
+                          onClick={() =>
+                            updateProjectAt(idx, (item) => ({ ...item, tags: [...item.tags, 'Tag'] }))
+                          }
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -212,12 +337,33 @@ export default function ProjectTimeline() {
           })}
         </div>
 
+        {editing && (
+          <div className="mt-8 max-w-md mx-auto">
+            <AddButton label="Add project" onClick={addProject} />
+          </div>
+        )}
+
         {/* Bottom CTA */}
         <div className="mt-32 text-center max-w-2xl mx-auto">
-          <h3 className="text-2xl font-bold mb-4">{p.ctaTitle}</h3>
-          <p className="text-dark-400 mb-8">{p.ctaDescription}</p>
+          <h3 className="text-2xl font-bold mb-4">
+            <EditableText path="projects.ctaTitle" placeholder="CTA title" />
+          </h3>
+          <p className="text-dark-400 mb-8">
+            <EditableText path="projects.ctaDescription" placeholder="CTA description" />
+          </p>
         </div>
       </div>
+
+      {managingProject !== null &&
+        createPortal(
+          <EditableProjectGallery
+            projectId={p.items[managingProject].id}
+            title={p.items[managingProject].title}
+            photos={media.projectImages[p.items[managingProject].id] ?? []}
+            onClose={() => setManagingProject(null)}
+          />,
+          document.body
+        )}
 
       {openProject !== null &&
         gallery.length > 0 &&

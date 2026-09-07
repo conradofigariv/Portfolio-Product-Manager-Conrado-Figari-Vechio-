@@ -21,6 +21,7 @@ const LIMITS = {
   certs: 20,
   stats: 3,
   contactItems: 10,
+  socials: 6,
 }
 
 function text(value: unknown, max = LIMITS.line): string {
@@ -38,6 +39,23 @@ function textList(value: unknown, max: number, maxLen = LIMITS.line): string[] {
 function id(value: unknown, fallback: string): string {
   const raw = text(value, 64)
   return /^[A-Za-z0-9_-]{1,64}$/.test(raw) ? raw : fallback
+}
+
+// Only http(s) survive, so a stored link can never become a javascript: URL.
+function url(value: unknown, max = LIMITS.line): string {
+  const raw = text(value, max)
+  if (!raw) return ''
+  try {
+    const parsed = new URL(raw)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? raw : ''
+  } catch {
+    return ''
+  }
+}
+
+function email(value: unknown): string {
+  const raw = text(value, LIMITS.short)
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw) ? raw : ''
 }
 
 // Rebuilds the document field by field, so anything the client sends that is
@@ -117,6 +135,11 @@ function sanitize(input: unknown): PortfolioContent {
       title: text(contact.title, LIMITS.short),
       subtitle: text(contact.subtitle, LIMITS.body),
       availableItems: textList(contact.availableItems, LIMITS.contactItems),
+      email: email(contact.email),
+      socials: list(contact.socials, LIMITS.socials, (item) => {
+        const s = (item ?? {}) as Record<string, unknown>
+        return { label: text(s.label, LIMITS.short), url: url(s.url) }
+      }).filter((s) => s.label && s.url),
     },
     footer: {
       tagline: text(footer.tagline, LIMITS.line),
@@ -286,6 +309,179 @@ export async function setBackgroundVideos(
     )
     if (error) return { ok: false, error: error.message }
   }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+/**
+ * Points a journey chapter at a newly uploaded photo, replacing any it had —
+ * the database allows only one per chapter. Mirrors savePortrait.
+ */
+export async function saveChapterPhoto(
+  chapterId: string,
+  storagePath: string,
+  alt: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  if (!storagePath.startsWith(`${user.id}/`)) {
+    return { ok: false, error: 'That file does not belong to your account.' }
+  }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { data: previous } = await supabase
+    .from('portfolio_media')
+    .select('id, storage_path')
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'chapter')
+    .eq('target_id', chapterId)
+
+  if (previous?.length) {
+    await supabase.from('portfolio_media').delete().in('id', previous.map((row) => row.id))
+    const owned = previous.map((row) => row.storage_path).filter((path) => !path.startsWith('/'))
+    if (owned.length) await supabase.storage.from(BUCKET).remove(owned)
+  }
+
+  const { error } = await supabase.from('portfolio_media').insert({
+    portfolio_id: portfolio.id,
+    kind: 'chapter',
+    target_id: chapterId,
+    storage_path: storagePath,
+    alt: alt.slice(0, 200),
+  })
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+export async function removeChapterPhoto(
+  chapterId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { data: rows } = await supabase
+    .from('portfolio_media')
+    .select('id, storage_path')
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'chapter')
+    .eq('target_id', chapterId)
+
+  if (rows?.length) {
+    await supabase.from('portfolio_media').delete().in('id', rows.map((row) => row.id))
+    const owned = rows.map((row) => row.storage_path).filter((path) => !path.startsWith('/'))
+    if (owned.length) await supabase.storage.from(BUCKET).remove(owned)
+  }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+const MAX_PROJECT_PHOTOS = 4
+
+/**
+ * Adds one photo to a project's gallery, up to the 4 the database allows.
+ */
+export async function addProjectPhoto(
+  projectId: string,
+  storagePath: string,
+  alt: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  if (!storagePath.startsWith(`${user.id}/`)) {
+    return { ok: false, error: 'That file does not belong to your account.' }
+  }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { count } = await supabase
+    .from('portfolio_media')
+    .select('id', { count: 'exact', head: true })
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'project')
+    .eq('target_id', projectId)
+
+  if ((count ?? 0) >= MAX_PROJECT_PHOTOS) {
+    return { ok: false, error: `A project can have at most ${MAX_PROJECT_PHOTOS} photos.` }
+  }
+
+  const { error } = await supabase.from('portfolio_media').insert({
+    portfolio_id: portfolio.id,
+    kind: 'project',
+    target_id: projectId,
+    storage_path: storagePath,
+    alt: alt.slice(0, 200),
+    sort_order: count ?? 0,
+  })
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+export async function removeProjectPhoto(
+  projectId: string,
+  storagePath: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { error } = await supabase
+    .from('portfolio_media')
+    .delete()
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'project')
+    .eq('target_id', projectId)
+    .eq('storage_path', storagePath)
+  if (error) return { ok: false, error: error.message }
+
+  if (!storagePath.startsWith('/')) await supabase.storage.from(BUCKET).remove([storagePath])
 
   revalidatePath('/', 'layout')
   return { ok: true }
