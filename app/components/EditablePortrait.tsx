@@ -7,6 +7,8 @@ import { useLang } from '../context/LanguageContext'
 import { createClient } from '../lib/supabase/client'
 import { savePortrait } from '../lib/portfolio-actions'
 import { compressImage, validateImageFile } from '../lib/image-upload'
+import { storagePathFromPublicUrl } from '../lib/media-path'
+import PositionPicker from './PositionPicker'
 
 export default function EditablePortrait() {
   const { editing, media, content } = useLang()
@@ -15,8 +17,11 @@ export default function EditablePortrait() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [uploadedPath, setUploadedPath] = useState<string | null>(null)
+  const [position, setPosition] = useState<string | undefined>(undefined)
 
   const portrait = preview ?? media.portrait?.src ?? null
+  const storagePath = uploadedPath ?? (media.portrait ? storagePathFromPublicUrl(media.portrait.src) : null)
 
   async function onPick(file: File) {
     setError(null)
@@ -46,6 +51,8 @@ export default function EditablePortrait() {
       if (!saved.ok) throw new Error(saved.error)
 
       setPreview(URL.createObjectURL(image))
+      setUploadedPath(path)
+      setPosition(undefined)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not upload that photo.')
@@ -68,7 +75,8 @@ export default function EditablePortrait() {
             alt={media.portrait?.alt ?? content.hero.name}
             fill
             unoptimized={portrait.startsWith('blob:')}
-            className="object-cover object-top"
+            style={{ objectPosition: position ?? media.portrait?.position ?? '50% 0%' }}
+            className="object-cover"
             priority
           />
         ) : (
@@ -77,17 +85,30 @@ export default function EditablePortrait() {
           </div>
         )}
 
-        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-dark-900/60 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-dark-900/60 to-transparent pointer-events-none" />
 
         {editing && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={busy}
-            className="absolute inset-0 flex items-center justify-center bg-dark-900/70 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-sm font-medium text-dark-50"
-          >
-            {busy ? 'Uploading…' : portrait ? 'Change photo' : 'Add photo'}
-          </button>
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-3 bg-dark-900/70 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity py-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={busy}
+              className="text-xs font-medium text-dark-50"
+            >
+              {busy ? 'Uploading…' : portrait ? 'Change photo' : 'Add photo'}
+            </button>
+          </div>
+        )}
+
+        {/* Direct child of the same relative box the photo fills, so the
+            picker's full-cover overlay lines up with the whole photo. */}
+        {editing && portrait && storagePath && (
+          <PositionPicker
+            storagePath={storagePath}
+            position={position ?? media.portrait?.position}
+            onChange={setPosition}
+            triggerClassName="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-dark-900/70 text-dark-50 text-xs font-medium opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+          />
         )}
       </div>
 

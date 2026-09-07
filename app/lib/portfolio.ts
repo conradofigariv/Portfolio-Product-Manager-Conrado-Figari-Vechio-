@@ -145,14 +145,14 @@ const CONRADO_MEDIA: PortfolioMedia = {
       { src: '/cramerbot-office.jpeg', alt: 'CramerBot team working session' },
     ],
     [projectId(2)]: [
-      { src: '/trackr-app.jpeg', alt: 'Trackr personal finance app', position: 'object-[center_40%]' },
+      { src: '/trackr-app.jpeg', alt: 'Trackr personal finance app', position: 'center 40%' },
     ],
     [projectId(4)]: [{ src: '/crm-n8n-workflow.png', alt: 'N8n workflow powering the AI CRM' }],
     [projectId(5)]: [
       { src: '/tiktok-plugstore.png', alt: 'Plug Store TikTok account with 4,000+ followers' },
     ],
     [projectId(6)]: [
-      { src: '/plug-inventory.jpg', alt: 'Plug business inventory', position: 'object-[center_65%]' },
+      { src: '/plug-inventory.jpg', alt: 'Plug business inventory', position: 'center 65%' },
     ],
     [projectId(7)]: [
       { src: '/aveit-team.png', alt: 'AVEIT team' },

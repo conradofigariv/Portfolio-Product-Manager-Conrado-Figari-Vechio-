@@ -9,6 +9,7 @@ type MediaRow = {
   storage_path: string
   alt: string
   sort_order: number
+  position: string | null
 }
 
 // Content is stored as one JSONB document per portfolio, so a page render is a
@@ -51,7 +52,7 @@ function buildMedia(rows: MediaRow[], publicUrl: (path: string) => string): Port
     const url = row.storage_path.startsWith('/')
       ? row.storage_path
       : publicUrl(row.storage_path)
-    const image: MediaImage = { src: url, alt: row.alt }
+    const image: MediaImage = { src: url, alt: row.alt, position: row.position ?? undefined }
 
     switch (row.kind) {
       case 'portrait':
@@ -106,7 +107,7 @@ export async function loadPortfolio(
 
   const { data: mediaRows } = await supabase
     .from('portfolio_media')
-    .select('kind, target_id, storage_path, alt, sort_order')
+    .select('kind, target_id, storage_path, alt, sort_order, position')
     .eq('portfolio_id', portfolio.id)
 
   const publicUrl = (path: string) => supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
