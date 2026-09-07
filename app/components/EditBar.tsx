@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '../context/LanguageContext'
 import { savePortfolio } from '../lib/portfolio-actions'
@@ -12,6 +12,19 @@ export default function EditBar({ username }: { username: string }) {
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  // Edits only live in the browser until Save actually confirms — closing the
+  // tab or reloading before that discards them, same as any unsaved document.
+  // This is the only guard against that; nothing here writes to the database.
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
 
   if (!editing) return null
 
