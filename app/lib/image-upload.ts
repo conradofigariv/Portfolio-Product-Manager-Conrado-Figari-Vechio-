@@ -1,10 +1,16 @@
-const MAX_EDGE = 1400
-const TARGET_BYTES = 600 * 1024
+const MAX_EDGE = 1920
+const TARGET_BYTES = 1.5 * 1024 * 1024
 
 /**
- * Resizes and re-encodes an image in the browser, so what reaches storage is a
- * couple of hundred kilobytes rather than whatever the camera produced.
- * Shared by every photo upload on the site (portrait, chapter, project).
+ * Resizes and re-encodes an image in the browser, so what reaches storage is
+ * a predictable size rather than whatever the camera (or a full-resolution
+ * screenshot) produced. Shared by every photo upload on the site (portrait,
+ * chapter, project).
+ *
+ * Quality never drops below .78: screenshots (sharp text, flat UI edges)
+ * show visible blocking at the lower steps this used to fall back to, far
+ * more than a photo does at the same setting. Missing the byte target by
+ * keeping quality high is the better trade for this kind of image.
  */
 export async function compressImage(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file)
@@ -20,7 +26,7 @@ export async function compressImage(file: File): Promise<Blob> {
   // Step the quality down rather than ever falling back to the original file,
   // so a stored photo has a predictable ceiling.
   let best: Blob | null = null
-  for (const quality of [0.85, 0.7, 0.55]) {
+  for (const quality of [0.92, 0.85, 0.78]) {
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/webp', quality)
     )

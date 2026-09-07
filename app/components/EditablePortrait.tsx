@@ -75,6 +75,7 @@ export default function EditablePortrait() {
             src={portrait}
             alt={media.portrait?.alt ?? content.hero.name}
             fill
+            quality={90}
             unoptimized={portrait.startsWith('blob:')}
             style={{ objectPosition: position ?? media.portrait?.position ?? '50% 0%' }}
             className="object-cover"
