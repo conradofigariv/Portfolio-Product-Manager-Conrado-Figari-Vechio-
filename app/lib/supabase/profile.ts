@@ -40,7 +40,7 @@ export async function ensureProfile(supabase: SupabaseClient, user: User) {
       // which the editor can create lazily on first save.
       await supabase.from('portfolios').insert({
         user_id: user.id,
-        published: false,
+        published: true,
         content: starterContent(displayName ?? seed),
       })
       return

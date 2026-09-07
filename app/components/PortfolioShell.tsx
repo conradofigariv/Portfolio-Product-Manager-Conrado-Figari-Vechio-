@@ -15,14 +15,22 @@ import EditBar from './EditBar'
 export default function PortfolioShell({
   portfolio,
   editing = false,
-  published = false,
+  previewing = false,
 }: {
   portfolio: Portfolio
   editing?: boolean
-  published?: boolean
+  previewing?: boolean
 }) {
   return (
     <LanguageProvider portfolio={portfolio} editing={editing}>
+      {previewing && (
+        <div className="sticky top-0 z-[95] flex items-center justify-center gap-3 bg-dark-50 text-dark-900 text-xs font-medium py-2 px-4 text-center">
+          <span>Vista previa — así se ve tu portfolio para cualquiera.</span>
+          <a href={`/${portfolio.username}`} className="underline hover:no-underline">
+            Volver a editar
+          </a>
+        </div>
+      )}
       <Navbar />
       <main>
         <Hero />
@@ -32,7 +40,7 @@ export default function PortfolioShell({
         <Contact />
       </main>
       <Footer />
-      <EditBar published={published} />
+      <EditBar username={portfolio.username} />
     </LanguageProvider>
   )
 }

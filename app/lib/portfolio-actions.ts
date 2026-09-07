@@ -150,7 +150,6 @@ function sanitize(input: unknown): PortfolioContent {
 
 export async function savePortfolio(payload: {
   content: Record<Lang, unknown>
-  published: boolean
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const supabase = await createClient()
 
@@ -170,11 +169,13 @@ export async function savePortfolio(payload: {
     return { ok: false, error: 'Your name cannot be empty.' }
   }
 
+  // Portfolios are always public — there is no draft/private state — so every
+  // save also self-heals any row still carrying the old default of false.
   // The row filter is belt and braces — row level security already restricts
   // updates to the caller's own portfolio.
   const { error } = await supabase
     .from('portfolios')
-    .update({ content, published: payload.published })
+    .update({ content, published: true })
     .eq('user_id', user.id)
 
   if (error) return { ok: false, error: error.message }
