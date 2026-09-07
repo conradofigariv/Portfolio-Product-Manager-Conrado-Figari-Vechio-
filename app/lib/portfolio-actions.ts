@@ -487,3 +487,37 @@ export async function removeProjectPhoto(
   revalidatePath('/', 'layout')
   return { ok: true }
 }
+
+/**
+ * Sets the CSS object-position (e.g. "62% 35%") an image crops around,
+ * chosen by clicking a spot on the photo. Works for any media row — portrait,
+ * chapter, or project photo — since storage_path is unique per portfolio.
+ */
+export async function saveMediaPosition(
+  storagePath: string,
+  position: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { error } = await supabase
+    .from('portfolio_media')
+    .update({ position: position.slice(0, 50) })
+    .eq('portfolio_id', portfolio.id)
+    .eq('storage_path', storagePath)
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}

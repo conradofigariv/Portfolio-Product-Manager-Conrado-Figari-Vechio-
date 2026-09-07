@@ -141,7 +141,7 @@ export default function ProjectTimeline() {
                 id={`project-item-${idx}`}
                 className="relative"
               >
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-stretch ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
 
                   {/* Visual side */}
                   <div
@@ -167,7 +167,7 @@ export default function ProjectTimeline() {
                         }
                       }
                     }}
-                    className={`group relative h-64 md:h-[22rem] rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
+                    className={`group relative h-64 md:h-full md:min-h-[22rem] rounded-2xl overflow-hidden border border-dark-700 transition-all duration-700 ${
                       hasGallery || editing ? 'cursor-pointer' : ''
                     } ${
                       isVisible
@@ -185,10 +185,9 @@ export default function ProjectTimeline() {
                           alt={photo ? photo.alt : project.title}
                           fill
                           unoptimized={photo?.src.startsWith('blob:')}
+                          style={photo ? { objectPosition: photo.position || 'left center' } : undefined}
                           className={`transition-transform duration-500 ${hasGallery ? 'group-hover:scale-105' : ''} ${
-                            photo
-                              ? `object-cover ${photo.position || 'object-left'} opacity-90`
-                              : 'object-cover object-top opacity-20 scale-110'
+                            photo ? 'object-cover opacity-90' : 'object-cover object-top opacity-20 scale-110'
                           }`}
                         />
                       )}

@@ -7,6 +7,8 @@ import { useLang } from '../context/LanguageContext'
 import { createClient } from '../lib/supabase/client'
 import { saveChapterPhoto, removeChapterPhoto } from '../lib/portfolio-actions'
 import { compressImage, validateImageFile } from '../lib/image-upload'
+import { storagePathFromPublicUrl } from '../lib/media-path'
+import PositionPicker from './PositionPicker'
 
 export default function EditableChapterPhoto({
   chapterId,
@@ -21,10 +23,14 @@ export default function EditableChapterPhoto({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [uploadedPath, setUploadedPath] = useState<string | null>(null)
+  const [position, setPosition] = useState<string | undefined>(undefined)
 
   const existing = media.chapterPhotos[chapterId]
   const src = preview ?? existing?.src ?? null
   const alt = existing?.alt ?? heading
+  const storagePath = uploadedPath ?? (existing ? storagePathFromPublicUrl(existing.src) : null)
+  const resolvedPosition = position ?? existing?.position
 
   async function onPick(file: File) {
     setError(null)
@@ -54,6 +60,8 @@ export default function EditableChapterPhoto({
       if (!saved.ok) throw new Error(saved.error)
 
       setPreview(URL.createObjectURL(image))
+      setUploadedPath(path)
+      setPosition(undefined)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not upload that photo.')
@@ -92,7 +100,7 @@ export default function EditableChapterPhoto({
                 fill
                 unoptimized={unoptimized}
                 className="object-cover"
-                style={{ objectPosition: existing?.positionMobile || existing?.position }}
+                style={{ objectPosition: existing?.positionMobile || resolvedPosition }}
               />
             </div>
             {/* Desktop position */}
@@ -103,7 +111,7 @@ export default function EditableChapterPhoto({
                 fill
                 unoptimized={unoptimized}
                 className="object-cover"
-                style={{ objectPosition: existing?.position }}
+                style={{ objectPosition: resolvedPosition }}
               />
             </div>
           </>
@@ -134,6 +142,19 @@ export default function EditableChapterPhoto({
               </button>
             )}
           </div>
+        )}
+
+        {/* Direct child of the same relative box the photo fills, so the
+            picker's full-cover overlay lines up with the whole photo and
+            stays visible (independent of the hover-fade group above) while
+            the owner is actively picking a spot. */}
+        {editing && src && storagePath && (
+          <PositionPicker
+            storagePath={storagePath}
+            position={resolvedPosition}
+            onChange={setPosition}
+            triggerClassName="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-dark-900/70 text-dark-50 text-xs font-medium opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+          />
         )}
       </div>
 
