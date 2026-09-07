@@ -1,10 +1,10 @@
 'use client'
 
 import { useLang } from '../context/LanguageContext'
+import EditableText from './EditableText'
 
 export default function Footer() {
   const { t, content } = useLang()
-  const f = content.footer
   const n = t.nav
 
   return (
@@ -12,8 +12,10 @@ export default function Footer() {
       <div className="container-main py-12">
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="text-dark-50 font-bold mb-3">Conrado Figari</h3>
-            <p className="text-dark-400 text-sm leading-relaxed">{f.tagline}</p>
+            <h3 className="text-dark-50 font-bold mb-3">{content.hero.name}</h3>
+            <p className="text-dark-400 text-sm leading-relaxed">
+              <EditableText path="footer.tagline" placeholder="Closing line" />
+            </p>
           </div>
           <div>
             <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.quickLinks}</h4>
@@ -30,24 +32,30 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-          <div>
-            <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.social}</h4>
-            <ul className="space-y-2 text-sm text-dark-400">
-              {[
-                { label: 'LinkedIn', href: 'https://www.linkedin.com/in/conradofigarivechio/' },
-                { label: 'GitHub', href: 'https://github.com/conradofigariv' },
-              ].map((link) => (
-                <li key={link.label}>
-                  <a href={link.href} target="_blank" rel="noopener noreferrer" className="hover:text-dark-50 transition">
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {content.contact.socials.length > 0 && (
+            <div>
+              <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.social}</h4>
+              <ul className="space-y-2 text-sm text-dark-400">
+                {content.contact.socials.map((social) => (
+                  <li key={social.url}>
+                    <a
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-dark-50 transition"
+                    >
+                      {social.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <div className="border-t border-dark-700 pt-8 flex flex-col md:flex-row justify-between items-center text-dark-400 text-xs gap-4">
-          <p>{f.rights}</p>
+          <p>
+            <EditableText path="footer.rights" placeholder="© Your name" />
+          </p>
         </div>
       </div>
     </footer>

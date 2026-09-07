@@ -51,7 +51,13 @@ export type PortfolioContent = {
     categories: SkillCategory[]
     certs: Certification[]
   }
-  contact: { title: string; subtitle: string; availableItems: string[] }
+  contact: {
+    title: string
+    subtitle: string
+    availableItems: string[]
+    email: string
+    socials: { label: string; url: string }[]
+  }
   footer: { tagline: string; rights: string }
 }
 
@@ -110,6 +116,13 @@ function toContent(t: (typeof translations)['en']): PortfolioContent {
       title: t.contact.title,
       subtitle: t.contact.subtitle,
       availableItems: [...t.contact.availableItems],
+      // Not modeled in translations.ts because it is Conrado's own contact
+      // info, not interface copy — every other account starts with none of it.
+      email: 'conradofigari.v@gmail.com',
+      socials: [
+        { label: 'linkedin.com/in/conradofigarivechio', url: 'https://www.linkedin.com/in/conradofigarivechio/' },
+        { label: 'github.com/conradofigariv', url: 'https://github.com/conradofigariv' },
+      ],
     },
     footer: {
       tagline: t.footer.tagline,
