@@ -19,6 +19,23 @@ function isContent(value: unknown): value is PortfolioContent {
   return !!c.hero && !!c.projects && !!c.journey && !!c.skills
 }
 
+// Back-fills fields added after some documents were already saved, so an
+// older stored portfolio does not crash the page it renders on — the schema
+// is a JSONB column with no migration to run for a purely additive field.
+function normalizeContent(raw: PortfolioContent): PortfolioContent {
+  const contact = raw.contact as Partial<PortfolioContent['contact']> | undefined
+  return {
+    ...raw,
+    contact: {
+      title: contact?.title ?? '',
+      subtitle: contact?.subtitle ?? '',
+      availableItems: Array.isArray(contact?.availableItems) ? contact.availableItems : [],
+      email: contact?.email ?? '',
+      socials: Array.isArray(contact?.socials) ? contact.socials : [],
+    },
+  }
+}
+
 function buildMedia(rows: MediaRow[], publicUrl: (path: string) => string): PortfolioMedia {
   const media: PortfolioMedia = {
     portrait: null,
@@ -97,7 +114,7 @@ export async function loadPortfolio(
   return {
     username: profile.username,
     media: buildMedia((mediaRows ?? []) as MediaRow[], publicUrl),
-    content: { en: content.en, es: content.es },
+    content: { en: normalizeContent(content.en), es: normalizeContent(content.es) },
     published: !!portfolio.published,
     ownerId: profile.id,
     portfolioId: portfolio.id,

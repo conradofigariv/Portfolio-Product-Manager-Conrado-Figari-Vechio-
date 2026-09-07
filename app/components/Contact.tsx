@@ -7,7 +7,12 @@ import { AddButton, RemoveButton } from './EditControls'
 export default function Contact() {
   const { t, content, editing, updateActive } = useLang()
   const c = content.contact
-  const hasSocials = editing || c.email || c.socials.length > 0
+  // Defensive: content can be an older document saved before these fields
+  // existed. The loader normalizes this too, but nothing here should crash
+  // if it is ever fed content that bypassed that step.
+  const socials = c.socials ?? []
+  const email = c.email ?? ''
+  const hasSocials = editing || email || socials.length > 0
 
   return (
     <section id="contact" className="section-padding">
@@ -26,7 +31,7 @@ export default function Contact() {
               <div className="bg-dark-800/50 border border-dark-700 rounded-xl p-8">
                 <h3 className="font-semibold text-dark-50 mb-6">{t.contact.otherWays}</h3>
                 <div className="space-y-5">
-                  {(c.email || editing) && (
+                  {(email || editing) && (
                     <div>
                       <p className="text-dark-400 text-xs uppercase tracking-wider mb-1">Email</p>
                       {editing ? (
@@ -35,16 +40,16 @@ export default function Contact() {
                         </p>
                       ) : (
                         <a
-                          href={`mailto:${c.email}`}
+                          href={`mailto:${email}`}
                           className="text-dark-50 hover:text-dark-100 transition font-medium break-all"
                         >
-                          {c.email}
+                          {email}
                         </a>
                       )}
                     </div>
                   )}
 
-                  {c.socials.map((social, i) => (
+                  {socials.map((social, i) => (
                     <div key={i} className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         {editing ? (
@@ -77,7 +82,7 @@ export default function Contact() {
                               ...cc,
                               contact: {
                                 ...cc.contact,
-                                socials: cc.contact.socials.filter((_, j) => j !== i),
+                                socials: (cc.contact.socials ?? []).filter((_, j) => j !== i),
                               },
                             }))
                           }
@@ -94,7 +99,7 @@ export default function Contact() {
                           ...cc,
                           contact: {
                             ...cc.contact,
-                            socials: [...cc.contact.socials, { label: '', url: '' }],
+                            socials: [...(cc.contact.socials ?? []), { label: '', url: '' }],
                           },
                         }))
                       }
