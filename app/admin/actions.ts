@@ -1,0 +1,158 @@
+'use server'
+
+import { createClient } from '../lib/supabase/server'
+import type { Lang, PortfolioContent } from '../lib/portfolio'
+
+// Caps exist so a malformed or hostile payload cannot store an unbounded
+// document. They are generous enough that no real portfolio hits them.
+const LIMITS = {
+  short: 200,
+  line: 1000,
+  body: 5000,
+  chapters: 20,
+  projects: 30,
+  narrative: 10,
+  metrics: 3,
+  tags: 12,
+  categories: 12,
+  skills: 30,
+  certs: 20,
+  stats: 3,
+  contactItems: 10,
+}
+
+function text(value: unknown, max = LIMITS.line): string {
+  return typeof value === 'string' ? value.slice(0, max).trim() : ''
+}
+
+function list<T>(value: unknown, max: number, map: (item: unknown, index: number) => T): T[] {
+  return Array.isArray(value) ? value.slice(0, max).map(map) : []
+}
+
+function textList(value: unknown, max: number, maxLen = LIMITS.line): string[] {
+  return list(value, max, (item) => text(item, maxLen)).filter(Boolean)
+}
+
+function id(value: unknown, fallback: string): string {
+  const raw = text(value, 64)
+  return /^[A-Za-z0-9_-]{1,64}$/.test(raw) ? raw : fallback
+}
+
+// Rebuilds the document field by field, so anything the client sends that is
+// not part of the shape is simply not carried over.
+function sanitize(input: unknown): PortfolioContent {
+  const c = (input ?? {}) as Record<string, never>
+  const hero = (c.hero ?? {}) as Record<string, unknown>
+  const journey = (c.journey ?? {}) as Record<string, unknown>
+  const projects = (c.projects ?? {}) as Record<string, unknown>
+  const skills = (c.skills ?? {}) as Record<string, unknown>
+  const contact = (c.contact ?? {}) as Record<string, unknown>
+  const footer = (c.footer ?? {}) as Record<string, unknown>
+
+  return {
+    hero: {
+      greeting: text(hero.greeting, LIMITS.short),
+      name: text(hero.name, LIMITS.short),
+      tagline: text(hero.tagline, LIMITS.line),
+      description: text(hero.description, LIMITS.body),
+    },
+    stats: list(c.stats, LIMITS.stats, (item) => {
+      const s = (item ?? {}) as Record<string, unknown>
+      return { value: text(s.value, LIMITS.short), label: text(s.label, LIMITS.short) }
+    }),
+    journey: {
+      title: text(journey.title, LIMITS.short),
+      chapters: list(journey.chapters, LIMITS.chapters, (item, index) => {
+        const ch = (item ?? {}) as Record<string, unknown>
+        return {
+          id: id(ch.id, `chapter-${index}`),
+          tag: text(ch.tag, LIMITS.short),
+          heading: text(ch.heading, LIMITS.line),
+          body: text(ch.body, LIMITS.body),
+        }
+      }),
+    },
+    projects: {
+      title: text(projects.title, LIMITS.short),
+      subtitle: text(projects.subtitle, LIMITS.line),
+      ctaTitle: text(projects.ctaTitle, LIMITS.short),
+      ctaDescription: text(projects.ctaDescription, LIMITS.body),
+      items: list(projects.items, LIMITS.projects, (item, index) => {
+        const p = (item ?? {}) as Record<string, unknown>
+        return {
+          id: id(p.id, `project-${index}`),
+          year: text(p.year, LIMITS.short),
+          tag: text(p.tag, LIMITS.short),
+          title: text(p.title, LIMITS.line),
+          narrative: textList(p.narrative, LIMITS.narrative, LIMITS.body),
+          metrics: list(p.metrics, LIMITS.metrics, (m) => {
+            const metric = (m ?? {}) as Record<string, unknown>
+            return {
+              label: text(metric.label, LIMITS.short),
+              value: text(metric.value, LIMITS.short),
+            }
+          }),
+          tags: textList(p.tags, LIMITS.tags, LIMITS.short),
+        }
+      }),
+    },
+    skills: {
+      title: text(skills.title, LIMITS.short),
+      subtitle: text(skills.subtitle, LIMITS.line),
+      categories: list(skills.categories, LIMITS.categories, (item) => {
+        const cat = (item ?? {}) as Record<string, unknown>
+        return {
+          category: text(cat.category, LIMITS.short),
+          skills: textList(cat.skills, LIMITS.skills, LIMITS.short),
+        }
+      }),
+      certs: list(skills.certs, LIMITS.certs, (item) => {
+        const cert = (item ?? {}) as Record<string, unknown>
+        return { title: text(cert.title, LIMITS.line), issuer: text(cert.issuer, LIMITS.short) }
+      }),
+    },
+    contact: {
+      title: text(contact.title, LIMITS.short),
+      subtitle: text(contact.subtitle, LIMITS.body),
+      availableItems: textList(contact.availableItems, LIMITS.contactItems),
+    },
+    footer: {
+      tagline: text(footer.tagline, LIMITS.line),
+      rights: text(footer.rights, LIMITS.short),
+    },
+  }
+}
+
+export async function savePortfolio(payload: {
+  content: Record<Lang, unknown>
+  published: boolean
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  // Checked here rather than relying on proxy.ts: the Next docs are explicit
+  // that proxy coverage can be dropped by a matcher change without warning.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const content = {
+    en: sanitize(payload.content?.en),
+    es: sanitize(payload.content?.es),
+  }
+
+  if (!content.en.hero.name && !content.es.hero.name) {
+    return { ok: false, error: 'Your name cannot be empty.' }
+  }
+
+  // The row filter is belt and braces — row level security already restricts
+  // updates to the caller's own portfolio.
+  const { error } = await supabase
+    .from('portfolios')
+    .update({ content, published: payload.published })
+    .eq('user_id', user.id)
+
+  if (error) return { ok: false, error: error.message }
+
+  return { ok: true }
+}
