@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useLang } from '../context/LanguageContext'
 import { createClient } from '../lib/supabase/client'
 import { saveChapterPhoto, removeChapterPhoto } from '../lib/portfolio-actions'
-import { compressImage, validateImageFile } from '../lib/image-upload'
+import { compressImage, uniqueUploadName, validateImageFile } from '../lib/image-upload'
 import { storagePathFromPublicUrl } from '../lib/media-path'
 import PositionPicker from './PositionPicker'
 
@@ -33,6 +33,7 @@ export default function EditableChapterPhoto({
   const resolvedPosition = position ?? existing?.position
 
   async function onPick(file: File) {
+    if (busy) return
     setError(null)
     const invalid = validateImageFile(file)
     if (invalid) {
@@ -49,7 +50,7 @@ export default function EditableChapterPhoto({
       if (!user) throw new Error('Your session expired. Sign in again.')
 
       const image = await compressImage(file)
-      const path = `${user.id}/chapter-${chapterId}-${Date.now()}.webp`
+      const path = `${user.id}/chapter-${chapterId}-${uniqueUploadName()}.webp`
 
       const upload = await supabase.storage
         .from('portfolio-media')
