@@ -36,7 +36,7 @@ export default async function AdminPage() {
         </p>
         <form action="/auth/signout" method="post">
           <button type="submit" className="button-secondary w-full">
-            Sign out
+            Cerrar sesión
           </button>
         </form>
       </div>
