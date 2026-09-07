@@ -288,7 +288,7 @@ export default function ProjectTimeline() {
                     {/* Metrics */}
                     <div className="grid grid-cols-3 gap-2 md:gap-4 mb-5 md:mb-7 py-4 md:py-5 border-y border-dark-700">
                       {project.metrics.map((_, i) => (
-                        <div key={i}>
+                        <div key={i} className="text-center">
                           <p className="text-dark-400 text-xs uppercase tracking-wider mb-1 md:mb-2">
                             <EditableText path={`projects.items.${idx}.metrics.${i}.label`} placeholder="Metric" />
                           </p>
