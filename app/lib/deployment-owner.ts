@@ -52,16 +52,18 @@ export async function adoptDeploymentMedia(
     })
   }
 
-  media.backgroundVideos.forEach((src, index) => {
+  // Only the first: a portfolio has at most one background going forward,
+  // even though the legacy static fallback still cycles through two.
+  if (media.backgroundVideos[0]) {
     rows.push({
       portfolio_id: portfolioId,
       kind: 'background_video',
       target_id: null,
-      storage_path: src,
+      storage_path: media.backgroundVideos[0],
       alt: '',
-      sort_order: index,
+      sort_order: 0,
     })
-  })
+  }
 
   if (media.cv) {
     rows.push({

@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '../context/LanguageContext'
 import { setBackgroundVideos } from '../lib/portfolio-actions'
-import { MAX_BACKGROUND_VIDEOS, PRESET_BACKGROUND_VIDEOS } from '../lib/preset-media'
+import { PRESET_BACKGROUND_VIDEOS } from '../lib/preset-media'
 
 /**
- * Backgrounds are chosen from the set that ships with the site. They are not
- * uploadable on purpose: video is by far the heaviest asset here, and one
- * 10MB file per account would exhaust the storage tier long before anything
- * else does. Serving the same few files from /public costs nothing per account.
+ * A single background, chosen from the set that ships with the site — a radio
+ * choice, not a multi-select. It is not uploadable on purpose: video is by far
+ * the heaviest asset here, and one 10MB file per account would exhaust the
+ * storage tier long before anything else. Serving the same few files from
+ * /public costs nothing per account.
  */
 export default function BackgroundPicker() {
   const { editing, media } = useLang()
@@ -21,22 +22,15 @@ export default function BackgroundPicker() {
 
   if (!editing) return null
 
-  const current = media.backgroundVideos
-  const chosen = (src: string) => current.includes(src)
+  const current = media.backgroundVideos[0] ?? null
 
-  async function apply(next: string[]) {
+  async function choose(src: string | null) {
     setBusy(true)
     setError(null)
-    const result = await setBackgroundVideos(next)
+    const result = await setBackgroundVideos(src ? [src] : [])
     setBusy(false)
     if (result.ok) router.refresh()
     else setError(result.error)
-  }
-
-  function toggle(src: string) {
-    if (chosen(src)) apply(current.filter((item) => item !== src))
-    else if (current.length < MAX_BACKGROUND_VIDEOS) apply([...current, src])
-    else apply([...current.slice(1), src])
   }
 
   return (
@@ -51,35 +45,46 @@ export default function BackgroundPicker() {
 
       {open && (
         <div className="w-64 rounded-xl border border-dark-600 bg-dark-900/95 backdrop-blur p-3 space-y-2 shadow-xl">
-          <p className="text-xs text-dark-400">Pick up to {MAX_BACKGROUND_VIDEOS}.</p>
+          <p className="text-xs text-dark-400">Pick one.</p>
+
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => choose(null)}
+            className={`w-full flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
+              current === null
+                ? 'border-dark-300 text-dark-50 bg-dark-50/10'
+                : 'border-dark-600 text-dark-300 hover:text-dark-50 hover:border-dark-400'
+            }`}
+          >
+            <span
+              className={`w-3.5 h-3.5 rounded-full border flex-shrink-0 ${
+                current === null ? 'border-dark-50 bg-dark-50' : 'border-dark-500'
+              }`}
+            />
+            None
+          </button>
 
           {PRESET_BACKGROUND_VIDEOS.map((preset) => (
             <button
               key={preset.src}
               type="button"
               disabled={busy}
-              onClick={() => toggle(preset.src)}
-              className={`w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
-                chosen(preset.src)
+              onClick={() => choose(preset.src)}
+              className={`w-full flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition disabled:opacity-50 ${
+                current === preset.src
                   ? 'border-dark-300 text-dark-50 bg-dark-50/10'
                   : 'border-dark-600 text-dark-300 hover:text-dark-50 hover:border-dark-400'
               }`}
             >
+              <span
+                className={`w-3.5 h-3.5 rounded-full border flex-shrink-0 ${
+                  current === preset.src ? 'border-dark-50 bg-dark-50' : 'border-dark-500'
+                }`}
+              />
               {preset.label}
-              <span>{chosen(preset.src) ? 'Selected' : 'Use'}</span>
             </button>
           ))}
-
-          {current.length > 0 && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => apply([])}
-              className="w-full text-xs text-dark-500 hover:text-dark-300 py-1"
-            >
-              No background
-            </button>
-          )}
 
           {error && <p className="text-xs text-red-400">{error}</p>}
         </div>

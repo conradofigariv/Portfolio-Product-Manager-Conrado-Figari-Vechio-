@@ -6,7 +6,8 @@ export const PRESET_BACKGROUND_VIDEOS = [
   { src: '/videos/video-2.mp4', label: 'Studio session' },
 ] as const
 
-export const MAX_BACKGROUND_VIDEOS = 2
+// A portfolio has at most one background: it is a single hero, not a slideshow.
+export const MAX_BACKGROUND_VIDEOS = 1
 
 export function isPresetVideo(path: string): boolean {
   return PRESET_BACKGROUND_VIDEOS.some((preset) => preset.src === path)
