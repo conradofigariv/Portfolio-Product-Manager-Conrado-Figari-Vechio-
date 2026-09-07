@@ -7,13 +7,22 @@ import ProjectTimeline from './ProjectTimeline'
 import Skills from './Skills'
 import Contact from './Contact'
 import Footer from './Footer'
+import EditBar from './EditBar'
 
-// A whole portfolio, rendered from one person's data. Lives here rather than in
-// the root layout so each route supplies its own, and so the editor and login
-// pages are not wrapped in someone's portfolio chrome.
-export default function PortfolioShell({ portfolio }: { portfolio: Portfolio }) {
+// A whole portfolio, rendered from one person's data. The same components serve
+// the public page and the editor — editing happens in place, so there is no
+// second copy of the layout that could drift from this one.
+export default function PortfolioShell({
+  portfolio,
+  editing = false,
+  published = false,
+}: {
+  portfolio: Portfolio
+  editing?: boolean
+  published?: boolean
+}) {
   return (
-    <LanguageProvider portfolio={portfolio}>
+    <LanguageProvider portfolio={portfolio} editing={editing}>
       <Navbar />
       <main>
         <Hero />
@@ -23,6 +32,7 @@ export default function PortfolioShell({ portfolio }: { portfolio: Portfolio }) 
         <Contact />
       </main>
       <Footer />
+      <EditBar published={published} />
     </LanguageProvider>
   )
 }

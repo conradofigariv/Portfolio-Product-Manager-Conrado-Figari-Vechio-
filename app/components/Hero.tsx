@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
+import EditableText from './EditableText'
+import EditablePortrait from './EditablePortrait'
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [videoIndex, setVideoIndex] = useState(0)
-  const { content, media } = useLang()
+  const { content, media, editing } = useLang()
   const videos = media.backgroundVideos
 
   useEffect(() => {
@@ -53,53 +54,41 @@ export default function Hero() {
             }`}
           >
             <p className="text-dark-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-2 md:mb-3">
-              {content.hero.greeting}
+              <EditableText path="hero.greeting" placeholder="Greeting" />
             </p>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight text-dark-50">
-              {content.hero.name}
+              <EditableText path="hero.name" placeholder="Your name" />
             </h1>
             <p className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
-              {content.hero.tagline}
+              <EditableText path="hero.tagline" placeholder="Headline" />
             </p>
             <p className="text-sm md:text-base text-dark-400 max-w-xl mb-10 md:mb-16 leading-relaxed">
-              {content.hero.description}
+              <EditableText path="hero.description" placeholder="Description" />
             </p>
 
             {/* Stats */}
             <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
-              {content.stats.map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-xl md:text-2xl font-bold text-dark-50">{stat.value}</p>
-                  <p className="text-dark-400 text-xs md:text-sm mt-1">{stat.label}</p>
+              {content.stats.map((_, i) => (
+                <div key={i}>
+                  <p className="text-xl md:text-2xl font-bold text-dark-50">
+                    <EditableText path={`stats.${i}.value`} placeholder="Value" />
+                  </p>
+                  <p className="text-dark-400 text-xs md:text-sm mt-1">
+                    <EditableText path={`stats.${i}.label`} placeholder="Label" />
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Right: Real photo */}
-          {media.portrait && (
+          {(media.portrait || editing) && (
             <div
               className={`hidden md:flex items-center justify-center transition-all duration-1000 delay-300 ${
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
-              <div className="relative">
-                {/* Subtle glow */}
-                <div className="absolute inset-0 bg-dark-50/5 rounded-2xl blur-2xl scale-110" />
-
-                {/* Photo */}
-                <div className="relative w-72 h-96 rounded-2xl overflow-hidden border border-dark-600">
-                  <Image
-                    src={media.portrait.src}
-                    alt={media.portrait.alt}
-                    fill
-                    className="object-cover object-top"
-                    priority
-                  />
-                  {/* Subtle gradient overlay at bottom */}
-                  <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-dark-900/60 to-transparent" />
-                </div>
-              </div>
+              <EditablePortrait />
             </div>
           )}
         </div>

@@ -29,12 +29,21 @@ export default async function UserPortfolioPage({
 }) {
   const { username } = await params
   const supabase = await createClient()
-  const portfolio = await loadPortfolio(supabase, username)
+  const [{ data: auth }, portfolio] = await Promise.all([
+    supabase.auth.getUser(),
+    loadPortfolio(supabase, username),
+  ])
 
   // Covers both an unknown username and a draft belonging to someone else:
   // row level security hides unpublished portfolios, so this cannot be used
   // to tell the two apart.
   if (!portfolio) notFound()
 
-  return <PortfolioShell portfolio={portfolio} />
+  return (
+    <PortfolioShell
+      portfolio={portfolio}
+      editing={!!auth.user && auth.user.id === portfolio.ownerId}
+      published={portfolio.published}
+    />
+  )
 }
