@@ -32,7 +32,7 @@ export default function GoogleSignInButton() {
           }`
         : 'not set'
       router.push(
-        `/login?error=bad_key&reason=${encodeURIComponent(
+        `/?error=bad_key&reason=${encodeURIComponent(
           `NEXT_PUBLIC_SUPABASE_ANON_KEY is not a valid key (${shape}). A real key starts with "eyJ". Re-enter it in the hosting environment and redeploy WITHOUT the build cache — this value is baked in at build time.`
         )}`
       )
@@ -46,7 +46,7 @@ export default function GoogleSignInButton() {
     })
     if (error) {
       setPending(false)
-      router.push(`/login?error=oauth_start&reason=${encodeURIComponent(error.message)}`)
+      router.push(`/?error=oauth_start&reason=${encodeURIComponent(error.message)}`)
     }
   }
 
