@@ -69,12 +69,12 @@ export default function Hero() {
             <p className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
               <EditableText path="hero.tagline" placeholder="Headline" />
             </p>
-            <p className="text-sm md:text-base text-dark-400 max-w-xl mb-6 md:mb-10 leading-relaxed">
+            <p className="text-sm md:text-base text-dark-400 max-w-xl mb-3 md:mb-4 leading-relaxed">
               <EditableText path="hero.description" placeholder="Description" />
             </p>
 
             {/* Stats */}
-            <div className="pt-4 md:pt-6 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
+            <div className="pt-3 md:pt-4 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
               {content.stats.map((_, i) => (
                 <div key={i}>
                   <p className="text-xl md:text-2xl font-bold text-dark-50">
