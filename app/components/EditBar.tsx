@@ -62,7 +62,7 @@ export default function EditBar({ published }: { published: boolean }) {
 
         <form action="/auth/signout" method="post">
           <button type="submit" className="text-xs text-dark-400 hover:text-dark-50">
-            Exit
+            Cerrar sesión
           </button>
         </form>
 
