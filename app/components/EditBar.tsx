@@ -7,20 +7,19 @@ import { savePortfolio } from '../lib/portfolio-actions'
 
 // Floats above the portfolio while its owner is editing. Everyone else never
 // renders this, and the page they see is unchanged.
-export default function EditBar({ published }: { published: boolean }) {
+export default function EditBar({ username }: { username: string }) {
   const { editing, dirty, draft, markSaved } = useLang()
-  const [isPublished, setIsPublished] = useState(published)
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   if (!editing) return null
 
-  async function onSave(nextPublished = isPublished) {
+  async function onSave() {
     setState('saving')
     setError(null)
 
-    const result = await savePortfolio({ content: draft, published: nextPublished })
+    const result = await savePortfolio({ content: draft })
     if (result.ok) {
       markSaved()
       setState('idle')
@@ -38,25 +37,18 @@ export default function EditBar({ published }: { published: boolean }) {
           {dirty ? 'Unsaved changes' : 'Click any text to edit'}
         </span>
 
-        <label
-          className="flex items-center gap-2 text-xs text-dark-300"
-          title="Si está tildado, tu portfolio es visible para cualquiera en tu link. Si lo destildás, queda privado y solo vos lo ves."
+        <a
+          href={`/${username}?preview=1`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-dark-300 hover:text-dark-50 transition"
         >
-          <input
-            type="checkbox"
-            checked={isPublished}
-            onChange={(e) => {
-              setIsPublished(e.target.checked)
-              onSave(e.target.checked)
-            }}
-            className="accent-dark-50"
-          />
-          Public
-        </label>
+          Preview
+        </a>
 
         <button
           type="button"
-          onClick={() => onSave()}
+          onClick={onSave}
           disabled={state === 'saving' || !dirty}
           className="button-primary text-sm py-1.5 px-4 disabled:opacity-50"
         >
