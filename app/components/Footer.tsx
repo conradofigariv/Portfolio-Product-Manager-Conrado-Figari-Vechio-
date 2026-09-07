@@ -4,14 +4,17 @@ import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
 
 export default function Footer() {
-  const { t, content } = useLang()
+  const { t, content, editing } = useLang()
   const n = t.nav
   // Defensive: same reasoning as Contact.tsx — an older stored document may
   // predate this field.
   const socials = content.contact.socials ?? []
 
   return (
-    <footer className="bg-dark-800/40 border-t border-dark-700">
+    <footer
+      className="bg-dark-800/40 border-t border-dark-700"
+      style={editing ? { paddingBottom: '6rem' } : undefined}
+    >
       <div className="container-main py-12">
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
