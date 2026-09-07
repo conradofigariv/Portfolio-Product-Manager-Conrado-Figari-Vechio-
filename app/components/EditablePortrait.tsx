@@ -57,11 +57,11 @@ export default function EditablePortrait() {
   if (!editing && !portrait) return null
 
   return (
-    <div className="relative">
+    <div className="relative w-72 h-full min-h-64 md:min-h-80">
       {/* Subtle glow */}
       <div className="absolute inset-0 bg-dark-50/5 rounded-2xl blur-2xl scale-110" />
 
-      <div className="relative w-72 h-96 rounded-2xl overflow-hidden border border-dark-600 group">
+      <div className="relative w-72 h-full rounded-2xl overflow-hidden border border-dark-600 group">
         {portrait ? (
           <Image
             src={portrait}
