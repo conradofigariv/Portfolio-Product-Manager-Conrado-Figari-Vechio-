@@ -9,7 +9,7 @@ import BackgroundPicker from './BackgroundPicker'
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isCVOpen, setIsCVOpen] = useState(false)
-  const { t, lang, toggleLang, content, media } = useLang()
+  const { t, lang, toggleLang, content, media, editing } = useLang()
 
   const initials = content.hero.name
     .split(' ')
@@ -61,6 +61,17 @@ export default function Navbar() {
 
           <BackgroundPicker />
 
+          {editing && (
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                className="px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
+              >
+                Cerrar sesión
+              </button>
+            </form>
+          )}
+
           {media.cv && (
             <button
               onClick={() => setIsCVOpen(true)}
@@ -80,6 +91,13 @@ export default function Navbar() {
             {lang === 'en' ? 'ES' : 'EN'}
           </button>
           <BackgroundPicker />
+          {editing && (
+            <form action="/auth/signout" method="post">
+              <button type="submit" className="text-dark-300 hover:text-dark-50 transition text-xs font-mono">
+                Cerrar sesión
+              </button>
+            </form>
+          )}
           <button
             className="text-dark-50"
             onClick={() => setIsOpen(!isOpen)}
