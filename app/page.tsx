@@ -1,49 +1,51 @@
-import PortfolioShell from './components/PortfolioShell'
-import { defaultPortfolio } from './lib/portfolio'
-import { hasAnyMedia, loadPortfolio } from './lib/portfolio-db'
-import { ROOT_USERNAME, adoptDeploymentMedia } from './lib/deployment-owner'
-import { createClient } from './lib/supabase/server'
+import { getUser } from './lib/supabase/server'
+import { redirect } from 'next/navigation'
+import GoogleSignInButton from './components/GoogleSignInButton'
 
-export default async function Home() {
-  const supabase = await createClient()
-  const [{ data: auth }, loaded] = await Promise.all([
-    supabase.auth.getUser(),
-    loadPortfolio(supabase, ROOT_USERNAME),
-  ])
+// The product landing and the sign-in screen are the same page: there is
+// nothing to pitch that isn't also the thing you sign in to try. A signed-in
+// visitor has nothing to do here, so they go straight to their editor.
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; reason?: string }>
+}) {
+  const user = await getUser()
+  if (user) redirect('/admin')
 
-  // Ownership is resolved from the signed-in user's own profile rather than
-  // from the loaded portfolio: the portfolio is still empty before the first
-  // save, and the owner has to be able to edit precisely then.
-  let isOwner = false
-  if (auth.user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', auth.user.id)
-      .maybeSingle()
-    isOwner = profile?.username === ROOT_USERNAME
-  }
-
-  let stored = loaded
-  if (isOwner && stored) {
-    const adopted = await adoptDeploymentMedia(supabase, {
-      portfolioId: stored.portfolioId,
-      username: stored.username,
-    })
-    if (adopted) stored = await loadPortfolio(supabase, ROOT_USERNAME)
-  }
-
-  // Until the first save the content still lives in the codebase. Falling back
-  // to it means the page never regresses, and saving once migrates it across.
-  const portfolio = stored
-    ? { ...stored, media: hasAnyMedia(stored.media) ? stored.media : defaultPortfolio.media }
-    : defaultPortfolio
+  const { error, reason } = await searchParams
 
   return (
-    <PortfolioShell
-      portfolio={portfolio}
-      editing={isOwner}
-      published={stored?.published ?? false}
-    />
+    <main className="relative min-h-screen flex items-center justify-center overflow-hidden section-padding">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/videos/video-2.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-gradient-to-b from-dark-900/85 via-dark-900/75 to-dark-900/90" />
+
+      <div className="relative z-10 w-full max-w-sm text-center">
+        <p className="text-dark-400 font-mono tracking-widest uppercase text-xs mb-3">
+          Portfolio App
+        </p>
+        <h1 className="text-3xl font-bold text-dark-50 mb-3">Your portfolio, live.</h1>
+        <p className="text-dark-300 text-sm mb-8 leading-relaxed">
+          Edit the real design in place — no forms, no builder. Sign in to start yours.
+        </p>
+
+        {error && (
+          <div className="mb-4">
+            <p className="text-sm text-red-400">Something went wrong signing you in.</p>
+            {reason && <p className="text-xs text-dark-500 mt-1 break-words">{reason}</p>}
+          </div>
+        )}
+
+        <GoogleSignInButton />
+      </div>
+    </main>
   )
 }
