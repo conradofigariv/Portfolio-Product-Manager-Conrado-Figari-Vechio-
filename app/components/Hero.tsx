@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
 import EditablePortrait from './EditablePortrait'
-import BackgroundPicker from './BackgroundPicker'
 
 export default function Hero() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -35,18 +34,16 @@ export default function Hero() {
       {/* Overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-dark-900/80 via-dark-900/70 to-dark-900/90" />
 
-      {/* Top-right controls, stacked so the picker and the toggle never overlap */}
-      <div className="absolute top-6 right-6 z-30 flex flex-col items-end gap-2">
-        {videos.length > 1 && (
+      {videos.length > 1 && (
+        <div className="absolute top-6 right-6 z-30">
           <button
             onClick={() => setVideoIndex((i) => (i + 1) % videos.length)}
             className="px-3 py-1.5 rounded-lg border border-dark-400/40 bg-dark-900/40 backdrop-blur text-dark-200 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
           >
             Video {(videoIndex % videos.length) + 1} / {videos.length}
           </button>
-        )}
-        <BackgroundPicker />
-      </div>
+        </div>
+      )}
 
       <div className="container-main w-full relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
@@ -66,12 +63,12 @@ export default function Hero() {
             <p className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
               <EditableText path="hero.tagline" placeholder="Headline" />
             </p>
-            <p className="text-sm md:text-base text-dark-400 max-w-xl mb-10 md:mb-16 leading-relaxed">
+            <p className="text-sm md:text-base text-dark-400 max-w-xl mb-6 md:mb-10 leading-relaxed">
               <EditableText path="hero.description" placeholder="Description" />
             </p>
 
             {/* Stats */}
-            <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
+            <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
               {content.stats.map((_, i) => (
                 <div key={i}>
                   <p className="text-xl md:text-2xl font-bold text-dark-50">

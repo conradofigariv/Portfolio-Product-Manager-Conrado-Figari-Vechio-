@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
+import BackgroundPicker from './BackgroundPicker'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -58,6 +59,8 @@ export default function Navbar() {
             <span className={lang === 'es' ? 'text-dark-50 font-bold' : ''}>ES</span>
           </button>
 
+          <BackgroundPicker />
+
           {media.cv && (
             <button
               onClick={() => setIsCVOpen(true)}
@@ -76,6 +79,7 @@ export default function Navbar() {
           >
             {lang === 'en' ? 'ES' : 'EN'}
           </button>
+          <BackgroundPicker />
           <button
             className="text-dark-50"
             onClick={() => setIsOpen(!isOpen)}
