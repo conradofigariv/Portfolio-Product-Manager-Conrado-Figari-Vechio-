@@ -49,8 +49,10 @@
     grid-template-areas: 'header' 'body';
   }
 
+  /* items-stretch (not items-start) so the photo column grows to match the
+     combined height of the header + body rows instead of a fixed size. */
   .journey-chapter-grid--with-photo {
-    @apply md:grid-cols-[1fr_auto] md:gap-8;
+    @apply md:grid-cols-[1fr_auto] md:gap-8 items-stretch;
     grid-template-areas: 'header' 'photo' 'body';
   }
 

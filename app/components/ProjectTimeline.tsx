@@ -118,7 +118,7 @@ export default function ProjectTimeline() {
   return (
     <section id="projects" ref={sectionRef} className="section-padding bg-gradient-to-b from-dark-900 to-dark-800/30">
       <div className="container-main">
-        <div className="mb-20">
+        <div className="mb-6 md:mb-8">
           <h2 className="heading-md mb-4">
             <EditableText path="projects.title" placeholder="Section title" />
           </h2>
@@ -141,12 +141,6 @@ export default function ProjectTimeline() {
                 id={`project-item-${idx}`}
                 className="relative"
               >
-                {editing && (
-                  <div className="mb-3">
-                    <RemoveButton onClick={() => removeProject(project.id)} label="Remove project" />
-                  </div>
-                )}
-
                 <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
 
                   {/* Visual side */}
@@ -246,9 +240,14 @@ export default function ProjectTimeline() {
                         : 'md:opacity-0 md:-translate-x-12 opacity-0 translate-y-8'
                     }`}
                   >
-                    <span className="block text-xs font-mono text-dark-500 uppercase tracking-widest mb-2">
-                      <EditableText path={`projects.items.${idx}.tag`} placeholder="Category" />
-                    </span>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
+                        <EditableText path={`projects.items.${idx}.tag`} placeholder="Category" />
+                      </span>
+                      {editing && (
+                        <RemoveButton onClick={() => removeProject(project.id)} label="Remove project" />
+                      )}
+                    </div>
 
                     {/* Narrative */}
                     <div className="space-y-2 md:space-y-3 mb-5 md:mb-7">

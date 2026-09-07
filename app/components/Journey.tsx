@@ -53,7 +53,7 @@ export default function Journey() {
   return (
     <section id="about" className="section-padding">
       <div className="container-main">
-        <h2 className="heading-md mb-12 md:mb-20">
+        <h2 className="heading-md mb-6 md:mb-8">
           <EditableText path="journey.title" placeholder="Section title" />
         </h2>
 
@@ -86,26 +86,26 @@ export default function Journey() {
                     />
                   </div>
 
-                  {editing && (
-                    <div className="mb-3">
-                      <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
-                    </div>
-                  )}
-
                   <div className={`journey-chapter-grid ${showPhotoColumn ? 'journey-chapter-grid--with-photo' : 'journey-chapter-grid--no-photo'}`}>
                     {/* Tag + Heading */}
-                    <div style={{ gridArea: 'header' }}>
-                      <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
-                        <EditableText path={`journey.chapters.${i}.tag`} placeholder="Tag" />
-                      </span>
+                    <div style={{ gridArea: 'header' }} className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-mono text-dark-500 uppercase tracking-widest">
+                          <EditableText path={`journey.chapters.${i}.tag`} placeholder="Tag" />
+                        </span>
 
-                      <h3
-                        className={`mt-2 mb-0 md:mb-5 font-bold leading-tight ${
-                          isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
-                        }`}
-                      >
-                        <EditableText path={`journey.chapters.${i}.heading`} placeholder="Heading" />
-                      </h3>
+                        <h3
+                          className={`mt-2 mb-0 md:mb-5 font-bold leading-tight ${
+                            isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
+                          }`}
+                        >
+                          <EditableText path={`journey.chapters.${i}.heading`} placeholder="Heading" />
+                        </h3>
+                      </div>
+
+                      {editing && (
+                        <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
+                      )}
                     </div>
 
                     {/* Photo */}
