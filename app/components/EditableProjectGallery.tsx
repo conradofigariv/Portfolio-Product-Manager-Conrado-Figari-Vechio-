@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../lib/supabase/client'
 import { addProjectPhoto, removeProjectPhoto } from '../lib/portfolio-actions'
-import { compressImage, validateImageFile } from '../lib/image-upload'
+import { compressImage, uniqueUploadName, validateImageFile } from '../lib/image-upload'
 import { storagePathFromPublicUrl } from '../lib/media-path'
 import PositionPicker from './PositionPicker'
 import type { MediaImage } from '../lib/portfolio'
@@ -34,6 +34,7 @@ export default function EditableProjectGallery({
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function onPick(file: File) {
+    if (busy) return
     setError(null)
     const invalid = validateImageFile(file)
     if (invalid) {
@@ -50,7 +51,7 @@ export default function EditableProjectGallery({
       if (!user) throw new Error('Your session expired. Sign in again.')
 
       const image = await compressImage(file)
-      const path = `${user.id}/project-${projectId}-${Date.now()}.webp`
+      const path = `${user.id}/project-${projectId}-${uniqueUploadName()}.webp`
 
       const upload = await supabase.storage
         .from('portfolio-media')

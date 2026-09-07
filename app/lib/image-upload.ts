@@ -40,3 +40,11 @@ export function validateImageFile(file: File): string | null {
   if (file.size > MAX_UPLOAD_BYTES) return 'That image is over 10MB. Pick a smaller one.'
   return null
 }
+
+// Date.now() alone can collide: a fast double-click fires two uploads in the
+// same millisecond, and Supabase Storage rejects the second with "The
+// resource already exists" (upsert is intentionally off). The random suffix
+// makes that practically impossible.
+export function uniqueUploadName(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
