@@ -1,4 +1,5 @@
 import type { JSONContent } from '@tiptap/core'
+import { isFontSizeCss } from './extensions/fontSize'
 
 /**
  * Turns a Tiptap document into HTML without touching Tiptap's own
@@ -6,14 +7,16 @@ import type { JSONContent } from '@tiptap/core'
  * doesn't otherwise depend on. This walks the JSON directly instead.
  *
  * Deliberately whitelist-only: it can only ever emit the tags listed in
- * MARK_TAGS plus <p>, regardless of what a node/mark type in the JSON says —
- * an unrecognized node just renders its children with no wrapping tag, and
- * an unrecognized mark is skipped. A block's content_json reaches here from
- * a server action that already accepted it from the client, so this is the
- * layer that actually decides what can end up in HTML served to visitors.
+ * MARK_TAGS, the fontSize `<span style="...">` below, plus <p> — regardless
+ * of what a node/mark type in the JSON says. An unrecognized node just
+ * renders its children with no wrapping tag, and an unrecognized mark (or a
+ * textStyle mark with no valid fontSize) is skipped. A block's content_json
+ * reaches here from a server action that already accepted it from the
+ * client, so this is the layer that actually decides what can end up in
+ * HTML served to visitors.
  *
  * Extend MARK_TAGS/NODE_RENDERERS here as more marks/nodes are supported —
- * currently just what Step 2 (bold/italic/underline) needs.
+ * currently what Step 2 (bold/italic/underline) and fontSize need.
  */
 const MARK_TAGS: Record<string, string> = {
   bold: 'strong',
@@ -33,6 +36,11 @@ function escapeHtml(text: string): string {
 function renderMarks(text: string, marks: JSONContent['marks']): string {
   let html = escapeHtml(text)
   for (const mark of marks ?? []) {
+    if (mark.type === 'textStyle') {
+      const size = mark.attrs?.fontSize
+      if (isFontSizeCss(size)) html = `<span style="font-size: ${size}">${html}</span>`
+      continue
+    }
     const tag = MARK_TAGS[mark.type]
     if (!tag) continue
     html = `<${tag}>${html}</${tag}>`
@@ -84,6 +92,25 @@ const ALLOWED_NODES = new Set(['doc', 'paragraph', 'text'])
 const ALLOWED_MARKS = new Set(Object.keys(MARK_TAGS))
 
 /**
+ * textStyle carries a fontSize attribute rather than being a fixed tag like
+ * the marks in MARK_TAGS, so it needs its own check: keep the mark only if
+ * fontSize survives isFontSizeCss's whitelist, drop it (attrs and all)
+ * otherwise — a textStyle mark with no valid attributes renders nothing, so
+ * there's no reason to keep it around.
+ */
+function sanitizeMark(mark: unknown): { type: string; attrs?: Record<string, unknown> } | null {
+  if (!mark || typeof mark !== 'object' || typeof (mark as { type?: unknown }).type !== 'string') return null
+  const m = mark as { type: string; attrs?: Record<string, unknown> }
+
+  if (m.type === 'textStyle') {
+    const size = m.attrs?.fontSize
+    return isFontSizeCss(size) ? { type: 'textStyle', attrs: { fontSize: size } } : null
+  }
+
+  return ALLOWED_MARKS.has(m.type) ? { type: m.type } : null
+}
+
+/**
  * Strips a client-submitted document down to only what this app's schema
  * actually supports, before it's ever stored — belt-and-suspenders on top of
  * renderBlockHtml's own whitelist, since a request can call the server
@@ -104,9 +131,7 @@ export function sanitizeDoc(input: unknown, maxLength: number): JSONContent {
       if (!text) return null
       remaining -= text.length
       const marks = Array.isArray(n.marks)
-        ? n.marks.filter(
-            (m): m is { type: string } => !!m && typeof m.type === 'string' && ALLOWED_MARKS.has(m.type)
-          )
+        ? n.marks.map(sanitizeMark).filter((m): m is { type: string; attrs?: Record<string, unknown> } => m !== null)
         : undefined
       return marks?.length ? { type: 'text', text, marks } : { type: 'text', text }
     }

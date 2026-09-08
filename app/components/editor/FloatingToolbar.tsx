@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useFloating, offset, flip, shift, autoUpdate, type VirtualElement } from '@floating-ui/react'
 import type { Editor } from '@tiptap/react'
 import ToolbarButton from './toolbar/ToolbarButton'
+import FontSizeControl from './toolbar/FontSizeControl'
 
 // Clicking into a field is often just moving between several fields fast —
 // this delay keeps the toolbar from flickering in and out on every click.
@@ -40,6 +41,13 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollOrigin = useRef<{ x: number; y: number } | null>(null)
   const reduceMotion = useReducedMotion()
+
+  // editor.isActive()/getAttributes() below read live editor state at
+  // render time — React has no way to know that state changed on its own,
+  // so without this a toolbar already open (visible didn't flip) would keep
+  // showing stale button/size states after the selection moves to a
+  // differently-formatted run, or after a command runs.
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0)
 
   const { refs, floatingStyles, placement } = useFloating({
     placement: 'top',
@@ -92,13 +100,18 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
     editor.on('focus', onFocus)
     editor.on('selectionUpdate', onSelectionUpdate)
     editor.on('blur', onBlur)
+    // Every selection move and every formatting command fires a
+    // transaction — forcing a render here is what keeps isActive()/
+    // getAttributes() reads below from going stale between those.
+    editor.on('transaction', forceUpdate)
     return () => {
       editor.off('focus', onFocus)
       editor.off('selectionUpdate', onSelectionUpdate)
       editor.off('blur', onBlur)
+      editor.off('transaction', forceUpdate)
       if (showTimer.current) clearTimeout(showTimer.current)
     }
-  }, [editor, refs])
+  }, [editor, refs, forceUpdate])
 
   useEffect(() => {
     if (!visible) return
@@ -191,6 +204,8 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
           >
             <span className="underline">U</span>
           </ToolbarButton>
+          <div className="w-px h-5 bg-dark-600 mx-0.5" />
+          <FontSizeControl editor={editor} />
         </motion.div>
       )}
     </AnimatePresence>,
