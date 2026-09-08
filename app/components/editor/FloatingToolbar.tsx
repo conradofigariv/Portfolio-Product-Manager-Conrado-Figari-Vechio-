@@ -7,6 +7,10 @@ import { useFloating, offset, flip, shift, autoUpdate, type VirtualElement } fro
 import type { Editor } from '@tiptap/react'
 import ToolbarButton from './toolbar/ToolbarButton'
 import FontSizeControl from './toolbar/FontSizeControl'
+import ColorSwatches from './toolbar/ColorSwatches'
+import HighlightButton from './toolbar/HighlightButton'
+import LinkPopover from './toolbar/LinkPopover'
+import AlignmentGroup from './toolbar/AlignmentGroup'
 
 // Clicking into a field is often just moving between several fields fast —
 // this delay keeps the toolbar from flickering in and out on every click.
@@ -41,6 +45,16 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollOrigin = useRef<{ x: number; y: number } | null>(null)
   const reduceMotion = useReducedMotion()
+
+  // The link popover's input needs real DOM focus to type into, which fires
+  // the editor's blur event — a ref (read inside the stable onBlur closure
+  // below, so it doesn't need to be a dependency) is what stops that from
+  // hiding the whole toolbar out from under it.
+  const [linkOpen, setLinkOpen] = useState(false)
+  const linkOpenRef = useRef(false)
+  useEffect(() => {
+    linkOpenRef.current = linkOpen
+  }, [linkOpen])
 
   // editor.isActive()/getAttributes() below read live editor state at
   // render time — React has no way to know that state changed on its own,
@@ -93,6 +107,7 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
       updateAnchor(0)
     }
     function onBlur() {
+      if (linkOpenRef.current) return
       if (showTimer.current) clearTimeout(showTimer.current)
       setVisible(false)
     }
@@ -118,8 +133,18 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
+        if (linkOpenRef.current) {
+          setLinkOpen(false)
+          editor?.commands.focus()
+          return
+        }
         setVisible(false)
         editor?.commands.blur()
+        return
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setLinkOpen(true)
       }
     }
     function onScroll() {
@@ -178,7 +203,7 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
           exit="exit"
           role="toolbar"
           aria-label="Text formatting"
-          className="flex items-center gap-1 rounded-lg border border-dark-600 bg-dark-800/95 backdrop-blur px-1.5 py-1 shadow-xl"
+          className="flex items-center gap-1 rounded-lg border border-dark-600 bg-dark-800/95 backdrop-blur px-1.5 py-1 shadow-xl max-w-[calc(100vw-2rem)] overflow-x-auto"
         >
           <ToolbarButton
             label="Bold"
@@ -204,8 +229,22 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
           >
             <span className="underline">U</span>
           </ToolbarButton>
+          <ToolbarButton
+            label="Strikethrough"
+            shortcut={`Shift+${modKey}X`}
+            active={editor.isActive('strike')}
+            onToggle={() => editor.chain().focus().toggleStrike().run()}
+          >
+            <span className="line-through">S</span>
+          </ToolbarButton>
           <div className="w-px h-5 bg-dark-600 mx-0.5" />
           <FontSizeControl editor={editor} />
+          <div className="w-px h-5 bg-dark-600 mx-0.5" />
+          <ColorSwatches editor={editor} />
+          <HighlightButton editor={editor} />
+          <LinkPopover editor={editor} open={linkOpen} onOpenChange={setLinkOpen} />
+          <div className="w-px h-5 bg-dark-600 mx-0.5" />
+          <AlignmentGroup editor={editor} />
         </motion.div>
       )}
     </AnimatePresence>,

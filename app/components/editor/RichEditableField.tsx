@@ -5,12 +5,16 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-import { TextStyle, FontSize } from '@tiptap/extension-text-style'
+import { TextStyle, FontSize, Color } from '@tiptap/extension-text-style'
+import Highlight from '@tiptap/extension-highlight'
+import Link from '@tiptap/extension-link'
+import TextAlign from '@tiptap/extension-text-align'
 import Placeholder from '@tiptap/extension-placeholder'
 import FloatingToolbar from './FloatingToolbar'
 import { useBlockPersistence } from '../../lib/editor/useBlockPersistence'
 import { useLang } from '../../context/LanguageContext'
 import { EMPTY_DOC } from '../../lib/editor/render-html'
+import { HIGHLIGHT_STYLE } from '../../lib/editor/extensions/colors'
 import type { PortfolioBlock } from '../../lib/portfolio'
 
 // The Tiptap-powered half of EditableText — split into its own module and
@@ -46,11 +50,20 @@ export default function RichEditableField({
         code: false,
         horizontalRule: false,
         hardBreak: false,
-        strike: false,
       }),
       Underline,
       TextStyle,
       FontSize,
+      Color,
+      // Single fixed color rather than multicolor — see HIGHLIGHT_STYLE's
+      // own comment for why the edit and public-read views share it.
+      Highlight.configure({ HTMLAttributes: { style: HIGHLIGHT_STYLE } }),
+      Link.configure({
+        openOnClick: false,
+        autolink: false,
+        protocols: ['http', 'https', 'mailto'],
+      }),
+      TextAlign.configure({ types: ['paragraph'] }),
       Placeholder.configure({ placeholder: placeholder ?? '' }),
     ],
     content: initial?.json ?? EMPTY_DOC,
