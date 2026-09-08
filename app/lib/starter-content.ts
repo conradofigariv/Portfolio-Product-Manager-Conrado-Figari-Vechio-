@@ -66,6 +66,7 @@ function starter(lang: Lang, displayName: string): PortfolioContent {
       subtitle: es ? 'Construidas con trabajo real.' : 'Built through real work.',
       categories: [
         {
+          id: 'skillcat-0',
           category: es ? 'Tu categoría' : 'Your category',
           skills: [es ? 'Tu habilidad' : 'Your skill'],
         },

@@ -30,7 +30,7 @@ export type JourneyChapter = {
   body: string
 }
 
-export type SkillCategory = { category: string; skills: string[] }
+export type SkillCategory = { id: string; category: string; skills: string[] }
 export type Certification = { title: string; issuer: string }
 
 // Everything a person writes about themselves. Interface labels (buttons, form
@@ -93,6 +93,7 @@ export type Portfolio = {
 
 export const projectId = (index: number) => `project-${index}`
 export const chapterId = (index: number) => `chapter-${index}`
+export const skillCategoryId = (index: number) => `skillcat-${index}`
 
 function toContent(t: (typeof translations)['en']): PortfolioContent {
   return {
@@ -123,7 +124,11 @@ function toContent(t: (typeof translations)['en']): PortfolioContent {
     skills: {
       title: t.skills.title,
       subtitle: t.skills.subtitle,
-      categories: t.skills.categories.map((c) => ({ category: c.category, skills: [...c.skills] })),
+      categories: t.skills.categories.map((c, i) => ({
+        id: skillCategoryId(i),
+        category: c.category,
+        skills: [...c.skills],
+      })),
       certs: t.skills.certs.map((c) => ({ ...c })),
     },
     contact: {
