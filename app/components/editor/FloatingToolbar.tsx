@@ -203,7 +203,7 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
           exit="exit"
           role="toolbar"
           aria-label="Text formatting"
-          className="flex items-center gap-1 rounded-lg border border-dark-600 bg-dark-800/95 backdrop-blur px-1.5 py-1 shadow-xl max-w-[calc(100vw-2rem)] overflow-x-auto"
+          className="flex items-center gap-1 rounded-lg border border-dark-600 bg-dark-800/95 backdrop-blur px-1.5 py-1 shadow-xl"
         >
           <ToolbarButton
             label="Bold"
