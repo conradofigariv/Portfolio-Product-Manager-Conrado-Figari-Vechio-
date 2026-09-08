@@ -1,6 +1,7 @@
 'use client'
 
 import { useLang } from '../context/LanguageContext'
+import { useBlockList } from '../lib/editor/useBlockList'
 import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import { AddButton, RemoveButton } from './EditControls'
@@ -8,6 +9,13 @@ import { AddButton, RemoveButton } from './EditControls'
 export default function Contact() {
   const { t, content, editing, updateActive } = useLang()
   const c = content.contact
+  const {
+    items: availableItems,
+    add: addAvailableItem,
+    remove: removeAvailableItem,
+    busy: availableItemsBusy,
+    error: availableItemsError,
+  } = useBlockList({ prefix: 'contact.availableItems', section: 'contact' })
   // Defensive: content can be an older document saved before these fields
   // existed. The loader normalizes this too, but nothing here should crash
   // if it is ever fed content that bypassed that step.
@@ -114,24 +122,17 @@ export default function Contact() {
               <h3 className="font-semibold text-dark-50 mb-4">{t.contact.availability}</h3>
               <p className="text-dark-400 text-sm mb-4">{t.contact.availableFor}</p>
               <ul className="space-y-2">
-                {c.availableItems.map((_, i) => (
-                  <li key={i} className="flex items-start gap-3 text-dark-300 text-sm">
+                {availableItems.map((item) => (
+                  <li key={item.blockKey} className="flex items-start gap-3 text-dark-300 text-sm">
                     <span className="text-dark-50 mt-0.5">✓</span>
                     <span className="flex-1">
-                      <EditableText path={`contact.availableItems.${i}`} placeholder="Item" />
+                      <RichText blockKey={item.blockKey} section="contact" placeholder="Item" />
                     </span>
                     {editing && (
                       <RemoveButton
                         label="Remove item"
-                        onClick={() =>
-                          updateActive((cc) => ({
-                            ...cc,
-                            contact: {
-                              ...cc.contact,
-                              availableItems: cc.contact.availableItems.filter((_, j) => j !== i),
-                            },
-                          }))
-                        }
+                        disabled={availableItemsBusy}
+                        onClick={() => removeAvailableItem(item.blockKey)}
                       />
                     )}
                   </li>
@@ -139,17 +140,10 @@ export default function Contact() {
               </ul>
               {editing && (
                 <div className="mt-3">
-                  <AddButton
-                    label="Add item"
-                    onClick={() =>
-                      updateActive((cc) => ({
-                        ...cc,
-                        contact: { ...cc.contact, availableItems: [...cc.contact.availableItems, ''] },
-                      }))
-                    }
-                  />
+                  <AddButton label="Add item" disabled={availableItemsBusy} onClick={addAvailableItem} />
                 </div>
               )}
+              {availableItemsError && <p className="text-xs text-red-400 mt-2">{availableItemsError}</p>}
             </div>
           </div>
         </div>

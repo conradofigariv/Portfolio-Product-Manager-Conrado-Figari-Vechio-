@@ -8,6 +8,7 @@ import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import EditableProjectGallery from './EditableProjectGallery'
 import ProjectNarrative from './ProjectNarrative'
+import ProjectTags from './ProjectTags'
 import { AddButton, RemoveButton } from './EditControls'
 
 // Alternating sides; index into this by position, not by project identity.
@@ -18,7 +19,7 @@ function newProjectId() {
 }
 
 export default function ProjectTimeline() {
-  const { t, content, media, editing, updateActive, updateBoth } = useLang()
+  const { t, content, media, editing, updateBoth } = useLang()
   const p = content.projects
   const sectionRef = useRef<HTMLDivElement>(null)
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set())
@@ -104,16 +105,6 @@ export default function ProjectTimeline() {
     updateBoth((c) => ({
       ...c,
       projects: { ...c.projects, items: c.projects.items.filter((item) => item.id !== id) },
-    }))
-  }
-
-  function updateProjectAt(idx: number, patch: (item: (typeof p.items)[number]) => (typeof p.items)[number]) {
-    updateActive((c) => ({
-      ...c,
-      projects: {
-        ...c.projects,
-        items: c.projects.items.map((item, i) => (i === idx ? patch(item) : item)),
-      },
     }))
   }
 
@@ -280,35 +271,7 @@ export default function ProjectTimeline() {
                     </div>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-2 items-center">
-                      {project.tags.map((_, i) => (
-                        <span
-                          key={i}
-                          className="flex items-center gap-1.5 px-2 md:px-3 py-1 bg-dark-700/60 text-dark-300 text-xs rounded-full border border-dark-600"
-                        >
-                          <EditableText path={`projects.items.${idx}.tags.${i}`} placeholder="Tag" />
-                          {editing && (
-                            <RemoveButton
-                              label="Remove tag"
-                              onClick={() =>
-                                updateProjectAt(idx, (item) => ({
-                                  ...item,
-                                  tags: item.tags.filter((_, j) => j !== i),
-                                }))
-                              }
-                            />
-                          )}
-                        </span>
-                      ))}
-                      {editing && (
-                        <AddButton
-                          label="Add tag"
-                          onClick={() =>
-                            updateProjectAt(idx, (item) => ({ ...item, tags: [...item.tags, 'Tag'] }))
-                          }
-                        />
-                      )}
-                    </div>
+                    <ProjectTags projectId={project.id} />
                   </div>
                 </div>
               </div>
