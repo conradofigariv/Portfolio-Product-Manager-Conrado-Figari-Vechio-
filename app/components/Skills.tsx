@@ -1,13 +1,23 @@
 'use client'
 
 import { useLang } from '../context/LanguageContext'
+import { usePairedBlockList } from '../lib/editor/usePairedBlockList'
 import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import { AddButton, RemoveButton } from './EditControls'
 
+const CERT_FIELDS = ['title', 'issuer'] as const
+
 export default function Skills() {
   const { t, content, editing, updateActive } = useLang()
   const s = content.skills
+  const {
+    items: certs,
+    add: addCert,
+    remove: removeCert,
+    busy: certsBusy,
+    error: certsError,
+  } = usePairedBlockList({ prefix: 'skills.certs', fields: CERT_FIELDS, section: 'skills' })
 
   return (
     <section id="skills" className="bg-dark-800/40 section-padding">
@@ -113,29 +123,25 @@ export default function Skills() {
         <div className="mt-8 md:mt-16 pt-8 md:pt-16 border-t border-dark-700">
           <h3 className="text-lg md:text-xl font-semibold mb-6 md:mb-8 text-dark-50">{t.skills.certifications}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {s.certs.map((_, i) => (
+            {certs.map((cert) => (
               <div
-                key={i}
+                key={cert.itemId}
                 className="flex items-start gap-3 md:gap-4 bg-dark-900/50 p-4 md:p-6 rounded-xl border border-dark-700 hover:border-dark-500 transition"
               >
                 <span className="text-lg md:text-xl flex-shrink-0">📜</span>
                 <div className="flex-1">
                   <h4 className="font-semibold text-dark-50 mb-1 text-xs md:text-sm leading-snug">
-                    <EditableText path={`skills.certs.${i}.title`} placeholder="Certification" />
+                    <RichText blockKey={cert.blockKeys.title} section="skills" placeholder="Certification" />
                   </h4>
                   <p className="text-dark-400 text-xs">
-                    <EditableText path={`skills.certs.${i}.issuer`} placeholder="Issuer" />
+                    <RichText blockKey={cert.blockKeys.issuer} section="skills" placeholder="Issuer" />
                   </p>
                 </div>
                 {editing && (
                   <RemoveButton
                     label="Remove certification"
-                    onClick={() =>
-                      updateActive((c) => ({
-                        ...c,
-                        skills: { ...c.skills, certs: c.skills.certs.filter((_, j) => j !== i) },
-                      }))
-                    }
+                    disabled={certsBusy}
+                    onClick={() => removeCert(cert.itemId)}
                   />
                 )}
               </div>
@@ -143,17 +149,10 @@ export default function Skills() {
           </div>
           {editing && (
             <div className="mt-4">
-              <AddButton
-                label="Add certification"
-                onClick={() =>
-                  updateActive((c) => ({
-                    ...c,
-                    skills: { ...c.skills, certs: [...c.skills.certs, { title: 'Certification', issuer: '' }] },
-                  }))
-                }
-              />
+              <AddButton label="Add certification" disabled={certsBusy} onClick={addCert} />
             </div>
           )}
+          {certsError && <p className="text-xs text-red-400 mt-2">{certsError}</p>}
         </div>
       </div>
     </section>
