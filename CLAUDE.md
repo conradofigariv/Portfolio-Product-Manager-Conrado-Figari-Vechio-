@@ -76,6 +76,8 @@ Frame math in `PhotoCropModal.tsx`:
 - Uses `setPointerCapture` for smooth drag across browser boundaries
 - Rendered via `createPortal(..., document.body)` to escape CSS `transform` containing-block traps
 
+Rotation (optional `storagePath`/`onRotated` props on `PhotoCropModal`, threaded through `PositionPicker`): `rotateImage()` in `image-upload.ts` fetches the current photo, redraws it onto a canvas rotated 90°/180°/270° (swapping width/height for 90°/270°), and re-encodes to WebP. The caller's `onRotated(newStoragePath, newPublicUrl)` uploads-and-persists the replacement (`savePortrait`/`saveChapterPhoto` for portrait/chapter — they already delete-old-then-insert-new; `replaceProjectPhoto` for gallery photos, which updates the row in place to preserve `sort_order`). The crop position resets to center since the old frame no longer matches the rotated dimensions.
+
 ## Important components
 
 | File | Role |
@@ -97,6 +99,7 @@ Frame math in `PhotoCropModal.tsx`:
 - `saveMediaPosition(storagePath, position)` — updates `portfolio_media.position`
 - `reorderProjectPhotos(projectId, storagePaths[])` — sets `sort_order` sequentially
 - `removeProjectPhoto(projectId, storagePath)` — needs raw storage path (not public URL)
+- `replaceProjectPhoto(projectId, oldStoragePath, newStoragePath, alt)` — points an existing gallery row at a new file in place (used by rotate), keeping `sort_order` and clearing `position`
 - `addProjectPhoto(projectId, storagePath, title)` — inserts new media row
 - `saveChapterPhoto(chapterId, storagePath, heading)` — upserts chapter photo
 - `savePortrait(storagePath, altText)` — upserts portrait

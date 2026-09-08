@@ -16,6 +16,7 @@ export default function PositionPicker({
   aspect,
   position,
   onChange,
+  onRotated,
   triggerClassName = 'text-xs font-medium text-dark-50',
 }: {
   storagePath: string
@@ -25,6 +26,13 @@ export default function PositionPicker({
   aspect: number
   position?: string
   onChange: (position: string) => void
+  // Re-encodes the photo rotated 90° and points the stored row at the
+  // result. Omit to hide the rotate control (e.g. for photos with no
+  // dedicated save action to call).
+  onRotated?: (
+    newStoragePath: string,
+    newPublicUrl: string
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
   triggerClassName?: string
 }) {
   const [open, setOpen] = useState(false)
@@ -54,6 +62,8 @@ export default function PositionPicker({
           onChange={onChange}
           onDone={done}
           saving={saving}
+          storagePath={storagePath}
+          onRotated={onRotated}
         />
       )}
     </>
