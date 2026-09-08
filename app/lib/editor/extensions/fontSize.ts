@@ -4,7 +4,12 @@
 // doesn't define an extension of its own, just the whitelist the toolbar
 // control and the server-side sanitizer (render-html.ts) both check
 // against, kept in one place so they can't drift apart.
-export const FONT_SIZES = [12, 14, 16, 20, 24, 32, 48] as const
+// Mirrors Tailwind's own default text-size scale (xs through 8xl) rather
+// than an arbitrary list — these fields sit inline among Tailwind-styled
+// headings (e.g. the hero name renders at 60px via text-6xl), so the
+// options line up with sizes already used on the page instead of topping
+// out below them.
+export const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96] as const
 export type FontSizeValue = (typeof FONT_SIZES)[number]
 
 const ALLOWED_CSS_VALUES = new Set<string>(FONT_SIZES.map((n) => `${n}px`))
