@@ -71,14 +71,14 @@ create policy "Users can delete blocks from their own portfolio"
   );
 
 -- Backfill: seed a block for every existing portfolio's current value of the
--- 16 scalar fields being migrated, in both languages. Wrapped as a single
+-- 15 scalar fields being migrated, in both languages. Wrapped as a single
 -- unformatted paragraph, since the old plain-text system never stored any
 -- formatting to carry over. Safe to re-run (on conflict do nothing).
 do $$
 declare
   field record;
   p record;
-  lang text;
+  v_lang text;
   v text;
   escaped text;
 begin
@@ -102,8 +102,8 @@ begin
     ) as f(section, block_key, path)
   loop
     for p in select id, content from public.portfolios loop
-      foreach lang in array array['en', 'es'] loop
-        v := p.content #>> (array[lang] || field.path);
+      foreach v_lang in array array['en', 'es'] loop
+        v := p.content #>> (array[v_lang] || field.path);
         continue when v is null or v = '';
 
         escaped := replace(replace(replace(replace(replace(
@@ -115,7 +115,7 @@ begin
           p.id,
           field.section,
           field.block_key,
-          lang,
+          v_lang,
           jsonb_build_object(
             'type', 'doc',
             'content', jsonb_build_array(
