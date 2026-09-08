@@ -41,7 +41,19 @@ Content paths are resolved by `app/lib/content-path.ts`.
 A `contentEditable` span. Empty fields must have `data-placeholder` and the CSS class `editable-field` so they get a visible placeholder (see `app/globals.css`). Without this, empty `contentEditable` collapses to zero height and becomes unclickable.
 
 ### EditBar (`app/components/EditBar.tsx`)
-Floating bottom bar. Shown only to the owner. Has: Preview link (`?preview=1`), Save button (calls `savePortfolio`). Registers a `beforeunload` guard when `dirty === true` to warn on navigation.
+Floating bottom bar. Shown only to the owner. Has: Preview link (`?preview=1`), Save button (calls `savePortfolio`). Registers a `beforeunload` guard when `dirty === true` to warn on navigation. Only reflects fields still on the plain draft/Save system below — a migrated rich text field autosaves on its own and never touches `dirty`.
+
+## Rich text fields (Tiptap) — migration in progress
+A field-by-field replacement of the plain-text system above with rich text (bold/italic/underline, more to follow), landing in `portfolio_blocks` instead of `portfolios.content`. **Only scalar, non-list fields are migrated so far** — a title, a tagline, a name. Fields that are list items an owner can add/remove (narrative lines, tags, metrics, project/chapter fields) are unaffected and still run entirely on the system above; migrating those needs a skeleton redesign (see the note in `supabase/migrations/0005_portfolio_blocks.sql`) that hasn't happened yet. `contact.email` was deliberately *not* migrated despite being scalar — `Contact.tsx` uses it to build a `mailto:` link and a visibility check, not just to display text, which doesn't fit a rich text field.
+
+- **Tiptap v3**, not v2 — v2's entire version range has an unpatched XSS/prototype-pollution disclosure (GHSA-cp6q-959q-f8rh) in `mergeAttributes()`; the fix only landed in 3.30.4+.
+- **`app/lib/editor/render-html.ts`** — turns a block's Tiptap JSON into HTML **without** Tiptap's own `generateHTML` (that needs a DOM/jsdom to run server-side, which this app doesn't otherwise depend on). Hand-rolled instead: `renderBlockHtml` walks the JSON directly and is whitelist-only by construction — it can only ever emit the tags in its `MARK_TAGS` map plus `<p>`, regardless of what the JSON claims, so there's no injection surface to sanitize against. `sanitizeDoc` strips a client-submitted doc to the same whitelist before it's ever stored (a server action can be called directly, bypassing the editor UI). `renderInlineHtml` renders without the outer `<p>` — used wherever a field is embedded inside a page element that already carries its own typography (a heading, an existing `<p>`), where a nested `<p>` would be invalid HTML.
+- **`app/lib/block-actions.ts`** — `upsertBlock(blockKey, lang, section, json, expectedUpdatedAt)`. Conflict check: if the stored row's `updated_at` has moved past `expectedUpdatedAt`, the write is refused and the caller's `latest` value comes back instead of silently overwriting it.
+- **`app/lib/editor/useBlockPersistence.ts`** — autosaves one Tiptap editor 800ms after the last keystroke, or immediately on blur/unmount so a quick navigation right after typing doesn't lose the debounce window.
+- **`app/components/editor/EditableText.tsx`** — the migrated counterpart to the plain one, addressed by the same dot-path `block_key` (e.g. `"hero.name"`) content-path.ts already resolves. Not editing → renders `renderInlineHtml` via `dangerouslySetInnerHTML`. Editing → dynamically imports `RichEditableField.tsx` (`next/dynamic`, `ssr: false`) — **this is the boundary that keeps Tiptap out of a public visitor's bundle entirely.**
+- **`app/components/editor/FloatingToolbar.tsx`** — `@floating-ui/react`, anchored to a *virtual* reference computed from `editor.view.coordsAtPos` (caret or selection bounding rect), not a real DOM node. Framer Motion `AnimatePresence`, spring on enter / 120ms ease-out on exit, opacity-only under `prefers-reduced-motion`.
+- Each editable field disables **Enter** (`editorProps.handleKeyDown`) — these are short, single-paragraph fields (a name, a title), not multi-paragraph documents, and the inline renderer above assumes exactly one paragraph.
+- Placeholder CSS: a Tiptap field is never truly `:empty` like the plain contentEditable span (it always contains a paragraph element), so it needs its own rule — `.ProseMirror p.is-editor-empty:first-child::before` in `globals.css`, alongside the existing `.editable-field:empty:before` rule the plain fields still use.
 
 ## Photo/media system
 
@@ -108,6 +120,7 @@ Rotation (optional `storagePath`/`onRotated` props on `PhotoCropModal`, threaded
 Key tables:
 - `portfolios` — one row per user. JSONB `content` column holds all text. `published boolean default true`.
 - `portfolio_media` — one row per uploaded image. Columns: `storage_path text`, `public_url text`, `alt text`, `position text`, `type text` (portrait/chapter/project-photo), `entity_id text`, `sort_order int`.
+- `portfolio_blocks` — one row per migrated rich text field per language. Columns: `portfolio_id uuid`, `section text`, `block_key text` (the same dot-path content-path.ts uses, e.g. `"hero.name"`), `lang text` (`en`/`es`), `content_json jsonb`, `content_html text`, `sort_order int`, `updated_at timestamptz`. Unique on `(portfolio_id, block_key, lang)`. Keyed by `portfolio_id` rather than `user_id`, matching `portfolio_media`'s pattern.
 
 Migrations are in `supabase/migrations/`. **The sandbox cannot reach Supabase** (network policy). All migrations must be run manually in the Supabase SQL Editor.
 

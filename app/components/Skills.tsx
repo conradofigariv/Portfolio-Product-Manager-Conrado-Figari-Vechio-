@@ -2,6 +2,7 @@
 
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
+import RichText from './editor/EditableText'
 import { AddButton, RemoveButton } from './EditControls'
 
 export default function Skills() {
@@ -12,10 +13,10 @@ export default function Skills() {
     <section id="skills" className="bg-dark-800/40 section-padding">
       <div className="container-main">
         <h2 className="heading-md mb-4">
-          <EditableText path="skills.title" placeholder="Section title" />
+          <RichText blockKey="skills.title" section="skills" placeholder="Section title" />
         </h2>
         <p className="text-dark-400 text-base md:text-lg mb-6 md:mb-8 max-w-2xl">
-          <EditableText path="skills.subtitle" placeholder="Subtitle" />
+          <RichText blockKey="skills.subtitle" section="skills" placeholder="Subtitle" />
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

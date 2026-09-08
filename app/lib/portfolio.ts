@@ -1,3 +1,4 @@
+import type { JSONContent } from '@tiptap/core'
 import { translations, Lang } from './translations'
 
 export type { Lang }
@@ -71,10 +72,18 @@ export type PortfolioMedia = {
   chapterPhotos: Record<string, MediaImage>
 }
 
+// A rich text field migrated to portfolio_blocks (Tiptap), replacing its
+// plain-string equivalent in PortfolioContent. Keyed by the same dot-path
+// block_key content-path.ts already resolves (e.g. "hero.name"), so a
+// migrated field's call site only swaps which component reads/writes it.
+export type PortfolioBlock = { json: JSONContent; html: string; updatedAt: string }
+export type PortfolioBlocks = Record<string, Partial<Record<Lang, PortfolioBlock>>>
+
 export type Portfolio = {
   username: string
   media: PortfolioMedia
   content: Record<Lang, PortfolioContent>
+  blocks: PortfolioBlocks
 }
 
 export const projectId = (index: number) => `project-${index}`
@@ -187,4 +196,5 @@ export const defaultPortfolio: Portfolio = {
     en: toContent(translations.en),
     es: toContent(translations.es),
   },
+  blocks: {},
 }

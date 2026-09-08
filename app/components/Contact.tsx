@@ -2,6 +2,7 @@
 
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
+import RichText from './editor/EditableText'
 import { AddButton, RemoveButton } from './EditControls'
 
 export default function Contact() {
@@ -18,10 +19,10 @@ export default function Contact() {
     <section id="contact" className="section-padding">
       <div className="container-main">
         <h2 className="heading-md mb-4">
-          <EditableText path="contact.title" placeholder="Title" />
+          <RichText blockKey="contact.title" section="contact" placeholder="Title" />
         </h2>
         <p className="text-dark-400 text-base md:text-lg mb-6 md:mb-8 max-w-2xl">
-          <EditableText path="contact.subtitle" placeholder="Subtitle" />
+          <RichText blockKey="contact.subtitle" section="contact" placeholder="Subtitle" />
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">

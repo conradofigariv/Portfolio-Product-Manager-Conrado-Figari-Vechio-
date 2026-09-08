@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
+import RichText from './editor/EditableText'
 import EditableProjectGallery from './EditableProjectGallery'
 import { AddButton, RemoveButton } from './EditControls'
 
@@ -120,10 +121,10 @@ export default function ProjectTimeline() {
       <div className="container-main">
         <div className="mb-6 md:mb-8">
           <h2 className="heading-md mb-4">
-            <EditableText path="projects.title" placeholder="Section title" />
+            <RichText blockKey="projects.title" section="projects" placeholder="Section title" />
           </h2>
           <p className="text-dark-400 text-lg max-w-2xl">
-            <EditableText path="projects.subtitle" placeholder="Subtitle" />
+            <RichText blockKey="projects.subtitle" section="projects" placeholder="Subtitle" />
           </p>
         </div>
 
@@ -345,10 +346,10 @@ export default function ProjectTimeline() {
         {/* Bottom CTA */}
         <div className="mt-32 text-center max-w-2xl mx-auto">
           <h3 className="text-2xl font-bold mb-4">
-            <EditableText path="projects.ctaTitle" placeholder="CTA title" />
+            <RichText blockKey="projects.ctaTitle" section="projects" placeholder="CTA title" />
           </h3>
           <p className="text-dark-400 mb-8">
-            <EditableText path="projects.ctaDescription" placeholder="CTA description" />
+            <RichText blockKey="projects.ctaDescription" section="projects" placeholder="CTA description" />
           </p>
         </div>
       </div>
