@@ -7,6 +7,7 @@ import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import EditableProjectGallery from './EditableProjectGallery'
+import ProjectNarrative from './ProjectNarrative'
 import { AddButton, RemoveButton } from './EditControls'
 
 // Alternating sides; index into this by position, not by project identity.
@@ -251,40 +252,7 @@ export default function ProjectTimeline() {
                     </div>
 
                     {/* Narrative */}
-                    <div className="space-y-2 md:space-y-3 mb-5 md:mb-7">
-                      {project.narrative.map((_, i) => (
-                        <p key={i} className="text-dark-300 text-sm md:text-base leading-relaxed flex items-start gap-2 md:gap-3">
-                          <span className="text-dark-500 font-light mt-0.5 text-xs md:text-sm select-none flex-shrink-0">
-                            {String(i + 1).padStart(2, '0')}
-                          </span>
-                          <span className="flex-1">
-                            <EditableText path={`projects.items.${idx}.narrative.${i}`} placeholder="Line" />
-                          </span>
-                          {editing && (
-                            <RemoveButton
-                              label="Remove line"
-                              onClick={() =>
-                                updateProjectAt(idx, (item) => ({
-                                  ...item,
-                                  narrative: item.narrative.filter((_, j) => j !== i),
-                                }))
-                              }
-                            />
-                          )}
-                        </p>
-                      ))}
-                      {editing && (
-                        <AddButton
-                          label="Add line"
-                          onClick={() =>
-                            updateProjectAt(idx, (item) => ({
-                              ...item,
-                              narrative: [...item.narrative, ''],
-                            }))
-                          }
-                        />
-                      )}
-                    </div>
+                    <ProjectNarrative projectId={project.id} />
 
                     {/* Metrics */}
                     <div className="grid grid-cols-3 gap-2 md:gap-4 mb-5 md:mb-7 py-4 md:py-5 border-y border-dark-700">
