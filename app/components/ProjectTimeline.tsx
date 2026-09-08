@@ -218,13 +218,24 @@ export default function ProjectTimeline() {
                       </div>
                     )}
 
-                    {/* Year + title overlay */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8">
+                    {/* Year + title overlay. Sits inside the whole card's own
+                        onClick (opens the photo manager while editing) —
+                        without stopping propagation here, clicking into
+                        the title to edit it immediately re-triggers that
+                        same click and the photo modal steals it back. Only
+                        while editing: a visitor's click here should still
+                        open the lightbox/gallery as before. */}
+                    <div
+                      className="absolute inset-0 flex flex-col justify-end p-4 md:p-8"
+                      onClick={(e) => {
+                        if (editing) e.stopPropagation()
+                      }}
+                    >
                       <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2">
                         <EditableText path={`projects.items.${idx}.year`} placeholder="Year" />
                       </span>
                       <h3 className="text-xl md:text-3xl font-bold text-dark-50 leading-tight">
-                        <EditableText path={`projects.items.${idx}.title`} placeholder="Title" />
+                        <RichText blockKey={`projects.items.${project.id}.title`} section="projects" placeholder="Title" />
                       </h3>
                     </div>
 

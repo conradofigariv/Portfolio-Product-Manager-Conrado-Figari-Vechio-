@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
-import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import EditableChapterPhoto from './EditableChapterPhoto'
 import { AddButton, RemoveButton } from './EditControls'
@@ -103,7 +102,7 @@ export default function Journey() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <span className="text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
-                            <EditableText path={`journey.chapters.${i}.tag`} placeholder="Tag" />
+                            <RichText blockKey={`journey.chapters.${chapter.id}.tag`} section="journey" placeholder="Tag" />
                           </span>
 
                           <h3
@@ -111,7 +110,11 @@ export default function Journey() {
                               isLast ? 'text-2xl text-dark-300 italic' : 'text-2xl md:text-3xl text-dark-50'
                             }`}
                           >
-                            <EditableText path={`journey.chapters.${i}.heading`} placeholder="Heading" />
+                            <RichText
+                              blockKey={`journey.chapters.${chapter.id}.heading`}
+                              section="journey"
+                              placeholder="Heading"
+                            />
                           </h3>
                         </div>
 
@@ -122,7 +125,7 @@ export default function Journey() {
 
                       {/* Body */}
                       <p className="text-dark-300 leading-relaxed text-base md:text-lg max-w-2xl">
-                        <EditableText path={`journey.chapters.${i}.body`} placeholder="Body" />
+                        <RichText blockKey={`journey.chapters.${chapter.id}.body`} section="journey" placeholder="Body" />
                       </p>
                     </div>
 
