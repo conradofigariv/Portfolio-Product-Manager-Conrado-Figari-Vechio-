@@ -71,6 +71,16 @@ export default function EditableChapterPhoto({
     }
   }
 
+  async function onRotated(newStoragePath: string, newPublicUrl: string) {
+    const saved = await saveChapterPhoto(chapterId, newStoragePath, alt)
+    if (!saved.ok) return saved
+    setPreview(newPublicUrl)
+    setUploadedPath(newStoragePath)
+    setPosition(undefined)
+    router.refresh()
+    return { ok: true as const }
+  }
+
   async function onRemove() {
     setBusy(true)
     setError(null)
@@ -160,6 +170,7 @@ export default function EditableChapterPhoto({
             aspect={0.78}
             position={resolvedPosition}
             onChange={setPosition}
+            onRotated={onRotated}
             triggerClassName="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-dark-900/70 text-dark-50 text-xs font-medium opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
           />
         )}

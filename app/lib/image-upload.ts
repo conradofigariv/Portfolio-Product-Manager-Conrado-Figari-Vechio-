@@ -12,19 +12,9 @@ const TARGET_BYTES = 1.5 * 1024 * 1024
  * more than a photo does at the same setting. Missing the byte target by
  * keeping quality high is the better trade for this kind of image.
  */
-export async function compressImage(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height))
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.round(bitmap.width * scale)
-  canvas.height = Math.round(bitmap.height * scale)
-
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('This browser cannot process images. Try another one.')
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-
-  // Step the quality down rather than ever falling back to the original file,
-  // so a stored photo has a predictable ceiling.
+// Step the quality down rather than ever falling back to the original file,
+// so a stored photo has a predictable ceiling.
+async function canvasToWebp(canvas: HTMLCanvasElement): Promise<Blob> {
   let best: Blob | null = null
   for (const quality of [0.92, 0.85, 0.78]) {
     const blob = await new Promise<Blob | null>((resolve) =>
@@ -37,6 +27,45 @@ export async function compressImage(file: File): Promise<Blob> {
 
   if (!best) throw new Error('Could not process that image. Try a different one.')
   return best
+}
+
+export async function compressImage(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file)
+  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bitmap.width * scale)
+  canvas.height = Math.round(bitmap.height * scale)
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('This browser cannot process images. Try another one.')
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+
+  return canvasToWebp(canvas)
+}
+
+/**
+ * Re-encodes a stored photo rotated by a multiple of 90°, for photos that
+ * came out sideways (a vertical shot cropped into a wide frame, or the
+ * reverse). Fetches the current image fresh rather than taking a src prop
+ * blindly, so repeated rotations always start from the latest bytes.
+ */
+export async function rotateImage(src: string, degrees: 90 | 180 | 270): Promise<Blob> {
+  const res = await fetch(src)
+  const blob = await res.blob()
+  const bitmap = await createImageBitmap(blob)
+
+  const swapped = degrees === 90 || degrees === 270
+  const canvas = document.createElement('canvas')
+  canvas.width = swapped ? bitmap.height : bitmap.width
+  canvas.height = swapped ? bitmap.width : bitmap.height
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('This browser cannot process images. Try another one.')
+  ctx.translate(canvas.width / 2, canvas.height / 2)
+  ctx.rotate((degrees * Math.PI) / 180)
+  ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2)
+
+  return canvasToWebp(canvas)
 }
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024

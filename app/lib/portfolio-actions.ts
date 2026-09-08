@@ -489,6 +489,52 @@ export async function removeProjectPhoto(
 }
 
 /**
+ * Points an existing gallery row at a freshly rotated re-encode of the same
+ * photo, in place — unlike addProjectPhoto/removeProjectPhoto, this keeps
+ * sort_order untouched instead of shuffling the row to the end. The crop
+ * position is cleared since it described a frame that no longer matches the
+ * rotated dimensions.
+ */
+export async function replaceProjectPhoto(
+  projectId: string,
+  oldStoragePath: string,
+  newStoragePath: string,
+  alt: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  if (!newStoragePath.startsWith(`${user.id}/`)) {
+    return { ok: false, error: 'That file does not belong to your account.' }
+  }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const { error } = await supabase
+    .from('portfolio_media')
+    .update({ storage_path: newStoragePath, alt: alt.slice(0, 200), position: null })
+    .eq('portfolio_id', portfolio.id)
+    .eq('kind', 'project')
+    .eq('target_id', projectId)
+    .eq('storage_path', oldStoragePath)
+  if (error) return { ok: false, error: error.message }
+
+  if (!oldStoragePath.startsWith('/')) await supabase.storage.from(BUCKET).remove([oldStoragePath])
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+/**
  * Rewrites the gallery order for one project. The paths arrive in the order
  * the owner dragged them into; sort_order is what the public carousel and the
  * card's cover photo (the first one) read back.

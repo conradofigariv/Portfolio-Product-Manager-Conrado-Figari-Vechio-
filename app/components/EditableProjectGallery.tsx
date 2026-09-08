@@ -5,7 +5,12 @@ import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../lib/supabase/client'
-import { addProjectPhoto, removeProjectPhoto, reorderProjectPhotos } from '../lib/portfolio-actions'
+import {
+  addProjectPhoto,
+  removeProjectPhoto,
+  reorderProjectPhotos,
+  replaceProjectPhoto,
+} from '../lib/portfolio-actions'
 import { compressImage, uniqueUploadName, validateImageFile } from '../lib/image-upload'
 import { storagePathFromPublicUrl } from '../lib/media-path'
 import PositionPicker from './PositionPicker'
@@ -35,6 +40,13 @@ export default function EditableProjectGallery({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [positions, setPositions] = useState<Record<string, string>>({})
+  // Keyed by the photo's original src (a stable identity the same as
+  // `positions` and `localOrder` use). A rotation re-encodes the file under a
+  // new storage path, so this tracks where each tile's *current* bytes
+  // actually live until the next router.refresh() catches up.
+  const [rotatedPhotos, setRotatedPhotos] = useState<Record<string, { src: string; storagePath: string }>>(
+    {}
+  )
   const [localOrder, setLocalOrder] = useState<string[] | null>(null)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
@@ -104,7 +116,9 @@ export default function EditableProjectGallery({
   }
 
   async function persistOrder(next: MediaImage[]) {
-    const paths = next.map((p) => storagePathFromPublicUrl(p.src) ?? p.src)
+    const paths = next.map(
+      (p) => rotatedPhotos[p.src]?.storagePath ?? storagePathFromPublicUrl(p.src) ?? p.src
+    )
     setError(null)
     const result = await reorderProjectPhotos(projectId, paths)
     if (result.ok) router.refresh()
@@ -173,8 +187,28 @@ export default function EditableProjectGallery({
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {ordered.map((photo, i) => {
-            const storagePath = storagePathFromPublicUrl(photo.src)
+            const override = rotatedPhotos[photo.src]
+            const displaySrc = override?.src ?? photo.src
+            const storagePath = override?.storagePath ?? storagePathFromPublicUrl(photo.src)
             const position = positions[photo.src] ?? photo.position
+
+            const onRotated = async (newStoragePath: string, newPublicUrl: string) => {
+              if (!storagePath) return { ok: false as const, error: 'Missing storage path.' }
+              const result = await replaceProjectPhoto(
+                projectId,
+                storagePath,
+                newStoragePath,
+                photo.alt || title
+              )
+              if (!result.ok) return result
+              setRotatedPhotos((r) => ({
+                ...r,
+                [photo.src]: { src: newPublicUrl, storagePath: newStoragePath },
+              }))
+              router.refresh()
+              return { ok: true as const }
+            }
+
             return (
               <div
                 key={photo.src}
@@ -200,7 +234,7 @@ export default function EditableProjectGallery({
                 } ${dragIndex === i ? 'opacity-40' : ''}`}
               >
                 <Image
-                  src={photo.src}
+                  src={displaySrc}
                   alt={photo.alt}
                   fill
                   quality={90}
@@ -219,11 +253,12 @@ export default function EditableProjectGallery({
                   {storagePath && (
                     <PositionPicker
                       storagePath={storagePath}
-                      src={photo.src}
+                      src={displaySrc}
                       alt={photo.alt}
                       aspect={CARD_ASPECT}
                       position={position}
                       onChange={(next) => setPositions((p) => ({ ...p, [photo.src]: next }))}
+                      onRotated={onRotated}
                       triggerClassName="text-xs font-medium text-dark-50"
                     />
                   )}

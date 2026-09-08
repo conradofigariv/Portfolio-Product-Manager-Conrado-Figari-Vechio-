@@ -2,6 +2,8 @@
 
 import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { createClient } from '../lib/supabase/client'
+import { rotateImage, uniqueUploadName } from '../lib/image-upload'
 
 function clamp(n: number) {
   return Math.max(0, Math.min(100, n))
@@ -33,6 +35,8 @@ export default function PhotoCropModal({
   onChange,
   onDone,
   saving = false,
+  storagePath,
+  onRotated,
 }: {
   src: string
   alt: string
@@ -42,11 +46,57 @@ export default function PhotoCropModal({
   onChange: (position: string) => void
   onDone: () => void
   saving?: boolean
+  // Needed to re-encode a rotated copy under the same account folder and
+  // point the stored row at it. Rotation is optional — omit both to hide it.
+  storagePath?: string
+  onRotated?: (
+    newStoragePath: string,
+    newPublicUrl: string
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
 }) {
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const drag = useRef<{ x: number; y: number; startX: number; startY: number } | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [rotating, setRotating] = useState(false)
+  const [rotateError, setRotateError] = useState<string | null>(null)
+
+  // The rotated re-encode is a different file at a different natural size —
+  // wait for the new one to load rather than keep showing the old frame math.
+  const [knownSrc, setKnownSrc] = useState(src)
+  if (src !== knownSrc) {
+    setKnownSrc(src)
+    setNatural(null)
+  }
+
+  async function handleRotate() {
+    if (rotating || saving || !storagePath || !onRotated) return
+    setRotateError(null)
+    setRotating(true)
+    try {
+      const blob = await rotateImage(src, 90)
+      const supabase = createClient()
+      const folder = storagePath.split('/')[0]
+      const newPath = `${folder}/${uniqueUploadName()}.webp`
+
+      const upload = await supabase.storage
+        .from('portfolio-media')
+        .upload(newPath, blob, { contentType: 'image/webp', upsert: false })
+      if (upload.error) throw upload.error
+
+      const { data } = supabase.storage.from('portfolio-media').getPublicUrl(newPath)
+      const result = await onRotated(newPath, data.publicUrl)
+      if (!result.ok) throw new Error(result.error)
+
+      // The old frame position described a photo shape that no longer
+      // applies once width/height swap.
+      onChange('50% 50%')
+    } catch (err) {
+      setRotateError(err instanceof Error ? err.message : 'Could not rotate that photo.')
+    } finally {
+      setRotating(false)
+    }
+  }
 
   const [x, y] = parsePosition(position)
 
@@ -64,6 +114,7 @@ export default function PhotoCropModal({
   const top = ((100 - frameH) * y) / 100
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (rotating) return
     e.currentTarget.setPointerCapture(e.pointerId)
     drag.current = { x: e.clientX, y: e.clientY, startX: x, startY: y }
     setDragging(true)
@@ -98,13 +149,38 @@ export default function PhotoCropModal({
         className="flex flex-col items-center gap-3 max-w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-xs text-dark-300 text-center">
-          {natural ? 'Drag the frame to choose what stays visible' : 'Opening editor…'}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-dark-300 text-center">
+            {rotating
+              ? 'Rotating…'
+              : natural
+              ? 'Drag the frame to choose what stays visible'
+              : 'Opening editor…'}
+          </p>
+          {storagePath && onRotated && (
+            <button
+              type="button"
+              onClick={handleRotate}
+              disabled={!natural || rotating || saving}
+              title="Rotate 90°"
+              className="text-dark-300 hover:text-dark-50 disabled:opacity-40 disabled:hover:text-dark-300 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h5M20 20v-5h-5M4.5 9a8 8 0 0113.9-3.4L20 9M19.5 15a8 8 0 01-13.9 3.4L4 15"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+        {rotateError && <p className="text-xs text-red-400 text-center max-w-72">{rotateError}</p>}
 
         <div className="relative inline-block leading-none select-none min-h-[40vh] min-w-[40vw]">
-          {!natural && (
-            <div className="absolute inset-0 flex items-center justify-center">
+          {(!natural || rotating) && (
+            <div className="absolute inset-0 flex items-center justify-center z-10">
               <div className="w-8 h-8 rounded-full border-2 border-dark-500 border-t-dark-50 animate-spin" />
             </div>
           )}
@@ -155,7 +231,7 @@ export default function PhotoCropModal({
           type="button"
           onClick={onDone}
           className="button-primary text-sm py-1.5 px-5 disabled:opacity-60"
-          disabled={saving}
+          disabled={saving || rotating}
         >
           {saving ? 'Saving…' : 'Done'}
         </button>
