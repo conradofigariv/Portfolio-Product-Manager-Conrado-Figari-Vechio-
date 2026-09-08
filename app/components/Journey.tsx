@@ -52,7 +52,11 @@ export default function Journey() {
   }
 
   return (
-    <section id="about" className="section-padding">
+    // Overrides section-padding's bottom side only (utilities layer beats
+    // components layer regardless of class order): Projects right below it
+    // already has its own full top padding, so both together were doubling
+    // up into a much bigger gap than either section alone intended.
+    <section id="about" className="section-padding pb-4 md:pb-6 lg:pb-8">
       <div className="container-main">
         <h2 className="heading-md mb-6 md:mb-8">
           <RichText blockKey="journey.title" section="journey" placeholder="Section title" />
