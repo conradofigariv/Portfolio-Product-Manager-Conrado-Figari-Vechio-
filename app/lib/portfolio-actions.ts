@@ -489,9 +489,48 @@ export async function removeProjectPhoto(
 }
 
 /**
+ * Rewrites the gallery order for one project. The paths arrive in the order
+ * the owner dragged them into; sort_order is what the public carousel and the
+ * card's cover photo (the first one) read back.
+ */
+export async function reorderProjectPhotos(
+  projectId: string,
+  storagePaths: string[]
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  for (const [index, storagePath] of storagePaths.entries()) {
+    const { error } = await supabase
+      .from('portfolio_media')
+      .update({ sort_order: index })
+      .eq('portfolio_id', portfolio.id)
+      .eq('kind', 'project')
+      .eq('target_id', projectId)
+      .eq('storage_path', storagePath)
+    if (error) return { ok: false, error: error.message }
+  }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+/**
  * Sets the CSS object-position (e.g. "62% 35%") an image crops around,
- * chosen by clicking a spot on the photo. Works for any media row — portrait,
- * chapter, or project photo — since storage_path is unique per portfolio.
+ * chosen by dragging the crop frame over the photo. Works for any media row —
+ * portrait, chapter, or project photo — since storage_path is unique per
+ * portfolio.
  */
 export async function saveMediaPosition(
   storagePath: string,
