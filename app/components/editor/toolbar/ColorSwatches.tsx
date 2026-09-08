@@ -58,7 +58,7 @@ export default function ColorSwatches({ editor }: { editor: Editor }) {
             }}
             exit={{ opacity: 0, scale: 0.96, y: 4, transition: { duration: 0.12, ease: 'easeOut' } }}
             style={{ transformOrigin: 'top left' }}
-            className="absolute top-full left-0 flex flex-col gap-2 rounded-lg border border-dark-600 bg-dark-800/95 backdrop-blur p-2.5 shadow-xl z-10"
+            className="absolute top-full left-0 flex w-36 flex-col gap-2 rounded-lg border border-dark-600 bg-dark-800/95 backdrop-blur p-2.5 shadow-xl z-10"
           >
             <div className="grid grid-cols-4 gap-1.5">
               {TEXT_COLORS.map((c) => (
