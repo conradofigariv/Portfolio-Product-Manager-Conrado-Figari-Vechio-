@@ -76,7 +76,12 @@ export type PortfolioMedia = {
 // plain-string equivalent in PortfolioContent. Keyed by the same dot-path
 // block_key content-path.ts already resolves (e.g. "hero.name"), so a
 // migrated field's call site only swaps which component reads/writes it.
-export type PortfolioBlock = { json: JSONContent; html: string; updatedAt: string }
+//
+// sortOrder only matters for a block that's one item in an owner-editable
+// list (e.g. "projects.items.<id>.narrative.<lineId>") — every sibling
+// sharing that list's key prefix sorts by it. A scalar field like
+// "hero.name" has no siblings, so its sortOrder is meaningless and ignored.
+export type PortfolioBlock = { json: JSONContent; html: string; updatedAt: string; sortOrder: number }
 export type PortfolioBlocks = Record<string, Partial<Record<Lang, PortfolioBlock>>>
 
 export type Portfolio = {

@@ -25,6 +25,7 @@ type BlockRow = {
   lang: string
   content_json: JSONContent
   content_html: string
+  sort_order: number
   updated_at: string
 }
 
@@ -37,6 +38,7 @@ function buildBlocks(rows: BlockRow[]): PortfolioBlocks {
       json: row.content_json,
       html: row.content_html,
       updatedAt: row.updated_at,
+      sortOrder: row.sort_order,
     }
   }
   return blocks
@@ -142,7 +144,7 @@ export async function loadPortfolio(
 
   const { data: blockRows } = await supabase
     .from('portfolio_blocks')
-    .select('block_key, lang, content_json, content_html, updated_at')
+    .select('block_key, lang, content_json, content_html, sort_order, updated_at')
     .eq('portfolio_id', portfolio.id)
 
   const publicUrl = (path: string) => supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
