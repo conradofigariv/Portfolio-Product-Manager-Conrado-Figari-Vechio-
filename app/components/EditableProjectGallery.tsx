@@ -283,9 +283,12 @@ export default function EditableProjectGallery({
           accept="image/*"
           hidden
           onChange={(e) => {
-            const files = e.target.files
+            // input.files is live: resetting e.target.value clears it in
+            // place, so it must be copied into a plain array *before* the
+            // reset or the upload below always sees zero files.
+            const files = e.target.files ? Array.from(e.target.files) : []
             e.target.value = ''
-            if (files?.length) onFiles(files)
+            if (files.length) onFiles(files)
           }}
         />
       </div>
