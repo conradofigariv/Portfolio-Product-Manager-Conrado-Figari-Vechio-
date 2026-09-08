@@ -154,6 +154,10 @@ export default function EditableChapterPhoto({
         {editing && src && storagePath && (
           <PositionPicker
             storagePath={storagePath}
+            src={src}
+            alt={alt}
+            // 12rem wide, stretching to the chapter's text height.
+            aspect={0.78}
             position={resolvedPosition}
             onChange={setPosition}
             triggerClassName="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-dark-900/70 text-dark-50 text-xs font-medium opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"

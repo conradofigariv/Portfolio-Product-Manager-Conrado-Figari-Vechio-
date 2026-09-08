@@ -107,6 +107,11 @@ export default function EditablePortrait() {
         {editing && portrait && storagePath && (
           <PositionPicker
             storagePath={storagePath}
+            src={portrait}
+            alt={media.portrait?.alt ?? content.hero.name}
+            // The portrait box is a fixed 18rem wide and stretches to the text
+            // column's height — roughly this, whatever the copy length.
+            aspect={0.62}
             position={position ?? media.portrait?.position}
             onChange={setPosition}
             triggerClassName="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-dark-900/70 text-dark-50 text-xs font-medium opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
