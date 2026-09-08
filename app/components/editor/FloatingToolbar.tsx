@@ -45,6 +45,12 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
     placement: 'top',
     middleware: [offset(8), flip(), shift({ padding: 8 })],
     whileElementsMounted: autoUpdate,
+    // floating-ui positions via `transform: translate(...)` by default —
+    // Framer Motion also owns `transform` (for the enter/exit scale/y
+    // animation) and overwrites it, which left the toolbar pinned at its
+    // unpositioned top-left corner. `top`/`left` instead keeps the two out
+    // of each other's way.
+    transform: false,
   })
 
   useEffect(() => {
