@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
+import RichText from './editor/EditableText'
 import EditableChapterPhoto from './EditableChapterPhoto'
 import { AddButton, RemoveButton } from './EditControls'
 
@@ -54,7 +55,7 @@ export default function Journey() {
     <section id="about" className="section-padding">
       <div className="container-main">
         <h2 className="heading-md mb-6 md:mb-8">
-          <EditableText path="journey.title" placeholder="Section title" />
+          <RichText blockKey="journey.title" section="journey" placeholder="Section title" />
         </h2>
 
         <div className="relative">

@@ -49,4 +49,16 @@
     color: theme('colors.dark.500');
     pointer-events: none;
   }
+
+  /* Same placeholder affordance, for a rich text field (Tiptap): it never
+     goes truly :empty like a plain contentEditable span (it always contains
+     a paragraph element, even with no text in it), so this targets the
+     empty-paragraph decoration Tiptap's own Placeholder extension applies. */
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: theme('colors.dark.500');
+    pointer-events: none;
+    float: left;
+    height: 0;
+  }
 }

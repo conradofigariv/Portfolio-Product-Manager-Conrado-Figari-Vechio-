@@ -1,7 +1,7 @@
 'use client'
 
 import { useLang } from '../context/LanguageContext'
-import EditableText from './EditableText'
+import RichText from './editor/EditableText'
 
 export default function Footer() {
   const { t, content, editing } = useLang()
@@ -20,7 +20,7 @@ export default function Footer() {
           <div>
             <h3 className="text-dark-50 font-bold mb-3">{content.hero.name}</h3>
             <p className="text-dark-400 text-sm leading-relaxed">
-              <EditableText path="footer.tagline" placeholder="Closing line" />
+              <RichText blockKey="footer.tagline" section="footer" placeholder="Closing line" />
             </p>
           </div>
           <div>
@@ -60,7 +60,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-dark-700 pt-8 flex flex-col md:flex-row justify-between items-center text-dark-400 text-xs gap-4">
           <p>
-            <EditableText path="footer.rights" placeholder="© Your name" />
+            <RichText blockKey="footer.rights" section="footer" placeholder="© Your name" />
           </p>
         </div>
       </div>

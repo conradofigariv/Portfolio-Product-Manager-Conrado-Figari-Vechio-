@@ -1,5 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Lang, MediaImage, Portfolio, PortfolioContent, PortfolioMedia } from './portfolio'
+import type { JSONContent } from '@tiptap/core'
+import type {
+  Lang,
+  MediaImage,
+  Portfolio,
+  PortfolioBlocks,
+  PortfolioContent,
+  PortfolioMedia,
+} from './portfolio'
 
 const BUCKET = 'portfolio-media'
 
@@ -10,6 +18,28 @@ type MediaRow = {
   alt: string
   sort_order: number
   position: string | null
+}
+
+type BlockRow = {
+  block_key: string
+  lang: string
+  content_json: JSONContent
+  content_html: string
+  updated_at: string
+}
+
+function buildBlocks(rows: BlockRow[]): PortfolioBlocks {
+  const blocks: PortfolioBlocks = {}
+  for (const row of rows) {
+    if (row.lang !== 'en' && row.lang !== 'es') continue
+    blocks[row.block_key] ??= {}
+    blocks[row.block_key][row.lang] = {
+      json: row.content_json,
+      html: row.content_html,
+      updatedAt: row.updated_at,
+    }
+  }
+  return blocks
 }
 
 // Content is stored as one JSONB document per portfolio, so a page render is a
@@ -110,12 +140,18 @@ export async function loadPortfolio(
     .select('kind, target_id, storage_path, alt, sort_order, position')
     .eq('portfolio_id', portfolio.id)
 
+  const { data: blockRows } = await supabase
+    .from('portfolio_blocks')
+    .select('block_key, lang, content_json, content_html, updated_at')
+    .eq('portfolio_id', portfolio.id)
+
   const publicUrl = (path: string) => supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 
   return {
     username: profile.username,
     media: buildMedia((mediaRows ?? []) as MediaRow[], publicUrl),
     content: { en: normalizeContent(content.en), es: normalizeContent(content.es) },
+    blocks: buildBlocks((blockRows ?? []) as BlockRow[]),
     published: !!portfolio.published,
     ownerId: profile.id,
     portfolioId: portfolio.id,

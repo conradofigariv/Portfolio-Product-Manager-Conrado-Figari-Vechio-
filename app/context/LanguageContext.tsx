@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
-import { Portfolio, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
+import { Portfolio, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
 import { setAtPath } from '../lib/content-path'
 
 interface LanguageContextType {
@@ -12,6 +12,10 @@ interface LanguageContextType {
   // The content of the portfolio being displayed, in the active language.
   content: PortfolioContent
   media: PortfolioMedia
+  // Rich text fields migrated to portfolio_blocks. Unlike content, these are
+  // not part of the draft — each field autosaves itself independently (see
+  // useBlockPersistence), so this is always the committed server value.
+  blocks: PortfolioBlocks
   toggleLang: () => void
   // Editing, only ever true for the portfolio's owner.
   editing: boolean
@@ -68,6 +72,7 @@ export function LanguageProvider({
         t: translations[lang],
         content: draft[lang],
         media: portfolio.media,
+        blocks: portfolio.blocks,
         toggleLang,
         editing,
         dirty,

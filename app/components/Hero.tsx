@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
 import EditableText from './EditableText'
+import RichText from './editor/EditableText'
 import EditablePortrait from './EditablePortrait'
 
 export default function Hero() {
@@ -61,16 +62,16 @@ export default function Hero() {
             }`}
           >
             <p className="text-dark-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-2 md:mb-3">
-              <EditableText path="hero.greeting" placeholder="Greeting" />
+              <RichText blockKey="hero.greeting" section="hero" placeholder="Greeting" />
             </p>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight text-dark-50">
-              <EditableText path="hero.name" placeholder="Your name" />
+              <RichText blockKey="hero.name" section="hero" placeholder="Your name" />
             </h1>
             <p className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
-              <EditableText path="hero.tagline" placeholder="Headline" />
+              <RichText blockKey="hero.tagline" section="hero" placeholder="Headline" />
             </p>
             <p className="text-sm md:text-base text-dark-400 max-w-xl mb-3 md:mb-4 leading-relaxed">
-              <EditableText path="hero.description" placeholder="Description" />
+              <RichText blockKey="hero.description" section="hero" placeholder="Description" />
             </p>
 
             {/* Stats */}
