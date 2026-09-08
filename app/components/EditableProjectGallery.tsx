@@ -240,7 +240,7 @@ export default function EditableProjectGallery({
             )
           })}
 
-          {ordered.length < MAX_PHOTOS && (
+          {ordered.length < MAX_PHOTOS ? (
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
@@ -258,12 +258,16 @@ export default function EditableProjectGallery({
             >
               {busy ? 'Uploading…' : '+ Add photo'}
             </button>
+          ) : (
+            <div className="aspect-square rounded-lg border border-dashed border-dark-700 flex items-center justify-center text-center px-2">
+              <span className="text-xs text-dark-500">Limit reached — remove one to add another</span>
+            </div>
           )}
         </div>
 
         <p className="text-xs text-dark-500 mt-3">
-          Up to {MAX_PHOTOS} photos. Drop files here to upload, drag a photo to reorder — the first
-          one is the cover.
+          {ordered.length} / {MAX_PHOTOS} photos. Drop files here to upload, drag a photo to reorder
+          — the first one is the cover.
         </p>
         {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
 
