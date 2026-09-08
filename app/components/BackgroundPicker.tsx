@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '../context/LanguageContext'
 import { setBackgroundVideos } from '../lib/portfolio-actions'
@@ -19,6 +19,23 @@ export default function BackgroundPicker() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function onPointerDown(e: PointerEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
 
   if (!editing) return null
 
@@ -34,7 +51,12 @@ export default function BackgroundPicker() {
   }
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    // relative: the panel below is positioned absolute against this, not
+    // left in normal flow — it used to be a plain flex-col sibling of the
+    // trigger, so opening it (taller than the navbar row) got vertically
+    // centered by the row's own items-center and ended up half-hidden
+    // behind the navbar instead of dropping down below it.
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -44,7 +66,7 @@ export default function BackgroundPicker() {
       </button>
 
       {open && (
-        <div className="w-64 rounded-xl border border-dark-600 bg-dark-900/95 backdrop-blur p-3 space-y-2 shadow-xl">
+        <div className="absolute right-0 top-full mt-2 z-10 w-64 rounded-xl border border-dark-600 bg-dark-900/95 backdrop-blur p-3 space-y-2 shadow-xl">
           <p className="text-xs text-dark-400">Pick one.</p>
 
           <button
