@@ -1,28 +1,28 @@
 import type { JSONContent } from '@tiptap/core'
 import { isFontSizeCss } from './extensions/fontSize'
+import { isAllowedColor, HIGHLIGHT_STYLE } from './extensions/colors'
 
 /**
  * Turns a Tiptap document into HTML without touching Tiptap's own
  * generateHTML — that needs a DOM (jsdom) to run server-side, which this app
  * doesn't otherwise depend on. This walks the JSON directly instead.
  *
- * Deliberately whitelist-only: it can only ever emit the tags listed in
- * MARK_TAGS, the fontSize `<span style="...">` below, plus <p> — regardless
- * of what a node/mark type in the JSON says. An unrecognized node just
- * renders its children with no wrapping tag, and an unrecognized mark (or a
- * textStyle mark with no valid fontSize) is skipped. A block's content_json
- * reaches here from a server action that already accepted it from the
- * client, so this is the layer that actually decides what can end up in
- * HTML served to visitors.
- *
- * Extend MARK_TAGS/NODE_RENDERERS here as more marks/nodes are supported —
- * currently what Step 2 (bold/italic/underline) and fontSize need.
+ * Deliberately whitelist-only: it can only ever emit the tags/attributes
+ * handled explicitly below, regardless of what a node/mark type in the JSON
+ * says. An unrecognized node just renders its children with no wrapping tag,
+ * an unrecognized mark is skipped, and an unsafe link href is dropped
+ * (rendered as plain text). A block's content_json reaches here from a
+ * server action that already accepted it from the client, so this is the
+ * layer that actually decides what can end up in HTML served to visitors.
  */
 const MARK_TAGS: Record<string, string> = {
   bold: 'strong',
   italic: 'em',
   underline: 'u',
+  strike: 's',
 }
+
+const TEXT_ALIGNMENTS = new Set(['left', 'center', 'right', 'justify'])
 
 function escapeHtml(text: string): string {
   return text
@@ -33,12 +33,36 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;')
 }
 
+/**
+ * Whitelist, not a blocklist: only http(s) and a well-formed mailto: pass.
+ * Rejects javascript:, data:, protocol-relative //, and anything else that
+ * doesn't match — a link mark with no safe href renders as plain text
+ * rather than an <a> with a dropped/empty href.
+ */
+function isSafeHref(href: unknown): href is string {
+  if (typeof href !== 'string') return false
+  const trimmed = href.trim()
+  return /^https?:\/\/\S+$/i.test(trimmed) || /^mailto:[^\s@]+@[^\s@]+\.\S+$/i.test(trimmed)
+}
+
 function renderMarks(text: string, marks: JSONContent['marks']): string {
   let html = escapeHtml(text)
   for (const mark of marks ?? []) {
     if (mark.type === 'textStyle') {
-      const size = mark.attrs?.fontSize
-      if (isFontSizeCss(size)) html = `<span style="font-size: ${size}">${html}</span>`
+      const styles: string[] = []
+      if (isFontSizeCss(mark.attrs?.fontSize)) styles.push(`font-size: ${mark.attrs?.fontSize}`)
+      if (isAllowedColor(mark.attrs?.color)) styles.push(`color: ${mark.attrs?.color}`)
+      if (styles.length) html = `<span style="${styles.join('; ')}">${html}</span>`
+      continue
+    }
+    if (mark.type === 'highlight') {
+      html = `<mark style="${HIGHLIGHT_STYLE}">${html}</mark>`
+      continue
+    }
+    if (mark.type === 'link') {
+      if (isSafeHref(mark.attrs?.href)) {
+        html = `<a href="${escapeHtml(mark.attrs.href)}" target="_blank" rel="noopener noreferrer nofollow">${html}</a>`
+      }
       continue
     }
     const tag = MARK_TAGS[mark.type]
@@ -48,6 +72,11 @@ function renderMarks(text: string, marks: JSONContent['marks']): string {
   return html
 }
 
+function paragraphAlignStyle(node: JSONContent): string {
+  const align = node.attrs?.textAlign
+  return typeof align === 'string' && TEXT_ALIGNMENTS.has(align) ? ` style="text-align: ${align}"` : ''
+}
+
 function renderNode(node: JSONContent): string {
   if (node.type === 'text') return renderMarks(node.text ?? '', node.marks)
 
@@ -55,7 +84,7 @@ function renderNode(node: JSONContent): string {
 
   switch (node.type) {
     case 'paragraph':
-      return `<p>${inner}</p>`
+      return `<p${paragraphAlignStyle(node)}>${inner}</p>`
     case 'doc':
     default:
       return inner
@@ -74,17 +103,27 @@ export function renderBlockHtml(doc: JSONContent): string {
  * could shift layout. Editable fields disable Enter, so in practice this is
  * always exactly one paragraph; multiple ever getting through (e.g. pasted
  * content) just lose the paragraph break rather than nesting invalidly.
+ *
+ * A paragraph's alignment still needs *some* block box to apply to, so
+ * unlike renderBlockHtml's real <p>, this wraps in a <span
+ * style="display:block">: a span carries no nesting restriction the way <p>
+ * does (it's valid inside another <p> or a heading), while display:block
+ * still gives text-align something to act on.
  */
 export function renderInlineHtml(doc: JSONContent): string {
   if (!doc?.content?.length) return ''
   return doc.content
     .filter((node) => node.type === 'paragraph')
-    .map((paragraph) =>
-      (paragraph.content ?? [])
+    .map((paragraph) => {
+      const inner = (paragraph.content ?? [])
         .filter((node) => node.type === 'text')
         .map((node) => renderMarks(node.text ?? '', node.marks))
         .join('')
-    )
+      const align = paragraph.attrs?.textAlign
+      return typeof align === 'string' && TEXT_ALIGNMENTS.has(align)
+        ? `<span style="display: block; text-align: ${align}">${inner}</span>`
+        : inner
+    })
     .join(' ')
 }
 
@@ -92,19 +131,26 @@ const ALLOWED_NODES = new Set(['doc', 'paragraph', 'text'])
 const ALLOWED_MARKS = new Set(Object.keys(MARK_TAGS))
 
 /**
- * textStyle carries a fontSize attribute rather than being a fixed tag like
- * the marks in MARK_TAGS, so it needs its own check: keep the mark only if
- * fontSize survives isFontSizeCss's whitelist, drop it (attrs and all)
- * otherwise — a textStyle mark with no valid attributes renders nothing, so
- * there's no reason to keep it around.
+ * textStyle/highlight/link carry attributes rather than being a fixed tag
+ * like the marks in MARK_TAGS, so each needs its own check. A mark that
+ * ends up with nothing valid to render (an all-invalid textStyle, an unsafe
+ * link href) is dropped entirely rather than kept with empty/unsafe attrs.
  */
 function sanitizeMark(mark: unknown): { type: string; attrs?: Record<string, unknown> } | null {
   if (!mark || typeof mark !== 'object' || typeof (mark as { type?: unknown }).type !== 'string') return null
   const m = mark as { type: string; attrs?: Record<string, unknown> }
 
   if (m.type === 'textStyle') {
-    const size = m.attrs?.fontSize
-    return isFontSizeCss(size) ? { type: 'textStyle', attrs: { fontSize: size } } : null
+    const attrs: Record<string, unknown> = {}
+    if (isFontSizeCss(m.attrs?.fontSize)) attrs.fontSize = m.attrs?.fontSize
+    if (isAllowedColor(m.attrs?.color)) attrs.color = m.attrs?.color
+    return Object.keys(attrs).length ? { type: 'textStyle', attrs } : null
+  }
+
+  if (m.type === 'highlight') return { type: 'highlight' }
+
+  if (m.type === 'link') {
+    return isSafeHref(m.attrs?.href) ? { type: 'link', attrs: { href: m.attrs.href } } : null
   }
 
   return ALLOWED_MARKS.has(m.type) ? { type: m.type } : null
@@ -139,7 +185,10 @@ export function sanitizeDoc(input: unknown, maxLength: number): JSONContent {
     const content = Array.isArray(n.content)
       ? n.content.map(walk).filter((c): c is JSONContent => c !== null)
       : []
-    return { type: n.type, ...(content.length ? { content } : {}) }
+    const align = n.type === 'paragraph' && typeof n.attrs?.textAlign === 'string' && TEXT_ALIGNMENTS.has(n.attrs.textAlign)
+      ? { attrs: { textAlign: n.attrs.textAlign } }
+      : {}
+    return { type: n.type, ...align, ...(content.length ? { content } : {}) }
   }
 
   const result = walk(input)
@@ -152,5 +201,5 @@ export const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragrap
 
 export function isEmptyDoc(doc: JSONContent | null | undefined): boolean {
   if (!doc) return true
-  return renderBlockHtml(doc).replace(/<p><\/p>/g, '').trim() === ''
+  return renderBlockHtml(doc).replace(/<p[^>]*><\/p>/g, '').trim() === ''
 }
