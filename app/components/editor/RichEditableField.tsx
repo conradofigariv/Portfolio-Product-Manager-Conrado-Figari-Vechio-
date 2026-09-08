@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
+import { TextStyle, FontSize } from '@tiptap/extension-text-style'
 import Placeholder from '@tiptap/extension-placeholder'
 import FloatingToolbar from './FloatingToolbar'
 import { useBlockPersistence } from '../../lib/editor/useBlockPersistence'
@@ -48,6 +49,8 @@ export default function RichEditableField({
         strike: false,
       }),
       Underline,
+      TextStyle,
+      FontSize,
       Placeholder.configure({ placeholder: placeholder ?? '' }),
     ],
     content: initial?.json ?? EMPTY_DOC,
