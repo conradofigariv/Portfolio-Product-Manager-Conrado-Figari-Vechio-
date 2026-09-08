@@ -99,10 +99,15 @@ export default function PhotoCropModal({
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-xs text-dark-300 text-center">
-          Drag the frame to choose what stays visible
+          {natural ? 'Drag the frame to choose what stays visible' : 'Opening editor…'}
         </p>
 
-        <div className="relative inline-block leading-none select-none">
+        <div className="relative inline-block leading-none select-none min-h-[40vh] min-w-[40vw]">
+          {!natural && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full border-2 border-dark-500 border-t-dark-50 animate-spin" />
+            </div>
+          )}
           {/* A plain img: it sizes itself to the photo's own proportions inside
               the max box, so the frame below can be positioned in percentages
               of the photo rather than of a letterboxed container. */}
@@ -117,7 +122,9 @@ export default function PhotoCropModal({
                 h: e.currentTarget.naturalHeight,
               })
             }
-            className="block max-h-[70vh] max-w-[min(92vw,900px)] rounded-lg"
+            className={`block max-h-[70vh] max-w-[min(92vw,900px)] rounded-lg transition-opacity ${
+              natural ? 'opacity-100' : 'opacity-0'
+            }`}
             draggable={false}
           />
 
