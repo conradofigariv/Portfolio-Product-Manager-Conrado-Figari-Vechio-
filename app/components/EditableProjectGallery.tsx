@@ -271,11 +271,16 @@ export default function EditableProjectGallery({
         </p>
         {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
 
+        {/* Single-select: on many mobile photo pickers, `multiple` requires an
+            extra confirm/checkmark tap after choosing a photo, so tapping the
+            photo alone (the gesture used everywhere else in this app) fires
+            no change event at all — indistinguishable from the upload doing
+            nothing. Dropping multiple files still works via the panel's
+            onDrop, which isn't subject to that picker behavior. */}
         <input
           ref={inputRef}
           type="file"
           accept="image/*"
-          multiple
           hidden
           onChange={(e) => {
             const files = e.target.files
