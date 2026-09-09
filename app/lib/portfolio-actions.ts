@@ -42,12 +42,17 @@ function id(value: unknown, fallback: string): string {
 }
 
 // Only http(s) survive, so a stored link can never become a javascript: URL.
+// A bare domain (no scheme at all — the natural way to type one) gets
+// `https://` prepended first, same normalization LinkPopover.tsx already
+// applies for rich text links, rather than being rejected outright: without
+// this, typing "linkedin.com/in/you" here silently saved as an empty string.
 function url(value: unknown, max = LIMITS.line): string {
   const raw = text(value, max)
   if (!raw) return ''
+  const normalized = /^(https?:\/\/|mailto:)/i.test(raw) ? raw : `https://${raw}`
   try {
-    const parsed = new URL(raw)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? raw : ''
+    const parsed = new URL(normalized)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? normalized : ''
   } catch {
     return ''
   }
@@ -137,10 +142,15 @@ function sanitize(input: unknown): PortfolioContent {
       subtitle: text(contact.subtitle, LIMITS.body),
       availableItems: textList(contact.availableItems, LIMITS.contactItems),
       email: email(contact.email),
+      // `||`, not `&&`: an owner filling one field before the other (the
+      // natural order — type the label, then go back for the URL) had the
+      // whole entry silently deleted on save the moment only one was
+      // filled in, which looked exactly like the field itself couldn't be
+      // edited. Only a link with *neither* field ever filled in is dropped.
       socials: list(contact.socials, LIMITS.socials, (item) => {
         const s = (item ?? {}) as Record<string, unknown>
         return { label: text(s.label, LIMITS.short), url: url(s.url) }
-      }).filter((s) => s.label && s.url),
+      }).filter((s) => s.label || s.url),
     },
     footer: {
       tagline: text(footer.tagline, LIMITS.line),
