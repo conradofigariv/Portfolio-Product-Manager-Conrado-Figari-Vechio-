@@ -15,6 +15,10 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Next 16 only allows quality values listed here (default: [75]); every
+    // <Image> in this app asks for 90, which would otherwise 400 in the
+    // optimizer and leave the image blank.
+    qualities: [75, 90],
     remotePatterns: [
       ...(supabaseHost
         ? [

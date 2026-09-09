@@ -1,8 +1,53 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import GoogleSignInButton from './GoogleSignInButton'
 import { FlagES, FlagUS } from './FlagIcon'
+
+// Real screenshots of the real editor (public/como/*.webp) — see CLAUDE.md.
+// `points` are the numbered badges overlaid on each one, as percentages of
+// that image's own box. They line up with the same-numbered captions below the
+// figure, and their order matches each language's `howShots[i].items` order.
+//
+// Each point sits *beside* the thing it labels, never on top of it: a badge
+// covering the very control it points at (the EN/ES pill, a drag handle, a
+// metric) makes the figure less readable, not more. Coordinates were read off
+// these exact images at their native pixel size, so they must be re-derived if
+// the screenshots are ever re-taken.
+const SHOTS = [
+  {
+    src: '/como/hero.webp',
+    width: 1349,
+    height: 599,
+    points: [
+      { x: 28.2, y: 38.4 }, // the name field — just past the end of "Vechio"
+      { x: 62.3, y: 25 }, // the portrait — its top-left corner, off his face
+      { x: 63.9, y: 4.7 }, // the EN/ES toggle — in the empty nav space left of it
+      { x: 57.2, y: 93.5 }, // the autosave bar — just right of the pill
+    ],
+  },
+  {
+    src: '/como/story.webp',
+    width: 1349,
+    height: 598,
+    points: [
+      { x: 18.2, y: 21.2 }, // a chapter's period tag — in the margin beside it
+      { x: 65.9, y: 17.6 }, // its drag handle — directly above the grip
+      { x: 71.5, y: 23.4 }, // the chapter photo — its top-left corner
+    ],
+  },
+  {
+    src: '/como/projects.webp',
+    width: 1350,
+    height: 599,
+    points: [
+      { x: 21.1, y: 55.1 }, // the project gallery — in the margin left of it
+      { x: 57, y: 56.1 }, // "+ Add line" — just right of the button
+      { x: 78.9, y: 66.8 }, // the metrics row — just right of the last metric
+    ],
+  },
+] as const
 
 // The landing page has its own small EN/ES copy table rather than reusing
 // LanguageContext — that context holds one portfolio owner's *content*,
@@ -20,29 +65,76 @@ const COPY = {
       'Creá tu espacio profesional para contar tu historia, mostrar tus proyectos y conectar con nuevas oportunidades.',
     errorTitle: 'Algo salió mal al iniciar sesión.',
     howNav: 'Cómo funciona',
-    howTitle: 'Así se edita tu portfolio',
-    howSubtitle: 'Este es el portfolio real de Conrado — el mismo diseño que vas a tener vos, explicado en el lugar.',
-    exampleName: 'Conrado Figari Vechio',
-    exampleTagline: 'The intersection between developers, stakeholders, and product.',
-    sections: ['Historia', 'Proyectos', 'Skills', 'Certificaciones y Títulos'],
-    features: [
+    howTitle: 'Así se edita, en vivo',
+    howSubtitle:
+      'Estas son capturas reales del editor. Todo lo que ves acá se toca con un click, sobre el diseño final: no hay panel de administración ni formularios que llenar.',
+    howShots: [
       {
-        title: 'Edición en el lugar',
-        body: 'Hacé click en cualquier texto y editalo directo sobre el diseño real, sin formularios ni paneles aparte.',
+        title: 'Tu portada',
+        body: 'Lo primero que ve quien te busca.',
+        alt: 'Portada del portfolio en modo edición: nombre, título, foto y estadísticas',
+        items: [
+          {
+            title: 'Escribís sobre el diseño',
+            body: 'Click en tu nombre, tu título o cualquier texto, y escribís encima. Podés cambiar tipografía, tamaño y color.',
+          },
+          {
+            title: 'Tu foto, bien encuadrada',
+            body: 'La subís y elegís qué parte se ve. Se recorta sola en cada pantalla.',
+          },
+          {
+            title: 'Español e inglés',
+            body: 'Cargás cada texto en los dos idiomas y quien te visita elige con un click.',
+          },
+          {
+            title: 'Se guarda solo',
+            body: 'Cada cambio queda guardado mientras escribís. No existe el “perdí todo”.',
+          },
+        ],
       },
       {
-        title: 'Organizado en secciones',
-        body: 'Tu historia, tus proyectos, tus habilidades y tus certificaciones, cada uno en su propia sección lista para llenar.',
+        title: 'Tu historia',
+        body: 'De dónde venís, contado por vos.',
+        alt: 'Sección de historia en modo edición: capítulos con período, título, relato y foto',
+        items: [
+          {
+            title: 'Capítulo por capítulo',
+            body: 'Cada etapa con su período, su título y su relato. Sumás los que quieras.',
+          },
+          {
+            title: 'Arrastrá para ordenar',
+            body: 'Cambiás el orden tirando del asa. Sin menús ni configuración.',
+          },
+          {
+            title: 'Una foto por capítulo',
+            body: 'Le ponés cara a cada momento de tu carrera.',
+          },
+        ],
       },
       {
-        title: 'Fotos: subí, recortá, reordená',
-        body: 'Arrastrá una foto para subirla, elegí el punto focal y ordená la galería como quieras.',
-      },
-      {
-        title: 'Arrastrá para reordenar',
-        body: 'Reordená proyectos, capítulos, tags y más simplemente arrastrando y soltando.',
+        title: 'Tus proyectos',
+        body: 'Con fotos, resultados y las herramientas que usaste.',
+        alt: 'Sección de proyectos en modo edición: galería, puntos clave, métricas y tags',
+        items: [
+          {
+            title: 'Galería por proyecto',
+            body: 'Varias fotos por proyecto, en el orden que vos elijas.',
+          },
+          {
+            title: 'Los puntos clave',
+            body: 'Agregás, editás y reordenás las líneas que cuentan qué hiciste.',
+          },
+          {
+            title: 'Métricas y tecnologías',
+            body: 'Tres números que resumen el impacto, más los tags de lo que usaste.',
+          },
+        ],
       },
     ],
+    howCtaTitle: 'Empezá el tuyo ahora',
+    howCtaBody: 'Entrás con Google y ya estás editando. Tu portfolio queda online desde el primer minuto.',
+    howCtaButton: 'Crear mi portfolio gratis',
+    howCtaFoot: 'Gratis. Sin tarjeta.',
   },
   en: {
     signIn: 'Sign in',
@@ -54,29 +146,76 @@ const COPY = {
       'Create your professional space to tell your story, showcase your projects, and connect with new opportunities.',
     errorTitle: 'Something went wrong signing in.',
     howNav: 'How it works',
-    howTitle: "Here's how you edit your portfolio",
-    howSubtitle: "This is Conrado's real portfolio — the same design you'll get, explained right in place.",
-    exampleName: 'Conrado Figari Vechio',
-    exampleTagline: 'The intersection between developers, stakeholders, and product.',
-    sections: ['Story', 'Projects', 'Skills', 'Certifications & Degrees'],
-    features: [
+    howTitle: 'This is the editor, live',
+    howSubtitle:
+      'These are real screenshots of the editor. Everything you see here is one click away, right on the finished design — no admin panel, no forms to fill in.',
+    howShots: [
       {
-        title: 'Edit right in place',
-        body: 'Click any text and edit it directly over the real design — no forms, no separate panel.',
+        title: 'Your cover',
+        body: 'The first thing anyone looking you up will see.',
+        alt: 'Portfolio cover in editing mode: name, headline, photo and stats',
+        items: [
+          {
+            title: 'Type on the design itself',
+            body: 'Click your name, your headline or any text and type over it. Change the font, size and color too.',
+          },
+          {
+            title: 'Your photo, framed right',
+            body: 'Upload it and pick which part shows. It crops itself on every screen size.',
+          },
+          {
+            title: 'English and Spanish',
+            body: 'Write each text in both languages and let visitors switch with one click.',
+          },
+          {
+            title: 'It saves itself',
+            body: 'Every change is saved as you type. There is no "I lost it all".',
+          },
+        ],
       },
       {
-        title: 'Organized into sections',
-        body: 'Your story, projects, skills, and certifications, each in its own section ready to fill in.',
+        title: 'Your story',
+        body: 'Where you come from, told by you.',
+        alt: 'Story section in editing mode: chapters with period, title, text and photo',
+        items: [
+          {
+            title: 'Chapter by chapter',
+            body: 'Each stage with its period, title and story. Add as many as you want.',
+          },
+          {
+            title: 'Drag to reorder',
+            body: 'Change the order by pulling the handle. No menus, no settings.',
+          },
+          {
+            title: 'A photo per chapter',
+            body: 'Put a face to every moment of your career.',
+          },
+        ],
       },
       {
-        title: 'Photos: upload, crop, reorder',
-        body: 'Drag a photo in to upload it, pick its focal point, and arrange the gallery however you like.',
-      },
-      {
-        title: 'Drag to reorder',
-        body: 'Reorder projects, chapters, tags and more just by dragging and dropping.',
+        title: 'Your projects',
+        body: 'With photos, results, and the tools you used.',
+        alt: 'Projects section in editing mode: gallery, key points, metrics and tags',
+        items: [
+          {
+            title: 'A gallery per project',
+            body: 'Several photos per project, in whatever order you choose.',
+          },
+          {
+            title: 'The key points',
+            body: 'Add, edit and reorder the lines that tell what you actually did.',
+          },
+          {
+            title: 'Metrics and tech',
+            body: 'Three numbers that sum up the impact, plus tags for what you used.',
+          },
+        ],
       },
     ],
+    howCtaTitle: 'Start yours now',
+    howCtaBody: 'Sign in with Google and you are already editing. Your portfolio is online from minute one.',
+    howCtaButton: 'Create my portfolio — free',
+    howCtaFoot: 'Free. No card.',
   },
 } as const
 
@@ -191,89 +330,77 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
             {t.howSubtitle}
           </p>
 
-          {/* The mini "portfolio" mock below reuses Conrado's real name/tagline
-              and section names (per explicit request: "mi portfolio sea el
-              ejemplo") and the app's own outline-dashed editable-field
-              affordance (see CLAUDE.md's CSS conventions) so the mockup reads
-              as truthful to the real UI, not an invented illustration style. */}
-          <div className="mt-10 sm:mt-14 rounded-2xl border border-white/10 bg-[#0c0c0f] p-6 sm:p-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
-              {/* Editing mock */}
-              <div>
-                <p className="m-0 mb-2 text-[13px] font-mono text-[#d8ff3e]">01</p>
-                <div className="inline-block rounded-md outline outline-dashed outline-1 outline-offset-4 outline-[#d8ff3e]/60 px-1">
-                  <p className="m-0 text-[22px] sm:text-[26px] font-semibold tracking-[-0.02em]">{t.exampleName}</p>
-                </div>
-                <p className="mt-3 text-[15px] text-[#a1a1aa] italic leading-relaxed max-w-[380px]">
-                  {t.exampleTagline}
-                </p>
-                <p className="mt-4 text-[14px] font-semibold">{t.features[0].title}</p>
-                <p className="mt-1 text-[13.5px] text-[#a1a1aa] leading-relaxed max-w-[380px]">{t.features[0].body}</p>
-              </div>
+          <div className="mt-12 sm:mt-16 space-y-16 sm:space-y-24">
+            {t.howShots.map((shot, shotIndex) => {
+              const meta = SHOTS[shotIndex]
+              // Numbering runs across all three figures (1..10) rather than
+              // restarting per figure, so a badge on an image and its caption
+              // below are never ambiguous about which one they pair with.
+              const firstNumber = t.howShots.slice(0, shotIndex).reduce((n, s) => n + s.items.length, 0) + 1
 
-              {/* Sections mock */}
-              <div>
-                <p className="m-0 mb-2 text-[13px] font-mono text-[#d8ff3e]">02</p>
-                <div className="flex flex-wrap gap-2">
-                  {t.sections.map((section) => (
-                    <span
-                      key={section}
-                      className="px-3 py-1.5 rounded-full border border-white/15 text-[13px] text-[#d4d4d8]"
-                    >
-                      {section}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-4 text-[14px] font-semibold">{t.features[1].title}</p>
-                <p className="mt-1 text-[13.5px] text-[#a1a1aa] leading-relaxed max-w-[380px]">{t.features[1].body}</p>
-              </div>
+              return (
+                <div key={shot.title}>
+                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-5">
+                    <h3 className="m-0 text-[20px] sm:text-[24px] font-semibold tracking-[-0.02em]">{shot.title}</h3>
+                    <p className="m-0 text-[15px] text-[#a1a1aa]">{shot.body}</p>
+                  </div>
 
-              {/* Photos mock */}
-              <div>
-                <p className="m-0 mb-2 text-[13px] font-mono text-[#d8ff3e]">03</p>
-                <div className="relative w-24 h-24 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth={1.5} className="w-8 h-8">
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <circle cx="9" cy="11" r="2" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 15l-4.5-4.5a2 2 0 00-2.8 0L7 17" />
-                  </svg>
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#d8ff3e] text-[#08080a] flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" />
-                    </svg>
-                  </span>
-                </div>
-                <p className="mt-4 text-[14px] font-semibold">{t.features[2].title}</p>
-                <p className="mt-1 text-[13.5px] text-[#a1a1aa] leading-relaxed max-w-[380px]">{t.features[2].body}</p>
-              </div>
+                  <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0c0c0f]">
+                    <Image
+                      src={meta.src}
+                      alt={shot.alt}
+                      width={meta.width}
+                      height={meta.height}
+                      quality={90}
+                      className="block w-full h-auto"
+                    />
+                    {meta.points.map((point, i) => (
+                      <span
+                        key={i}
+                        aria-hidden="true"
+                        className="absolute flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d8ff3e] text-[#08080a] text-[11px] sm:text-[12px] font-bold ring-4 ring-[#d8ff3e]/25 shadow-lg"
+                        style={{ left: `${point.x}%`, top: `${point.y}%` }}
+                      >
+                        {firstNumber + i}
+                      </span>
+                    ))}
+                  </div>
 
-              {/* Drag-to-reorder mock */}
-              <div>
-                <p className="m-0 mb-2 text-[13px] font-mono text-[#d8ff3e]">04</p>
-                <div className="flex flex-col gap-2 max-w-[220px]">
-                  {[0, 1].map((i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 ${
-                        i === 0 ? 'opacity-40' : 'outline outline-1 outline-[#d8ff3e]/60 outline-offset-2'
-                      }`}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="#71717a">
-                        <circle cx="5" cy="3" r="1.4" />
-                        <circle cx="11" cy="3" r="1.4" />
-                        <circle cx="5" cy="8" r="1.4" />
-                        <circle cx="11" cy="8" r="1.4" />
-                        <circle cx="5" cy="13" r="1.4" />
-                        <circle cx="11" cy="13" r="1.4" />
-                      </svg>
-                      <span className="h-2 flex-1 rounded-full bg-white/10" />
-                    </div>
-                  ))}
+                  <div className="mt-6 flex flex-wrap gap-x-8 gap-y-6">
+                    {shot.items.map((item, i) => (
+                      <div key={item.title} className="flex gap-3 flex-1 min-w-[220px] max-w-[340px]">
+                        <span className="mt-0.5 flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full border border-[#d8ff3e]/40 text-[#d8ff3e] text-[11px] font-bold">
+                          {firstNumber + i}
+                        </span>
+                        <div>
+                          <p className="m-0 text-[14.5px] font-semibold">{item.title}</p>
+                          <p className="m-0 mt-1 text-[13.5px] text-[#a1a1aa] leading-relaxed">{item.body}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p className="mt-4 text-[14px] font-semibold">{t.features[3].title}</p>
-                <p className="mt-1 text-[13.5px] text-[#a1a1aa] leading-relaxed max-w-[380px]">{t.features[3].body}</p>
-              </div>
+              )
+            })}
+          </div>
+
+          {/* The whole section exists to end here — the walkthrough is the
+              argument, this is the ask. */}
+          <div className="mt-16 sm:mt-24 rounded-2xl border border-white/10 bg-[#0c0c0f] px-6 sm:px-10 py-10 sm:py-12 text-center">
+            <h3 className="m-0 text-[24px] sm:text-[32px] font-medium tracking-[-0.03em] [text-wrap:balance]">
+              {t.howCtaTitle}
+            </h3>
+            <p className="mt-3 mx-auto max-w-[460px] text-[15.5px] text-[#a1a1aa] leading-relaxed [text-wrap:balance]">
+              {t.howCtaBody}
+            </p>
+            <div className="flex justify-center mt-7">
+              <GoogleSignInButton
+                label={t.howCtaButton}
+                pendingLabel={t.redirecting}
+                className="inline-flex items-center justify-center gap-2.5 h-[52px] px-8 rounded-full bg-[#d8ff3e] text-[#08080a] text-base font-semibold tracking-[-0.01em] transition-[filter] hover:brightness-110 disabled:opacity-60"
+              />
             </div>
+            <p className="mt-3 text-[13px] text-[#71717a]">{t.howCtaFoot}</p>
           </div>
         </div>
       </section>
