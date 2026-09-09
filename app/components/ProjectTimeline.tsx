@@ -214,17 +214,34 @@ export default function ProjectTimeline() {
                         the title to edit it immediately re-triggers that
                         same click and the photo modal steals it back. Only
                         while editing: a visitor's click here should still
-                        open the lightbox/gallery as before. */}
-                    <div
-                      className="absolute inset-0 flex flex-col justify-end p-4 md:p-8"
-                      onClick={(e) => {
-                        if (editing) e.stopPropagation()
-                      }}
-                    >
-                      <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2">
+                        open the lightbox/gallery as before.
+
+                        The wrapper itself is `inset-0` (it has to be, to
+                        anchor the text to the card's bottom edge) but must
+                        stay `pointer-events-none` — otherwise, since it's
+                        painted on top of the whole photo, it swallows every
+                        click anywhere on the card (not just on the text)
+                        and the card's own onClick can never fire, making the
+                        photo unclickable. Only the year/title spans
+                        themselves opt back in with `pointer-events-auto`, so
+                        a click still bubbles up from them to this div's
+                        stopPropagation, but a click anywhere else on the
+                        photo passes straight through to the card. */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8 pointer-events-none">
+                      <span
+                        className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2 pointer-events-auto"
+                        onClick={(e) => {
+                          if (editing) e.stopPropagation()
+                        }}
+                      >
                         <RichText blockKey={`projects.items.${project.id}.year`} section="projects" placeholder="Year" />
                       </span>
-                      <h3 className="text-xl md:text-3xl font-bold text-dark-50 leading-tight">
+                      <h3
+                        className="text-xl md:text-3xl font-bold text-dark-50 leading-tight pointer-events-auto"
+                        onClick={(e) => {
+                          if (editing) e.stopPropagation()
+                        }}
+                      >
                         <RichText blockKey={`projects.items.${project.id}.title`} section="projects" placeholder="Title" />
                       </h3>
                     </div>
