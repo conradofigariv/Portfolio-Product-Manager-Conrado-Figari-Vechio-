@@ -75,7 +75,7 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
         </div>
       </header>
 
-      <div className="relative z-[3] flex-1 flex flex-col items-center justify-center text-center px-5 sm:px-9 lg:px-[72px] py-12 sm:py-16 lg:py-20">
+      <div className="relative z-[3] flex-1 flex items-start px-5 sm:px-9 lg:px-[72px] pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-20 lg:pb-24">
         <div className="max-w-[760px]">
           <h1 className="m-0 text-[40px] sm:text-[56px] lg:text-[76px] leading-[0.98] tracking-[-0.035em] font-medium [text-wrap:balance]">
             {t.headlineLine1}
@@ -83,10 +83,13 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
             {t.headlineLine2}
           </h1>
 
-          <p className="mt-5 max-w-[520px] mx-auto text-[17px] sm:text-[19px] leading-[1.5] text-[#d4d4d8] [text-wrap:balance]">
+          <p className="mt-5 max-w-[520px] text-[17px] sm:text-[19px] leading-[1.5] text-[#d4d4d8] [text-wrap:balance]">
             {t.subheading}
           </p>
 
+          {/* Centered within this text column's own width (not the full
+              page) — the block itself stays left-anchored like the rest of
+              the hero, only the CTA is centered relative to the text above it. */}
           <div className="flex flex-wrap items-center justify-center gap-3 mt-9">
             <GoogleSignInButton
               showIcon={false}
@@ -99,9 +102,7 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
           {error && (
             <div className="mt-4">
               <p className="text-sm text-red-400">{t.errorTitle}</p>
-              {reason && (
-                <p className="text-xs text-[#71717a] mt-1 break-words max-w-md mx-auto">{reason}</p>
-              )}
+              {reason && <p className="text-xs text-[#71717a] mt-1 break-words max-w-md">{reason}</p>}
             </div>
           )}
         </div>
