@@ -42,16 +42,23 @@ export default function Footer() {
             <div>
               <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.social}</h4>
               <ul className="space-y-2 text-sm text-dark-400">
-                {socials.map((social) => (
-                  <li key={social.url}>
-                    <a
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-dark-50 transition"
-                    >
-                      {social.label}
-                    </a>
+                {socials.map((social, i) => (
+                  <li key={`${social.label}-${social.url}-${i}`}>
+                    {social.url ? (
+                      <a
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-dark-50 transition"
+                      >
+                        {social.label || social.url}
+                      </a>
+                    ) : (
+                      // Owner has only filled in the label so far — see
+                      // Contact.tsx's matching guard for why this can't
+                      // just be an <a href=""> (links to the current page).
+                      <span>{social.label}</span>
+                    )}
                   </li>
                 ))}
               </ul>

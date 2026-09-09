@@ -72,15 +72,23 @@ export default function Contact() {
                               <EditableText path={`contact.socials.${i}.url`} placeholder="https://..." />
                             </p>
                           </>
-                        ) : (
+                        ) : social.url ? (
                           <a
                             href={social.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-dark-50 hover:text-dark-100 transition font-medium flex items-center gap-1 break-all"
                           >
-                            {social.label} ↗
+                            {social.label || social.url} ↗
                           </a>
+                        ) : (
+                          // A link the owner has only half-filled in so far
+                          // (label but no URL yet) now survives a save — see
+                          // portfolio-actions.ts's socials filter — so a
+                          // visitor needs something other than an <a
+                          // href=""> (which would just link to the current
+                          // page) for that in-progress state.
+                          <span className="text-dark-50 font-medium break-all">{social.label}</span>
                         )}
                       </div>
                       {editing && (
