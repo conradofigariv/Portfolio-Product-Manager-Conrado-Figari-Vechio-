@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import type { JSONContent } from '@tiptap/core'
 import { upsertBlock } from '../block-actions'
+import { useLang } from '../../context/LanguageContext'
 import type { Lang } from '../portfolio'
 
 const DEBOUNCE_MS = 800
@@ -35,6 +36,7 @@ export function useBlockPersistence({
   const updatedAtRef = useRef(initialUpdatedAt)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRef = useRef<JSONContent | null>(null)
+  const { notifyBlockSaved } = useLang()
 
   const save = useCallback(
     async (json: JSONContent) => {
@@ -50,6 +52,7 @@ export function useBlockPersistence({
       if (result.ok) {
         updatedAtRef.current = result.updatedAt
         setStatus('saved')
+        notifyBlockSaved()
         return
       }
 
@@ -66,7 +69,7 @@ export function useBlockPersistence({
       setStatus('error')
       setError(result.error)
     },
-    [blockKey, lang, section, editor]
+    [blockKey, lang, section, editor, notifyBlockSaved]
   )
 
   const scheduleSave = useCallback(

@@ -2,15 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useLang } from '../context/LanguageContext'
 import { savePortfolio } from '../lib/portfolio-actions'
+
+// How long the "Saved"/"Guardado" flash stays up after a block autosaves —
+// long enough to notice, short enough to not linger once it's stopped
+// meaning anything.
+const FLASH_MS = 1600
 
 // Floats above the portfolio while its owner is editing. Everyone else never
 // renders this, and the page they see is unchanged.
 export default function EditBar({ username }: { username: string }) {
-  const { editing, dirty, draft, markSaved } = useLang()
+  const { editing, dirty, draft, markSaved, lastBlockSavedAt, lang } = useLang()
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [justSaved, setJustSaved] = useState(false)
+  const [seenSavedAt, setSeenSavedAt] = useState(lastBlockSavedAt)
   const router = useRouter()
 
   // Edits only live in the browser until Save actually confirms — closing the
@@ -25,6 +33,24 @@ export default function EditBar({ username }: { username: string }) {
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
+
+  // A field's own autosave (useBlockPersistence, 800ms after the last
+  // keystroke) bumps lastBlockSavedAt — flash the button briefly to confirm
+  // it, independent of dirty/Save below. Turning the flash on happens here,
+  // during render (comparing against the last value seen rather than calling
+  // setState directly in an effect); the effect below only ever schedules/
+  // clears the timer that turns it back off, keyed on the same value so a
+  // second save while still flashing restarts the timer instead of stacking.
+  if (lastBlockSavedAt !== seenSavedAt) {
+    setSeenSavedAt(lastBlockSavedAt)
+    if (lastBlockSavedAt != null) setJustSaved(true)
+  }
+
+  useEffect(() => {
+    if (lastBlockSavedAt == null) return
+    const timer = setTimeout(() => setJustSaved(false), FLASH_MS)
+    return () => clearTimeout(timer)
+  }, [lastBlockSavedAt])
 
   if (!editing) return null
 
@@ -63,9 +89,30 @@ export default function EditBar({ username }: { username: string }) {
           type="button"
           onClick={onSave}
           disabled={state === 'saving' || !dirty}
-          className="button-primary text-sm py-1.5 px-4 disabled:opacity-50"
+          className={`button-primary text-sm py-1.5 px-4 disabled:opacity-50 overflow-hidden ${
+            justSaved && state !== 'saving' ? 'scale-105 shadow-[0_0_0_3px_rgba(216,255,62,0.35)]' : ''
+          }`}
         >
-          {state === 'saving' ? 'Saving…' : dirty ? 'Save' : 'Saved'}
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={state === 'saving' ? 'saving' : justSaved ? 'flash' : dirty ? 'save' : 'saved'}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              className="inline-block"
+            >
+              {state === 'saving'
+                ? 'Saving…'
+                : justSaved
+                ? lang === 'es'
+                  ? '¡Guardado!'
+                  : 'Saved!'
+                : dirty
+                ? 'Save'
+                : 'Saved'}
+            </motion.span>
+          </AnimatePresence>
         </button>
 
         {error && <p className="w-full text-xs text-red-400">{error}</p>}

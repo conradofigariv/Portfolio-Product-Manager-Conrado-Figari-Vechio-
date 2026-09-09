@@ -253,11 +253,22 @@ export default function ProjectTimeline() {
                         themselves opt back in with `pointer-events-auto`, so
                         a click still bubbles up from them to this div's
                         stopPropagation, but a click anywhere else on the
-                        photo passes straight through to the card. */}
+                        photo passes straight through to the card.
+
+                        Same story for onKeyDown: the outer card treats a
+                        keyboard Enter/Space as "activate" (opens the photo
+                        modal) for its own role="button" accessibility, and
+                        preventDefault()s Space specifically to stop the page
+                        from scrolling — which also silently eats every space
+                        bar keystroke typed into the title/year fields unless
+                        stopped here first. */}
                     <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-8 pointer-events-none">
                       <span
                         className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2 pointer-events-auto"
                         onClick={(e) => {
+                          if (editing) e.stopPropagation()
+                        }}
+                        onKeyDown={(e) => {
                           if (editing) e.stopPropagation()
                         }}
                       >
@@ -266,6 +277,9 @@ export default function ProjectTimeline() {
                       <h3
                         className="text-xl md:text-3xl font-bold text-dark-50 leading-tight pointer-events-auto"
                         onClick={(e) => {
+                          if (editing) e.stopPropagation()
+                        }}
+                        onKeyDown={(e) => {
                           if (editing) e.stopPropagation()
                         }}
                       >
