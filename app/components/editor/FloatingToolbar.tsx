@@ -12,6 +12,7 @@ import ColorSwatches from './toolbar/ColorSwatches'
 import HighlightButton from './toolbar/HighlightButton'
 import LinkPopover from './toolbar/LinkPopover'
 import AlignmentGroup from './toolbar/AlignmentGroup'
+import type { PersistStatus } from '../../lib/editor/useBlockPersistence'
 
 // Clicking into a field is often just moving between several fields fast —
 // this delay keeps the toolbar from flickering in and out on every click.
@@ -41,7 +42,7 @@ function selectionRect(editor: Editor): DOMRect {
   return new DOMRect(left, top, Math.max(start.right, end.right) - left, Math.max(start.bottom, end.bottom) - top)
 }
 
-export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
+export default function FloatingToolbar({ editor, status }: { editor: Editor | null; status?: PersistStatus }) {
   const [visible, setVisible] = useState(false)
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollOrigin = useRef<{ x: number; y: number } | null>(null)
@@ -248,6 +249,46 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
           <LinkPopover editor={editor} open={linkOpen} onOpenChange={setLinkOpen} />
           <div className="w-px h-5 bg-dark-600 mx-0.5" />
           <AlignmentGroup editor={editor} />
+          {(status === 'saving' || status === 'saved') && (
+            <>
+              <div className="w-px h-5 bg-dark-600 mx-0.5" />
+              <AnimatePresence mode="wait">
+                {status === 'saving' ? (
+                  <motion.span
+                    key="saving"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="flex items-center gap-1.5 px-1.5 text-[11px] text-dark-400 whitespace-nowrap"
+                    aria-live="polite"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-dark-400 animate-pulse" />
+                    Saving…
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="saved"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="flex items-center gap-1 px-1.5 text-[11px] text-lime-400 whitespace-nowrap"
+                    aria-live="polite"
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M16.704 5.29a1 1 0 010 1.415l-7.4 7.4a1 1 0 01-1.414 0l-3.6-3.6a1 1 0 111.414-1.415l2.893 2.893 6.693-6.693a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Saved
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </motion.div>
       )}
     </AnimatePresence>,

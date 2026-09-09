@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { addListItemBlock, removeListItemBlock } from '../block-list-actions'
+import { addListItemBlock, removeListItemBlock, reorderListItemBlocks } from '../block-list-actions'
 import { useLang } from '../../context/LanguageContext'
+import { moveBeforeId } from '../reorder'
 
 export type BlockListItem = { blockKey: string }
 
@@ -48,5 +49,26 @@ export function useBlockList({ prefix, section }: { prefix: string; section: str
     else setError(result.error)
   }
 
-  return { items, add, remove, busy, error }
+  // Same by-id reorder logic as the plain-array lists (moveBeforeId), just
+  // persisted immediately server-side instead of staged in draft state —
+  // see reorderListItemBlocks for why. `targetBlockKey` missing (dropped
+  // past the last item) falls out of moveBeforeId itself: appends at the end.
+  async function reorder(movedBlockKey: string, targetBlockKey: string) {
+    const reordered = moveBeforeId(
+      items.map((item) => ({ id: item.blockKey })),
+      movedBlockKey,
+      targetBlockKey
+    )
+    setBusy(true)
+    setError(null)
+    const result = await reorderListItemBlocks(
+      reordered.map((item) => item.id),
+      lang
+    )
+    setBusy(false)
+    if (result.ok) router.refresh()
+    else setError(result.error)
+  }
+
+  return { items, add, remove, reorder, busy, error }
 }
