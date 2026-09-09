@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import GoogleSignInButton from './GoogleSignInButton'
+import { FlagES, FlagUS } from './FlagIcon'
 
 // The landing page has its own small EN/ES copy table rather than reusing
 // LanguageContext — that context holds one portfolio owner's *content*,
@@ -58,9 +59,13 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-[13px] font-mono text-[#a1a1aa] hover:text-white hover:border-white/30 transition-colors"
           aria-label="Cambiar idioma / Toggle language"
         >
-          <span className={lang === 'en' ? 'text-white font-semibold' : ''}>🇺🇸 EN</span>
+          <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-white font-semibold' : ''}`}>
+            <FlagUS /> EN
+          </span>
           <span className="text-white/20">/</span>
-          <span className={lang === 'es' ? 'text-white font-semibold' : ''}>🇪🇸 ES</span>
+          <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-white font-semibold' : ''}`}>
+            <FlagES /> ES
+          </span>
         </button>
 
         <GoogleSignInButton
