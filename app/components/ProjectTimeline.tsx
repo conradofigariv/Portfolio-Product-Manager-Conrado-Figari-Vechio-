@@ -288,7 +288,11 @@ export default function ProjectTimeline() {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
-                      <span className="text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
+                      {/* flex-1 + min-w-0: without real width to grow into, this
+                          span shrink-wraps to its own text (a flex-row item with
+                          no grow always does) — the toolbar's alignment buttons
+                          would then have no slack to visibly shift text into. */}
+                      <span className="flex-1 min-w-0 text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
                         <RichText blockKey={`projects.items.${project.id}.tag`} section="projects" placeholder="Category" />
                       </span>
                       {editing && (

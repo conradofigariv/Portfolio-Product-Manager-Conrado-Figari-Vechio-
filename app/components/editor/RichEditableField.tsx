@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-import { TextStyle, FontSize, Color } from '@tiptap/extension-text-style'
+import { TextStyle, FontSize, FontFamily, Color } from '@tiptap/extension-text-style'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
@@ -54,6 +54,7 @@ export default function RichEditableField({
       Underline,
       TextStyle,
       FontSize,
+      FontFamily,
       Color,
       // Single fixed color rather than multicolor — see HIGHLIGHT_STYLE's
       // own comment for why the edit and public-read views share it.

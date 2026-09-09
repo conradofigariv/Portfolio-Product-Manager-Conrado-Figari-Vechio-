@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useFloating, offset, flip, shift, autoUpdate, type VirtualElement } from '@floating-ui/react'
 import type { Editor } from '@tiptap/react'
 import ToolbarButton from './toolbar/ToolbarButton'
+import FontFamilyControl from './toolbar/FontFamilyControl'
 import FontSizeControl from './toolbar/FontSizeControl'
 import ColorSwatches from './toolbar/ColorSwatches'
 import HighlightButton from './toolbar/HighlightButton'
@@ -237,6 +238,8 @@ export default function FloatingToolbar({ editor }: { editor: Editor | null }) {
           >
             <span className="line-through">S</span>
           </ToolbarButton>
+          <div className="w-px h-5 bg-dark-600 mx-0.5" />
+          <FontFamilyControl editor={editor} />
           <div className="w-px h-5 bg-dark-600 mx-0.5" />
           <FontSizeControl editor={editor} />
           <div className="w-px h-5 bg-dark-600 mx-0.5" />

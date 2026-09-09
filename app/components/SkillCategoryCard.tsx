@@ -27,7 +27,10 @@ export default function SkillCategoryCard({
   return (
     <div className="bg-dark-900/50 border border-dark-700 rounded-xl p-4 md:p-6 hover:border-dark-500 transition">
       <div className="flex items-start justify-between gap-2 mb-3 md:mb-4">
-        <h3 className="text-sm md:text-base font-semibold text-dark-50">
+        {/* flex-1 + min-w-0: a flex-row item with no grow shrink-wraps to its
+            own text, leaving the alignment toolbar's buttons no slack to
+            visibly shift text into. */}
+        <h3 className="flex-1 min-w-0 text-sm md:text-base font-semibold text-dark-50">
           <RichText blockKey={`skills.categories.${category.id}.category`} section="skills" placeholder="Category" />
         </h3>
         {editing && <RemoveButton label="Remove category" onClick={onRemove} />}

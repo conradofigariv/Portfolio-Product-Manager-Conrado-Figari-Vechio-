@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/core'
 import { isFontSizeCss } from './extensions/fontSize'
 import { isAllowedColor, HIGHLIGHT_STYLE } from './extensions/colors'
+import { isAllowedFontFamily } from './extensions/fontFamily'
 
 /**
  * Turns a Tiptap document into HTML without touching Tiptap's own
@@ -52,6 +53,7 @@ function renderMarks(text: string, marks: JSONContent['marks']): string {
       const styles: string[] = []
       if (isFontSizeCss(mark.attrs?.fontSize)) styles.push(`font-size: ${mark.attrs?.fontSize}`)
       if (isAllowedColor(mark.attrs?.color)) styles.push(`color: ${mark.attrs?.color}`)
+      if (isAllowedFontFamily(mark.attrs?.fontFamily)) styles.push(`font-family: ${mark.attrs?.fontFamily}`)
       if (styles.length) html = `<span style="${styles.join('; ')}">${html}</span>`
       continue
     }
@@ -144,6 +146,7 @@ function sanitizeMark(mark: unknown): { type: string; attrs?: Record<string, unk
     const attrs: Record<string, unknown> = {}
     if (isFontSizeCss(m.attrs?.fontSize)) attrs.fontSize = m.attrs?.fontSize
     if (isAllowedColor(m.attrs?.color)) attrs.color = m.attrs?.color
+    if (isAllowedFontFamily(m.attrs?.fontFamily)) attrs.fontFamily = m.attrs?.fontFamily
     return Object.keys(attrs).length ? { type: 'textStyle', attrs } : null
   }
 

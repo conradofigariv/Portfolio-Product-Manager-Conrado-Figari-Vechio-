@@ -47,7 +47,7 @@ export default function EditBar({ username }: { username: string }) {
     <div className="fixed bottom-4 inset-x-4 z-[90] flex justify-center pointer-events-none">
       <div className="pointer-events-auto flex flex-wrap items-center gap-3 rounded-full border border-dark-600 bg-dark-900/95 backdrop-blur px-4 py-2.5 shadow-xl">
         <span className="text-xs text-dark-400 hidden sm:inline">
-          {dirty ? 'Unsaved changes' : 'Click any text to edit'}
+          {dirty ? 'Unsaved changes' : 'Text saves automatically — Save is for reordering/adding'}
         </span>
 
         <a

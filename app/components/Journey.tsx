@@ -127,7 +127,14 @@ export default function Journey() {
                     <div>
                       {/* Tag + Heading */}
                       <div className="flex items-start justify-between gap-3">
-                        <div>
+                        {/* flex-1 + min-w-0: without this, a flex-row item
+                            with no grow shrink-wraps to the wider of its two
+                            children's natural width — the narrower one gets
+                            some slack from that, but whichever child actually
+                            defines the box (usually the heading) gets none,
+                            leaving the alignment toolbar's buttons no room to
+                            visibly shift its text into. */}
+                        <div className="flex-1 min-w-0">
                           <span className="text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
                             <RichText blockKey={`journey.chapters.${chapter.id}.tag`} section="journey" placeholder="Tag" />
                           </span>
