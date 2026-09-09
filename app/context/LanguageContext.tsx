@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useState, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
 import { Portfolio, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
 import { setAtPath } from '../lib/content-path'
@@ -22,6 +22,12 @@ interface LanguageContextType {
   dirty: boolean
   draft: Record<Lang, PortfolioContent>
   setField: (path: string, value: string) => void
+  // Bumped to Date.now() by useBlockPersistence every time *any* field's
+  // autosave completes — separate from `dirty` on purpose, since autosave
+  // never touches that. EditBar watches this to flash a brief "Saved"
+  // confirmation, independent of whatever dirty/Save is doing.
+  lastBlockSavedAt: number | null
+  notifyBlockSaved: () => void
   // Structural edits (add/remove list items) that only ever touch the language
   // being viewed — used for narrative lines, tags, skills, categories, certs
   // and contact items, none of which anything else is keyed to.
@@ -47,6 +53,13 @@ export function LanguageProvider({
   const [lang, setLang] = useState<Lang>('en')
   const [draft, setDraft] = useState(portfolio.content)
   const [dirty, setDirty] = useState(false)
+  const [lastBlockSavedAt, setLastBlockSavedAt] = useState<number | null>(null)
+  // Stable across renders (unlike an inline arrow in the provider value
+  // below) so it doesn't churn useBlockPersistence's own useCallback deps —
+  // this context re-renders on every keystroke in an old-system field, and
+  // every mounted Tiptap editor's update/blur listeners would otherwise be
+  // torn down and re-attached on each one.
+  const notifyBlockSaved = useCallback(() => setLastBlockSavedAt(Date.now()), [])
 
   const toggleLang = () => setLang((l) => (l === 'en' ? 'es' : 'en'))
 
@@ -81,6 +94,8 @@ export function LanguageProvider({
         updateActive,
         updateBoth,
         markSaved: () => setDirty(false),
+        lastBlockSavedAt,
+        notifyBlockSaved,
       }}
     >
       {children}
