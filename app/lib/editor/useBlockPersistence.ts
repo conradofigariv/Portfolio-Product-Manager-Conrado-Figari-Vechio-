@@ -36,7 +36,7 @@ export function useBlockPersistence({
   const updatedAtRef = useRef(initialUpdatedAt)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRef = useRef<JSONContent | null>(null)
-  const { notifyBlockSaved } = useLang()
+  const { notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd } = useLang()
 
   const save = useCallback(
     async (json: JSONContent) => {
@@ -47,29 +47,47 @@ export function useBlockPersistence({
       pendingRef.current = null
       setStatus('saving')
       setError(null)
+      notifyBlockSavingStart()
 
-      const result = await upsertBlock(blockKey, lang, section, json, updatedAtRef.current)
-      if (result.ok) {
-        updatedAtRef.current = result.updatedAt
-        setStatus('saved')
-        notifyBlockSaved()
-        return
-      }
+      try {
+        const result = await upsertBlock(blockKey, lang, section, json, updatedAtRef.current)
+        if (result.ok) {
+          updatedAtRef.current = result.updatedAt
+          setStatus('saved')
+          notifyBlockSaved()
+          return
+        }
 
-      if (result.conflict && result.latest) {
-        updatedAtRef.current = result.latest.updatedAt
-        setStatus('conflict')
+        if (result.conflict && result.latest) {
+          updatedAtRef.current = result.latest.updatedAt
+          setStatus('conflict')
+          setError(result.error)
+          // Someone/something else just overwrote this field — show that
+          // instead of silently discarding it under what's on screen.
+          editor?.commands.setContent(result.latest.json, { emitUpdate: false })
+          return
+        }
+
+        setStatus('error')
         setError(result.error)
-        // Someone/something else just overwrote this field — show that
-        // instead of silently discarding it under what's on screen.
-        editor?.commands.setContent(result.latest.json, { emitUpdate: false })
-        return
+      } catch {
+        // upsertBlock itself rejecting (network failure, a revalidatePath
+        // navigation aborting the request mid-flight, ...) used to leave
+        // status stuck at 'saving' forever — nothing after the await ever
+        // ran. Catching here is what makes the global saving count in
+        // EditBar reliably drop back to 0 even when the request never
+        // resolves normally.
+        setStatus('error')
+        setError('Could not save this field.')
+      } finally {
+        // Always balances the start above, on every branch including a
+        // thrown/rejected upsertBlock call — this is what the global
+        // "is anything still saving" count on EditBar's Save button relies
+        // on to never get stuck showing "Saving…" forever.
+        notifyBlockSavingEnd()
       }
-
-      setStatus('error')
-      setError(result.error)
     },
-    [blockKey, lang, section, editor, notifyBlockSaved]
+    [blockKey, lang, section, editor, notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd]
   )
 
   const scheduleSave = useCallback(

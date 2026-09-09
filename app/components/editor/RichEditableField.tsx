@@ -98,7 +98,7 @@ export default function RichEditableField({
   return (
     <>
       <EditorContent editor={editor} />
-      <FloatingToolbar editor={editor} status={status} />
+      <FloatingToolbar editor={editor} />
       {(status === 'error' || status === 'conflict') &&
         createPortal(
           <AnimatePresence>
