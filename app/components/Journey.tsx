@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
+import { moveBeforeId } from '../lib/reorder'
 import RichText from './editor/EditableText'
 import EditableChapterPhoto from './EditableChapterPhoto'
-import { AddButton, RemoveButton } from './EditControls'
+import { AddButton, DragHandle, RemoveButton } from './EditControls'
 
 function newChapterId() {
   return `chapter-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
@@ -15,6 +16,8 @@ export default function Journey() {
   const chapters = content.journey.chapters
   const [visible, setVisible] = useState<Set<number>>(new Set())
   const refs = useRef<(HTMLDivElement | null)[]>([])
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
 
   useEffect(() => {
     const observers: IntersectionObserver[] = []
@@ -50,6 +53,20 @@ export default function Journey() {
     }))
   }
 
+  function dropChapter(targetId: string) {
+    setOverId(null)
+    if (!dragId || dragId === targetId) {
+      setDragId(null)
+      return
+    }
+    const movedId = dragId
+    updateBoth((c) => ({
+      ...c,
+      journey: { ...c.journey, chapters: moveBeforeId(c.journey.chapters, movedId, targetId) },
+    }))
+    setDragId(null)
+  }
+
   return (
     // Overrides section-padding's bottom side only (utilities layer beats
     // components layer regardless of class order): Projects right below it
@@ -77,9 +94,19 @@ export default function Journey() {
                 <div
                   key={chapter.id}
                   ref={(el) => { refs.current[i] = el }}
-                  className={`relative md:pl-12 transition-all duration-700 ${
+                  className={`relative md:pl-12 rounded-2xl transition-all duration-700 ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  } ${dragId === chapter.id ? 'opacity-40' : ''} ${
+                    overId === chapter.id && dragId !== null && dragId !== chapter.id
+                      ? 'outline outline-2 outline-offset-8 outline-dark-50/60'
+                      : ''
                   }`}
+                  onDragOver={(e) => {
+                    if (!dragId) return
+                    e.preventDefault()
+                    setOverId(chapter.id)
+                  }}
+                  onDrop={() => dropChapter(chapter.id)}
                 >
                   {/* Dot on timeline */}
                   <div className="absolute left-0 top-1 w-px hidden md:block">
@@ -119,7 +146,16 @@ export default function Journey() {
                         </div>
 
                         {editing && (
-                          <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <DragHandle
+                              onDragStart={() => setDragId(chapter.id)}
+                              onDragEnd={() => {
+                                setDragId(null)
+                                setOverId(null)
+                              }}
+                            />
+                            <RemoveButton onClick={() => removeChapter(chapter.id)} label="Remove chapter" />
+                          </div>
                         )}
                       </div>
 

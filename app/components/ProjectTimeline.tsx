@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
+import { moveBeforeId } from '../lib/reorder'
 import RichText from './editor/EditableText'
 import EditableProjectGallery from './EditableProjectGallery'
 import ProjectNarrative from './ProjectNarrative'
 import ProjectTags from './ProjectTags'
-import { AddButton, RemoveButton } from './EditControls'
+import { AddButton, DragHandle, RemoveButton } from './EditControls'
 
 // Alternating sides; index into this by position, not by project identity.
 const poses: Array<'left' | 'right'> = ['right', 'left']
@@ -25,6 +26,8 @@ export default function ProjectTimeline() {
   const [openProject, setOpenProject] = useState<number | null>(null)
   const [managingProject, setManagingProject] = useState<number | null>(null)
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
 
   useEffect(() => {
     const observers: IntersectionObserver[] = []
@@ -107,6 +110,20 @@ export default function ProjectTimeline() {
     }))
   }
 
+  function dropProject(targetId: string) {
+    setOverId(null)
+    if (!dragId || dragId === targetId) {
+      setDragId(null)
+      return
+    }
+    const movedId = dragId
+    updateBoth((c) => ({
+      ...c,
+      projects: { ...c.projects, items: moveBeforeId(c.projects.items, movedId, targetId) },
+    }))
+    setDragId(null)
+  }
+
   return (
     <section id="projects" ref={sectionRef} className="section-padding bg-gradient-to-b from-dark-900 to-dark-800/30">
       <div className="container-main">
@@ -131,7 +148,17 @@ export default function ProjectTimeline() {
               <div
                 key={project.id}
                 id={`project-item-${idx}`}
-                className="relative"
+                className={`relative rounded-2xl transition-all ${dragId === project.id ? 'opacity-40' : ''} ${
+                  overId === project.id && dragId !== null && dragId !== project.id
+                    ? 'outline outline-2 outline-offset-8 outline-dark-50/60'
+                    : ''
+                }`}
+                onDragOver={(e) => {
+                  if (!dragId) return
+                  e.preventDefault()
+                  setOverId(project.id)
+                }}
+                onDrop={() => dropProject(project.id)}
               >
                 <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-stretch ${isRight ? '' : 'md:[&>*:first-child]:order-2'}`}>
 
@@ -265,7 +292,16 @@ export default function ProjectTimeline() {
                         <RichText blockKey={`projects.items.${project.id}.tag`} section="projects" placeholder="Category" />
                       </span>
                       {editing && (
-                        <RemoveButton onClick={() => removeProject(project.id)} label="Remove project" />
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <DragHandle
+                            onDragStart={() => setDragId(project.id)}
+                            onDragEnd={() => {
+                              setDragId(null)
+                              setOverId(null)
+                            }}
+                          />
+                          <RemoveButton onClick={() => removeProject(project.id)} label="Remove project" />
+                        </div>
                       )}
                     </div>
 
