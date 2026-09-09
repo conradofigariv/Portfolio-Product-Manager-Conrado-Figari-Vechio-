@@ -167,9 +167,9 @@ export default function Journey() {
                       </div>
 
                       {/* Body */}
-                      <p className="text-dark-300 leading-relaxed text-base md:text-lg max-w-2xl">
+                      <div className="text-dark-300 leading-relaxed text-base md:text-lg max-w-2xl">
                         <RichText blockKey={`journey.chapters.${chapter.id}.body`} section="journey" placeholder="Body" />
-                      </p>
+                      </div>
                     </div>
 
                     {/* Photo */}

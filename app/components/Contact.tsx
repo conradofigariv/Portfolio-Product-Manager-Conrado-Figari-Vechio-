@@ -1,10 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { useLang } from '../context/LanguageContext'
 import { useBlockList } from '../lib/editor/useBlockList'
 import EditableText from './EditableText'
 import RichText from './editor/EditableText'
-import { AddButton, RemoveButton } from './EditControls'
+import { AddButton, DragHandle, RemoveButton } from './EditControls'
 
 export default function Contact() {
   const { t, content, editing, updateActive } = useLang()
@@ -13,9 +14,22 @@ export default function Contact() {
     items: availableItems,
     add: addAvailableItem,
     remove: removeAvailableItem,
+    reorder: reorderAvailableItems,
     busy: availableItemsBusy,
     error: availableItemsError,
   } = useBlockList({ prefix: 'contact.availableItems', section: 'contact' })
+  const [dragKey, setDragKey] = useState<string | null>(null)
+  const [overKey, setOverKey] = useState<string | null>(null)
+
+  function dropAvailableItem(targetKey: string) {
+    setOverKey(null)
+    if (!dragKey || dragKey === targetKey) {
+      setDragKey(null)
+      return
+    }
+    reorderAvailableItems(dragKey, targetKey)
+    setDragKey(null)
+  }
   // Defensive: content can be an older document saved before these fields
   // existed. The loader normalizes this too, but nothing here should crash
   // if it is ever fed content that bypassed that step.
@@ -29,9 +43,9 @@ export default function Contact() {
         <h2 className="heading-md mb-4">
           <RichText blockKey="contact.title" section="contact" placeholder="Title" />
         </h2>
-        <p className="text-dark-400 text-base md:text-lg mb-6 md:mb-8 max-w-2xl">
+        <div className="text-dark-400 text-base md:text-lg mb-6 md:mb-8 max-w-2xl">
           <RichText blockKey="contact.subtitle" section="contact" placeholder="Subtitle" />
-        </p>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
           {/* Contact Info */}
@@ -131,7 +145,31 @@ export default function Contact() {
               <p className="text-dark-400 text-sm mb-4">{t.contact.availableFor}</p>
               <ul className="space-y-2">
                 {availableItems.map((item) => (
-                  <li key={item.blockKey} className="flex items-start gap-3 text-dark-300 text-sm">
+                  <li
+                    key={item.blockKey}
+                    className={`flex items-start gap-3 text-dark-300 text-sm rounded-lg transition-all ${
+                      dragKey === item.blockKey ? 'opacity-40' : ''
+                    } ${
+                      overKey === item.blockKey && dragKey !== null && dragKey !== item.blockKey
+                        ? 'outline outline-2 outline-offset-4 outline-dark-50/60'
+                        : ''
+                    }`}
+                    onDragOver={(e) => {
+                      if (!dragKey) return
+                      e.preventDefault()
+                      setOverKey(item.blockKey)
+                    }}
+                    onDrop={() => dropAvailableItem(item.blockKey)}
+                  >
+                    {editing && (
+                      <DragHandle
+                        onDragStart={() => setDragKey(item.blockKey)}
+                        onDragEnd={() => {
+                          setDragKey(null)
+                          setOverKey(null)
+                        }}
+                      />
+                    )}
                     <span className="text-dark-50 mt-0.5">✓</span>
                     <span className="flex-1">
                       <RichText blockKey={item.blockKey} section="contact" placeholder="Item" />

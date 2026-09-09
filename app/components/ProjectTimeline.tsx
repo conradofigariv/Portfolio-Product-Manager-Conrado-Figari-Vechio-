@@ -131,9 +131,12 @@ export default function ProjectTimeline() {
           <h2 className="heading-md mb-4">
             <RichText blockKey="projects.title" section="projects" placeholder="Section title" />
           </h2>
-          <p className="text-dark-400 text-lg max-w-2xl">
+          {/* div, not p — see Hero.tsx's comment on the same pattern: a
+              migrated RichText field's edit-mode Tiptap div can't legally
+              sit inside a <p>. */}
+          <div className="text-dark-400 text-lg max-w-2xl">
             <RichText blockKey="projects.subtitle" section="projects" placeholder="Subtitle" />
-          </p>
+          </div>
         </div>
 
         <div className="space-y-16 md:space-y-32">
@@ -370,9 +373,9 @@ export default function ProjectTimeline() {
           <h3 className="text-2xl font-bold mb-4">
             <RichText blockKey="projects.ctaTitle" section="projects" placeholder="CTA title" />
           </h3>
-          <p className="text-dark-400 mb-8">
+          <div className="text-dark-400 mb-8">
             <RichText blockKey="projects.ctaDescription" section="projects" placeholder="CTA description" />
-          </p>
+          </div>
         </div>
       </div>
 

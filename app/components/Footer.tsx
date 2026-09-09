@@ -19,9 +19,9 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="text-dark-50 font-bold mb-3">{content.hero.name}</h3>
-            <p className="text-dark-400 text-sm leading-relaxed">
+            <div className="text-dark-400 text-sm leading-relaxed">
               <RichText blockKey="footer.tagline" section="footer" placeholder="Closing line" />
-            </p>
+            </div>
           </div>
           <div>
             <h4 className="text-dark-50 font-semibold mb-4 text-sm">{t.footer.quickLinks}</h4>
@@ -66,9 +66,9 @@ export default function Footer() {
           )}
         </div>
         <div className="border-t border-dark-700 pt-8 flex flex-col md:flex-row justify-between items-center text-dark-400 text-xs gap-4">
-          <p>
+          <div>
             <RichText blockKey="footer.rights" section="footer" placeholder="© Your name" />
-          </p>
+          </div>
         </div>
       </div>
     </footer>

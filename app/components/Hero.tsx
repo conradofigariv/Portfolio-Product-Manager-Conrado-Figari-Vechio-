@@ -60,29 +60,35 @@ export default function Hero() {
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
           >
-            <p className="text-dark-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-2 md:mb-3">
+            {/* These wrap a migrated RichText field, so `div` rather than
+                `p` — in edit mode Tiptap's EditorContent renders its own
+                `<div>`, and a `<div>` inside a `<p>` is invalid HTML
+                (browsers auto-close the `<p>` early, which React flags as
+                a nesting error). Purely typographic Tailwind classes work
+                identically on a div. */}
+            <div className="text-dark-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-2 md:mb-3">
               <RichText blockKey="hero.greeting" section="hero" placeholder="Greeting" />
-            </p>
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight text-dark-50">
               <RichText blockKey="hero.name" section="hero" placeholder="Your name" />
             </h1>
-            <p className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
+            <div className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">
               <RichText blockKey="hero.tagline" section="hero" placeholder="Headline" />
-            </p>
-            <p className="text-sm md:text-base text-dark-400 max-w-xl mb-3 md:mb-4 leading-relaxed">
+            </div>
+            <div className="text-sm md:text-base text-dark-400 max-w-xl mb-3 md:mb-4 leading-relaxed">
               <RichText blockKey="hero.description" section="hero" placeholder="Description" />
-            </p>
+            </div>
 
             {/* Stats */}
             <div className="pt-3 md:pt-4 border-t border-dark-700 grid grid-cols-3 gap-3 md:gap-6">
               {content.stats.map((_, i) => (
                 <div key={i} className="text-center">
-                  <p className="text-xl md:text-2xl font-bold text-dark-50">
+                  <div className="text-xl md:text-2xl font-bold text-dark-50">
                     <RichText blockKey={`stats.${i}.value`} section="hero" placeholder="Value" />
-                  </p>
-                  <p className="text-dark-400 text-xs md:text-sm mt-1">
+                  </div>
+                  <div className="text-dark-400 text-xs md:text-sm mt-1">
                     <RichText blockKey={`stats.${i}.label`} section="hero" placeholder="Label" />
-                  </p>
+                  </div>
                 </div>
               ))}
             </div>

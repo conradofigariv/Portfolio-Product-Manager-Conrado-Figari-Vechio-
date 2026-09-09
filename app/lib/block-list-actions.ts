@@ -7,6 +7,7 @@ import type { Lang } from './portfolio'
 
 type AddResult = { ok: true; blockKey: string } | { ok: false; error: string }
 type RemoveResult = { ok: true } | { ok: false; error: string }
+type ReorderResult = { ok: true } | { ok: false; error: string }
 
 function randomId(): string {
   return Math.random().toString(36).slice(2, 10)
@@ -93,6 +94,50 @@ export async function removeListItemBlock(blockKey: string, lang: Lang): Promise
     .eq('lang', lang)
 
   if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { ok: true }
+}
+
+/**
+ * Resequences a single-field list's blocks to match `orderedBlockKeys` —
+ * the drag-to-reorder counterpart to add/remove. Unlike the plain-array
+ * reorder used for projects/chapters (a local draft mutation via
+ * updateBoth, nothing persisted until Save), a list-of-blocks field
+ * autosaves immediately, same as add/remove, so this writes straight to
+ * `sort_order` rather than staging anything client-side. Every block in
+ * the list gets its array index as its new sort_order, in one batch —
+ * simpler and safer than computing a single fractional value for just the
+ * moved block, and cheap enough for lists this size (narrative lines,
+ * tags, a handful of items).
+ */
+export async function reorderListItemBlocks(orderedBlockKeys: string[], lang: Lang): Promise<ReorderResult> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'You are not signed in.' }
+
+  const { data: portfolio } = await supabase
+    .from('portfolios')
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+  const results = await Promise.all(
+    orderedBlockKeys.map((blockKey, index) =>
+      supabase
+        .from('portfolio_blocks')
+        .update({ sort_order: index })
+        .eq('portfolio_id', portfolio.id)
+        .eq('block_key', blockKey)
+        .eq('lang', lang)
+    )
+  )
+  const failed = results.find((r) => r.error)
+  if (failed?.error) return { ok: false, error: failed.error.message }
 
   revalidatePath('/', 'layout')
   return { ok: true }
