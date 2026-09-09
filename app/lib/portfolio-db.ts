@@ -8,6 +8,7 @@ import type {
   PortfolioContent,
   PortfolioMedia,
 } from './portfolio'
+import { skillCategoryId } from './portfolio'
 
 const BUCKET = 'portfolio-media'
 
@@ -59,6 +60,15 @@ function normalizeContent(raw: PortfolioContent): PortfolioContent {
   const contact = raw.contact as Partial<PortfolioContent['contact']> | undefined
   return {
     ...raw,
+    skills: {
+      ...raw.skills,
+      // Categories predating the `id` field (assigned by 0010's migration
+      // to every already-stored category) get the same deterministic
+      // index-based id here — a belt-and-suspenders fallback in case this
+      // ever renders a document the migration hasn't reached yet, so a
+      // category's block_key is never built from an undefined id.
+      categories: raw.skills.categories.map((cat, i) => ({ ...cat, id: cat.id ?? skillCategoryId(i) })),
+    },
     contact: {
       title: contact?.title ?? '',
       subtitle: contact?.subtitle ?? '',

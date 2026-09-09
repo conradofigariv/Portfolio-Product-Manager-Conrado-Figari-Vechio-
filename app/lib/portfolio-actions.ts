@@ -119,9 +119,10 @@ function sanitize(input: unknown): PortfolioContent {
     skills: {
       title: text(skills.title, LIMITS.short),
       subtitle: text(skills.subtitle, LIMITS.line),
-      categories: list(skills.categories, LIMITS.categories, (item) => {
+      categories: list(skills.categories, LIMITS.categories, (item, index) => {
         const cat = (item ?? {}) as Record<string, unknown>
         return {
+          id: id(cat.id, `skillcat-${index}`),
           category: text(cat.category, LIMITS.short),
           skills: textList(cat.skills, LIMITS.skills, LIMITS.short),
         }

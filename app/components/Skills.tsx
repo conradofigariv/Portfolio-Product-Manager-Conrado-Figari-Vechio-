@@ -2,11 +2,15 @@
 
 import { useLang } from '../context/LanguageContext'
 import { usePairedBlockList } from '../lib/editor/usePairedBlockList'
-import EditableText from './EditableText'
 import RichText from './editor/EditableText'
+import SkillCategoryCard from './SkillCategoryCard'
 import { AddButton, RemoveButton } from './EditControls'
 
 const CERT_FIELDS = ['title', 'issuer'] as const
+
+function newSkillCategoryId() {
+  return `skillcat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+}
 
 export default function Skills() {
   const { t, content, editing, updateActive } = useLang()
@@ -30,75 +34,20 @@ export default function Skills() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {s.categories.map((cat, ci) => (
-            <div
-              key={ci}
-              className="bg-dark-900/50 border border-dark-700 rounded-xl p-4 md:p-6 hover:border-dark-500 transition"
-            >
-              <div className="flex items-start justify-between gap-2 mb-3 md:mb-4">
-                <h3 className="text-sm md:text-base font-semibold text-dark-50">
-                  <EditableText path={`skills.categories.${ci}.category`} placeholder="Category" />
-                </h3>
-                {editing && (
-                  <RemoveButton
-                    label="Remove category"
-                    onClick={() =>
-                      updateActive((c) => ({
-                        ...c,
-                        skills: {
-                          ...c.skills,
-                          categories: c.skills.categories.filter((_, j) => j !== ci),
-                        },
-                      }))
-                    }
-                  />
-                )}
-              </div>
-              <ul className="space-y-2">
-                {cat.skills.map((_, si) => (
-                  <li key={si} className="flex items-center gap-3 text-dark-300 text-xs md:text-sm">
-                    <span className="w-1 h-1 bg-dark-400 rounded-full flex-shrink-0" />
-                    <span className="flex-1">
-                      <EditableText path={`skills.categories.${ci}.skills.${si}`} placeholder="Skill" />
-                    </span>
-                    {editing && (
-                      <RemoveButton
-                        label="Remove skill"
-                        onClick={() =>
-                          updateActive((c) => ({
-                            ...c,
-                            skills: {
-                              ...c.skills,
-                              categories: c.skills.categories.map((cc, j) =>
-                                j === ci ? { ...cc, skills: cc.skills.filter((_, k) => k !== si) } : cc
-                              ),
-                            },
-                          }))
-                        }
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {editing && (
-                <div className="mt-3">
-                  <AddButton
-                    label="Add skill"
-                    onClick={() =>
-                      updateActive((c) => ({
-                        ...c,
-                        skills: {
-                          ...c.skills,
-                          categories: c.skills.categories.map((cc, j) =>
-                            j === ci ? { ...cc, skills: [...cc.skills, 'Skill'] } : cc
-                          ),
-                        },
-                      }))
-                    }
-                  />
-                </div>
-              )}
-            </div>
+          {s.categories.map((cat) => (
+            <SkillCategoryCard
+              key={cat.id}
+              category={cat}
+              onRemove={() =>
+                updateActive((c) => ({
+                  ...c,
+                  skills: {
+                    ...c.skills,
+                    categories: c.skills.categories.filter((cc) => cc.id !== cat.id),
+                  },
+                }))
+              }
+            />
           ))}
 
           {editing && (
@@ -110,7 +59,7 @@ export default function Skills() {
                     ...c,
                     skills: {
                       ...c.skills,
-                      categories: [...c.skills.categories, { category: 'Category', skills: [] }],
+                      categories: [...c.skills.categories, { id: newSkillCategoryId(), category: '', skills: [] }],
                     },
                   }))
                 }

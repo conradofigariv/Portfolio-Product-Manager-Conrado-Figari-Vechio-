@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useLang } from '../context/LanguageContext'
-import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import EditablePortrait from './EditablePortrait'
 
@@ -79,10 +78,10 @@ export default function Hero() {
               {content.stats.map((_, i) => (
                 <div key={i} className="text-center">
                   <p className="text-xl md:text-2xl font-bold text-dark-50">
-                    <EditableText path={`stats.${i}.value`} placeholder="Value" />
+                    <RichText blockKey={`stats.${i}.value`} section="hero" placeholder="Value" />
                   </p>
                   <p className="text-dark-400 text-xs md:text-sm mt-1">
-                    <EditableText path={`stats.${i}.label`} placeholder="Label" />
+                    <RichText blockKey={`stats.${i}.label`} section="hero" placeholder="Label" />
                   </p>
                 </div>
               ))}

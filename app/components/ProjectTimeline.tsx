@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { useLang } from '../context/LanguageContext'
-import EditableText from './EditableText'
 import RichText from './editor/EditableText'
 import EditableProjectGallery from './EditableProjectGallery'
 import ProjectNarrative from './ProjectNarrative'
@@ -223,7 +222,7 @@ export default function ProjectTimeline() {
                       }}
                     >
                       <span className="text-dark-400 text-xs font-mono tracking-widest uppercase mb-1 md:mb-2">
-                        <EditableText path={`projects.items.${idx}.year`} placeholder="Year" />
+                        <RichText blockKey={`projects.items.${project.id}.year`} section="projects" placeholder="Year" />
                       </span>
                       <h3 className="text-xl md:text-3xl font-bold text-dark-50 leading-tight">
                         <RichText blockKey={`projects.items.${project.id}.title`} section="projects" placeholder="Title" />
@@ -246,7 +245,7 @@ export default function ProjectTimeline() {
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <span className="text-sm md:text-base font-mono text-dark-50 uppercase tracking-widest">
-                        <EditableText path={`projects.items.${idx}.tag`} placeholder="Category" />
+                        <RichText blockKey={`projects.items.${project.id}.tag`} section="projects" placeholder="Category" />
                       </span>
                       {editing && (
                         <RemoveButton onClick={() => removeProject(project.id)} label="Remove project" />
