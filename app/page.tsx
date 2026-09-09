@@ -8,18 +8,42 @@ const instrumentSans = Instrument_Sans({
   weight: ['400', '500', '600'],
 })
 
+// Step 3 used to describe a "Public" toggle the app has never had — the
+// portfolio is live the moment you sign in, published:true from creation,
+// with no separate publish action to pitch (see CLAUDE.md: "always public,
+// no draft/private mode"). Reframed around what's actually true instead:
+// there's nothing left to do after step 2.
 const steps = [
   {
     title: 'Iniciá sesión con Google',
     body: 'Sin formularios ni tutoriales. Un click y ya tenés tu portfolio.',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-5 h-5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l4-4m0 0l-4-4m4 4H3m8-8h6a2 2 0 012 2v12a2 2 0 01-2 2h-6" />
+      </svg>
+    ),
   },
   {
     title: 'Editá todo en vivo',
     body: 'Texto y fotos se tocan directo sobre el diseño real, no en un panel aparte.',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-5 h-5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
   },
   {
-    title: 'Publicá con un click',
-    body: 'Activá "Public" y tu portfolio queda online en tu propio link.',
+    title: 'Ya está online',
+    body: 'No hay botón de "publicar" — tu portfolio queda en vivo apenas iniciás sesión, en tu propio link.',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-5 h-5">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9.5 14.5l5-5m-4-3.5l.7-.7a3.5 3.5 0 015 5l-.7.7m-6 6l-.7.7a3.5 3.5 0 01-5-5l.7-.7"
+        />
+      </svg>
+    ),
   },
 ]
 
@@ -116,8 +140,17 @@ export default async function Home({
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-white/10 border border-white/10 rounded-2xl overflow-hidden">
-            {steps.map((step) => (
-              <div key={step.title} className="bg-[#08080a] p-7 sm:p-8 lg:p-11">
+            {steps.map((step, i) => (
+              <div
+                key={step.title}
+                className="group relative bg-[#08080a] hover:bg-white/[0.03] transition-colors p-7 sm:p-8 lg:p-11"
+              >
+                <span className="absolute top-7 right-7 sm:top-8 sm:right-8 lg:top-11 lg:right-11 text-[13px] font-mono text-white/20 group-hover:text-white/35 transition-colors">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="w-10 h-10 rounded-full bg-[#d8ff3e] text-[#08080a] flex items-center justify-center mb-5">
+                  {step.icon}
+                </div>
                 <h3 className="m-0 mb-2.5 text-xl font-semibold tracking-[-0.02em]">{step.title}</h3>
                 <p className="m-0 text-[15.5px] leading-[1.55] text-[#a1a1aa]">{step.body}</p>
               </div>
