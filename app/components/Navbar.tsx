@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
 import BackgroundPicker from './BackgroundPicker'
+import { FlagES, FlagUS } from './FlagIcon'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -54,9 +55,13 @@ export default function Navbar() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
             aria-label="Toggle language"
           >
-            <span className={lang === 'en' ? 'text-dark-50 font-bold' : ''}>🇺🇸 EN</span>
+            <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-dark-50 font-bold' : ''}`}>
+              <FlagUS /> EN
+            </span>
             <span className="text-dark-600">/</span>
-            <span className={lang === 'es' ? 'text-dark-50 font-bold' : ''}>🇪🇸 ES</span>
+            <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-dark-50 font-bold' : ''}`}>
+              <FlagES /> ES
+            </span>
           </button>
 
           <BackgroundPicker />
@@ -83,9 +88,17 @@ export default function Navbar() {
         <div className="md:hidden flex items-center gap-3">
           <button
             onClick={toggleLang}
-            className="text-dark-300 hover:text-dark-50 transition text-xs font-mono"
+            className="flex items-center gap-1 text-dark-300 hover:text-dark-50 transition text-xs font-mono"
           >
-            {lang === 'en' ? '🇪🇸 ES' : '🇺🇸 EN'}
+            {lang === 'en' ? (
+              <>
+                <FlagES /> ES
+              </>
+            ) : (
+              <>
+                <FlagUS /> EN
+              </>
+            )}
           </button>
           <BackgroundPicker />
           {editing && (
