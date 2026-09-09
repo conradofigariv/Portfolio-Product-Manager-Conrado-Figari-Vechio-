@@ -75,7 +75,7 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
         </div>
       </header>
 
-      <div className="relative z-[3] flex-1 flex items-start px-5 sm:px-9 lg:px-[72px] pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-20 lg:pb-24">
+      <div className="relative z-[3] flex-1 flex items-center px-5 sm:px-9 lg:px-[72px] py-12 sm:py-16 lg:py-20">
         <div className="max-w-[760px]">
           <h1 className="m-0 text-[40px] sm:text-[56px] lg:text-[76px] leading-[0.98] tracking-[-0.035em] font-medium [text-wrap:balance]">
             {t.headlineLine1}
