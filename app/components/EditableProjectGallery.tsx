@@ -159,7 +159,7 @@ export default function EditableProjectGallery({
       onClick={onClose}
     >
       <div
-        className={`bg-dark-800 border rounded-xl w-full max-w-lg p-5 transition-colors ${
+        className={`bg-dark-800 border rounded-xl w-full max-w-3xl max-h-[85vh] overflow-y-auto flex flex-col transition-colors ${
           fileOver ? 'border-dark-300' : 'border-dark-700'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -178,133 +178,155 @@ export default function EditableProjectGallery({
           if (e.dataTransfer.files?.length) onFiles(e.dataTransfer.files)
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-semibold text-dark-50">Photos — {title || 'Untitled'}</span>
-          <button type="button" onClick={onClose} className="text-dark-400 hover:text-dark-50 text-sm">
-            Done
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-dark-700 flex-shrink-0">
+          <div>
+            <span className="text-base font-semibold text-dark-50">Photos</span>
+            <span className="text-dark-500"> — {title || 'Untitled'}</span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-dark-300 hover:text-dark-50 transition p-1.5 -m-1.5 rounded-lg hover:bg-dark-700/60"
+            aria-label="Done"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {ordered.map((photo, i) => {
-            const override = rotatedPhotos[photo.src]
-            const displaySrc = override?.src ?? photo.src
-            const storagePath = override?.storagePath ?? storagePathFromPublicUrl(photo.src)
-            const position = positions[photo.src] ?? photo.position
+        <div className="p-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {ordered.map((photo, i) => {
+              const override = rotatedPhotos[photo.src]
+              const displaySrc = override?.src ?? photo.src
+              const storagePath = override?.storagePath ?? storagePathFromPublicUrl(photo.src)
+              const position = positions[photo.src] ?? photo.position
 
-            const onRotated = async (newStoragePath: string, newPublicUrl: string) => {
-              if (!storagePath) return { ok: false as const, error: 'Missing storage path.' }
-              const result = await replaceProjectPhoto(
-                projectId,
-                storagePath,
-                newStoragePath,
-                photo.alt || title
+              const onRotated = async (newStoragePath: string, newPublicUrl: string) => {
+                if (!storagePath) return { ok: false as const, error: 'Missing storage path.' }
+                const result = await replaceProjectPhoto(
+                  projectId,
+                  storagePath,
+                  newStoragePath,
+                  photo.alt || title
+                )
+                if (!result.ok) return result
+                setRotatedPhotos((r) => ({
+                  ...r,
+                  [photo.src]: { src: newPublicUrl, storagePath: newStoragePath },
+                }))
+                router.refresh()
+                return { ok: true as const }
+              }
+
+              return (
+                <div
+                  key={photo.src}
+                  draggable
+                  onDragStart={(e) => {
+                    setDragIndex(i)
+                    e.dataTransfer.effectAllowed = 'move'
+                    e.dataTransfer.setData('text/plain', String(i))
+                  }}
+                  onDragEnd={() => {
+                    setDragIndex(null)
+                    setOverIndex(null)
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    if (dragIndex !== null) setOverIndex(i)
+                  }}
+                  onDrop={(e) => dropOnTile(e, i)}
+                  className={`relative aspect-square rounded-xl overflow-hidden border cursor-grab active:cursor-grabbing transition-all group ${
+                    overIndex === i && dragIndex !== null && dragIndex !== i
+                      ? 'border-dark-50 scale-95'
+                      : 'border-dark-600'
+                  } ${dragIndex === i ? 'opacity-40' : ''}`}
+                >
+                  <Image
+                    src={displaySrc}
+                    alt={photo.alt}
+                    fill
+                    quality={90}
+                    sizes="(min-width: 640px) 25vw, 50vw"
+                    draggable={false}
+                    className="object-cover pointer-events-none"
+                    style={{ objectPosition: position }}
+                  />
+
+                  {i === 0 && (
+                    <span className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full bg-dark-900/80 backdrop-blur text-dark-100 text-[11px] font-medium">
+                      Cover
+                    </span>
+                  )}
+
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-dark-900/75 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    {storagePath && (
+                      <PositionPicker
+                        storagePath={storagePath}
+                        src={displaySrc}
+                        alt={photo.alt}
+                        aspect={CARD_ASPECT}
+                        position={position}
+                        onChange={(next) => setPositions((p) => ({ ...p, [photo.src]: next }))}
+                        onRotated={onRotated}
+                        triggerClassName="text-sm font-medium text-dark-50"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onRemove(storagePath ?? photo.src)}
+                      disabled={busy}
+                      className="text-sm font-medium text-red-400 hover:text-red-300 transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
               )
-              if (!result.ok) return result
-              setRotatedPhotos((r) => ({
-                ...r,
-                [photo.src]: { src: newPublicUrl, storagePath: newStoragePath },
-              }))
-              router.refresh()
-              return { ok: true as const }
-            }
+            })}
 
-            return (
-              <div
-                key={photo.src}
-                draggable
-                onDragStart={(e) => {
-                  setDragIndex(i)
-                  e.dataTransfer.effectAllowed = 'move'
-                  e.dataTransfer.setData('text/plain', String(i))
-                }}
-                onDragEnd={() => {
-                  setDragIndex(null)
-                  setOverIndex(null)
-                }}
+            {ordered.length < MAX_PHOTOS ? (
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                disabled={busy}
                 onDragOver={(e) => {
                   e.preventDefault()
-                  if (dragIndex !== null) setOverIndex(i)
+                  setFileOver(true)
                 }}
-                onDrop={(e) => dropOnTile(e, i)}
-                className={`relative aspect-square rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing transition-all group ${
-                  overIndex === i && dragIndex !== null && dragIndex !== i
-                    ? 'border-dark-50 scale-95'
-                    : 'border-dark-600'
-                } ${dragIndex === i ? 'opacity-40' : ''}`}
+                onDrop={(e) => dropOnTile(e, ordered.length)}
+                className={`aspect-square rounded-xl border border-dashed flex flex-col items-center justify-center gap-1.5 text-xs font-medium transition disabled:opacity-50 ${
+                  fileOver
+                    ? 'border-dark-300 text-dark-50 bg-dark-700/40'
+                    : 'border-dark-600 hover:border-dark-400 text-dark-400 hover:text-dark-50'
+                }`}
               >
-                <Image
-                  src={displaySrc}
-                  alt={photo.alt}
-                  fill
-                  quality={90}
-                  draggable={false}
-                  className="object-cover pointer-events-none"
-                  style={{ objectPosition: position }}
-                />
-
-                {i === 0 && (
-                  <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded bg-dark-900/80 text-dark-100 text-[10px] font-medium">
-                    Cover
-                  </span>
+                {busy ? (
+                  'Uploading…'
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add photo
+                  </>
                 )}
-
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-dark-900/70 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                  {storagePath && (
-                    <PositionPicker
-                      storagePath={storagePath}
-                      src={displaySrc}
-                      alt={photo.alt}
-                      aspect={CARD_ASPECT}
-                      position={position}
-                      onChange={(next) => setPositions((p) => ({ ...p, [photo.src]: next }))}
-                      onRotated={onRotated}
-                      triggerClassName="text-xs font-medium text-dark-50"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => onRemove(storagePath ?? photo.src)}
-                    disabled={busy}
-                    className="text-xs font-medium text-red-400"
-                  >
-                    Remove
-                  </button>
-                </div>
+              </button>
+            ) : (
+              <div className="aspect-square rounded-xl border border-dashed border-dark-700 flex items-center justify-center text-center px-3">
+                <span className="text-xs text-dark-500">Limit reached — remove one to add another</span>
               </div>
-            )
-          })}
+            )}
+          </div>
 
-          {ordered.length < MAX_PHOTOS ? (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              disabled={busy}
-              onDragOver={(e) => {
-                e.preventDefault()
-                setFileOver(true)
-              }}
-              onDrop={(e) => dropOnTile(e, ordered.length)}
-              className={`aspect-square rounded-lg border border-dashed text-xs transition disabled:opacity-50 ${
-                fileOver
-                  ? 'border-dark-300 text-dark-50 bg-dark-700/40'
-                  : 'border-dark-600 hover:border-dark-400 text-dark-400 hover:text-dark-50'
-              }`}
-            >
-              {busy ? 'Uploading…' : '+ Add photo'}
-            </button>
-          ) : (
-            <div className="aspect-square rounded-lg border border-dashed border-dark-700 flex items-center justify-center text-center px-2">
-              <span className="text-xs text-dark-500">Limit reached — remove one to add another</span>
-            </div>
-          )}
+          <p className="text-xs text-dark-500 mt-4">
+            {ordered.length} / {MAX_PHOTOS} photos. Drop files here to upload, drag a photo to reorder
+            — the first one is the cover.
+          </p>
+          {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
         </div>
-
-        <p className="text-xs text-dark-500 mt-3">
-          {ordered.length} / {MAX_PHOTOS} photos. Drop files here to upload, drag a photo to reorder
-          — the first one is the cover.
-        </p>
-        {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
 
         {/* Single-select: on many mobile photo pickers, `multiple` requires an
             extra confirm/checkmark tap after choosing a photo, so tapping the

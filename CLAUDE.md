@@ -175,6 +175,7 @@ Never stack commits on already-merged history — always rebase the working bran
 - Empty editable field placeholder: `editable-field` class + `data-placeholder` attribute + CSS in `globals.css`
 - `createPortal(..., document.body)` whenever a modal/overlay lives inside a card that uses CSS `transform` (would trap `position: fixed`)
 - `quality={90}` on all Next.js `<Image>` components for sharp output
+- Full-panel modal header convention (the public photo lightbox in `ProjectTimeline.tsx`, `EditableProjectGallery.tsx`): `flex items-center justify-between gap-4 px-6 py-4 border-b border-dark-700`, title on the left, a plain icon-only close button on the right (`<svg>` X, `text-dark-300 hover:text-dark-50 transition p-1.5 rounded-lg hover:bg-dark-700/60`) — not a text "Close"/"Done" link. `EditableProjectGallery`'s panel was `max-w-lg` and felt cramped for a 4-tile grid; widened to `max-w-3xl` (plus `max-h-[85vh] overflow-y-auto` as a safety net on short viewports) to match this convention and give tiles real size.
 
 ## Common pitfalls
 - **Always use `storagePathFromPublicUrl()`** before passing a media src to any DB action that filters by `storage_path`.
