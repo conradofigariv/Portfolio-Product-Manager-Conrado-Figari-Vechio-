@@ -51,12 +51,12 @@ export default function Navbar() {
           {/* Language toggle */}
           <button
             onClick={toggleLang}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-600 text-dark-300 hover:text-dark-50 hover:border-dark-400 transition text-sm font-mono"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
             aria-label="Toggle language"
           >
-            <span className={lang === 'en' ? 'text-dark-50 font-bold' : ''}>EN</span>
+            <span className={lang === 'en' ? 'text-dark-50 font-bold' : ''}>🇺🇸 EN</span>
             <span className="text-dark-600">/</span>
-            <span className={lang === 'es' ? 'text-dark-50 font-bold' : ''}>ES</span>
+            <span className={lang === 'es' ? 'text-dark-50 font-bold' : ''}>🇪🇸 ES</span>
           </button>
 
           <BackgroundPicker />
@@ -86,9 +86,9 @@ export default function Navbar() {
         <div className="md:hidden flex items-center gap-3">
           <button
             onClick={toggleLang}
-            className="text-dark-300 hover:text-dark-50 transition text-sm font-mono"
+            className="text-dark-300 hover:text-dark-50 transition text-xs font-mono"
           >
-            {lang === 'en' ? 'ES' : 'EN'}
+            {lang === 'en' ? '🇪🇸 ES' : '🇺🇸 EN'}
           </button>
           <BackgroundPicker />
           {editing && (
