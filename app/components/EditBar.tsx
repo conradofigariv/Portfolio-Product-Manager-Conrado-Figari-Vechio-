@@ -14,7 +14,7 @@ const FLASH_MS = 1600
 // Floats above the portfolio while its owner is editing. Everyone else never
 // renders this, and the page they see is unchanged.
 export default function EditBar({ username }: { username: string }) {
-  const { editing, dirty, draft, markSaved, lastBlockSavedAt, lang } = useLang()
+  const { editing, dirty, draft, markSaved, lastBlockSavedAt, blockSaving, lang } = useLang()
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [justSaved, setJustSaved] = useState(false)
@@ -86,27 +86,42 @@ export default function EditBar({ username }: { username: string }) {
           onClick={onSave}
           disabled={state === 'saving' || !dirty}
           className={`button-primary text-sm py-1.5 px-4 disabled:opacity-50 overflow-hidden ${
-            justSaved && state !== 'saving' ? 'scale-105 shadow-[0_0_0_3px_rgba(216,255,62,0.35)]' : ''
+            justSaved && state !== 'saving' && !blockSaving ? 'scale-105 shadow-[0_0_0_3px_rgba(216,255,62,0.35)]' : ''
           }`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
-              key={state === 'saving' ? 'saving' : justSaved ? 'flash' : dirty ? 'save' : 'saved'}
+              key={
+                state === 'saving' || blockSaving
+                  ? 'saving'
+                  : justSaved
+                  ? 'flash'
+                  : dirty
+                  ? 'save'
+                  : 'saved'
+              }
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.15 }}
-              className="inline-block"
+              className="inline-flex items-center gap-1.5"
             >
-              {state === 'saving'
-                ? 'Saving…'
-                : justSaved
-                ? lang === 'es'
-                  ? '¡Guardado!'
-                  : 'Saved!'
-                : dirty
-                ? 'Save'
-                : 'Saved'}
+              {state === 'saving' || blockSaving ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  Saving…
+                </>
+              ) : justSaved ? (
+                lang === 'es' ? (
+                  '¡Guardado!'
+                ) : (
+                  'Saved!'
+                )
+              ) : dirty ? (
+                'Save'
+              ) : (
+                'Saved'
+              )}
             </motion.span>
           </AnimatePresence>
         </button>

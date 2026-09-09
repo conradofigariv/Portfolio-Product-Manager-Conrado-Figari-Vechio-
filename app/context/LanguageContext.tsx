@@ -28,6 +28,16 @@ interface LanguageContextType {
   // confirmation, independent of whatever dirty/Save is doing.
   lastBlockSavedAt: number | null
   notifyBlockSaved: () => void
+  // True while at least one field's autosave request is in flight — a
+  // ref-counted "how many blocks are currently saving" rather than a single
+  // boolean, since more than one field can be mid-save at once (e.g.
+  // tabbing away from one field the instant another's debounce fires). Feeds
+  // EditBar's Save button, which is the single place save status shows up
+  // now (a per-field indicator in FloatingToolbar was tried and dropped —
+  // see EditBar's own comment for why).
+  blockSaving: boolean
+  notifyBlockSavingStart: () => void
+  notifyBlockSavingEnd: () => void
   // Structural edits (add/remove list items) that only ever touch the language
   // being viewed — used for narrative lines, tags, skills, categories, certs
   // and contact items, none of which anything else is keyed to.
@@ -54,12 +64,18 @@ export function LanguageProvider({
   const [draft, setDraft] = useState(portfolio.content)
   const [dirty, setDirty] = useState(false)
   const [lastBlockSavedAt, setLastBlockSavedAt] = useState<number | null>(null)
+  const [savingCount, setSavingCount] = useState(0)
   // Stable across renders (unlike an inline arrow in the provider value
   // below) so it doesn't churn useBlockPersistence's own useCallback deps —
   // this context re-renders on every keystroke in an old-system field, and
   // every mounted Tiptap editor's update/blur listeners would otherwise be
   // torn down and re-attached on each one.
   const notifyBlockSaved = useCallback(() => setLastBlockSavedAt(Date.now()), [])
+  const notifyBlockSavingStart = useCallback(() => setSavingCount((n) => n + 1), [])
+  // Floored at 0 — a field can call this from its unmount-flush effect after
+  // its own save() already settled and decremented once, so the count must
+  // never go negative from a double-decrement.
+  const notifyBlockSavingEnd = useCallback(() => setSavingCount((n) => Math.max(0, n - 1)), [])
 
   const toggleLang = () => setLang((l) => (l === 'en' ? 'es' : 'en'))
 
@@ -96,6 +112,9 @@ export function LanguageProvider({
         markSaved: () => setDirty(false),
         lastBlockSavedAt,
         notifyBlockSaved,
+        blockSaving: savingCount > 0,
+        notifyBlockSavingStart,
+        notifyBlockSavingEnd,
       }}
     >
       {children}
