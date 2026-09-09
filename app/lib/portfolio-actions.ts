@@ -162,36 +162,45 @@ function sanitize(input: unknown): PortfolioContent {
 export async function savePortfolio(payload: {
   content: Record<Lang, unknown>
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient()
+  // Wrapped so this always resolves rather than ever rejecting — an
+  // uncaught throw here used to leave EditBar's Save button stuck showing
+  // "Saving…" forever, the same class of bug fixed in block-actions.ts's
+  // upsertBlock (see its longer comment).
+  try {
+    const supabase = await createClient()
 
-  // Checked here rather than relying on proxy.ts: the Next docs are explicit
-  // that proxy coverage can be dropped by a matcher change without warning.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You are not signed in.' }
+    // Checked here rather than relying on proxy.ts: the Next docs are
+    // explicit that proxy coverage can be dropped by a matcher change
+    // without warning.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
 
-  const content = {
-    en: sanitize(payload.content?.en),
-    es: sanitize(payload.content?.es),
+    const content = {
+      en: sanitize(payload.content?.en),
+      es: sanitize(payload.content?.es),
+    }
+
+    if (!content.en.hero.name && !content.es.hero.name) {
+      return { ok: false, error: 'Your name cannot be empty.' }
+    }
+
+    // Portfolios are always public — there is no draft/private state — so
+    // every save also self-heals any row still carrying the old default of
+    // false. The row filter is belt and braces — row level security
+    // already restricts updates to the caller's own portfolio.
+    const { error } = await supabase
+      .from('portfolios')
+      .update({ content, published: true })
+      .eq('user_id', user.id)
+
+    if (error) return { ok: false, error: error.message }
+
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error saving.' }
   }
-
-  if (!content.en.hero.name && !content.es.hero.name) {
-    return { ok: false, error: 'Your name cannot be empty.' }
-  }
-
-  // Portfolios are always public — there is no draft/private state — so every
-  // save also self-heals any row still carrying the old default of false.
-  // The row filter is belt and braces — row level security already restricts
-  // updates to the caller's own portfolio.
-  const { error } = await supabase
-    .from('portfolios')
-    .update({ content, published: true })
-    .eq('user_id', user.id)
-
-  if (error) return { ok: false, error: error.message }
-
-  return { ok: true }
 }
 
 const BUCKET = 'portfolio-media'

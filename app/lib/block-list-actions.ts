@@ -13,6 +13,17 @@ function randomId(): string {
   return Math.random().toString(36).slice(2, 10)
 }
 
+// Every action below always *resolves*, never rejects — an uncaught throw
+// (a Supabase client network failure, mostly) used to leave the caller's
+// local state (useBlockList's `busy`, useBlockPersistence's save status)
+// stuck forever, since nothing after the failed await ever ran to reset it.
+// See block-actions.ts's upsertBlock for the same fix and its longer
+// comment on why this also gives a real error message instead of a generic
+// fallback.
+function unexpectedError(err: unknown): string {
+  return err instanceof Error ? err.message : 'Unexpected error.'
+}
+
 /**
  * Adds one new (empty) block to an owner-editable list — a narrative line,
  * a tag, and so on — identified by `listPrefix` (e.g.
@@ -24,46 +35,50 @@ function randomId(): string {
  * one.
  */
 export async function addListItemBlock(listPrefix: string, section: string, lang: Lang): Promise<AddResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You are not signed in.' }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
 
-  const { data: portfolio } = await supabase
-    .from('portfolios')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
 
-  const { data: last } = await supabase
-    .from('portfolio_blocks')
-    .select('sort_order')
-    .eq('portfolio_id', portfolio.id)
-    .eq('lang', lang)
-    .like('block_key', `${listPrefix}.%`)
-    .order('sort_order', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+    const { data: last } = await supabase
+      .from('portfolio_blocks')
+      .select('sort_order')
+      .eq('portfolio_id', portfolio.id)
+      .eq('lang', lang)
+      .like('block_key', `${listPrefix}.%`)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-  const blockKey = `${listPrefix}.${randomId()}`
+    const blockKey = `${listPrefix}.${randomId()}`
 
-  const { error } = await supabase.from('portfolio_blocks').insert({
-    portfolio_id: portfolio.id,
-    block_key: blockKey,
-    lang,
-    section,
-    sort_order: (last?.sort_order ?? -1) + 1,
-    content_json: EMPTY_DOC,
-    content_html: renderBlockHtml(EMPTY_DOC),
-  })
+    const { error } = await supabase.from('portfolio_blocks').insert({
+      portfolio_id: portfolio.id,
+      block_key: blockKey,
+      lang,
+      section,
+      sort_order: (last?.sort_order ?? -1) + 1,
+      content_json: EMPTY_DOC,
+      content_html: renderBlockHtml(EMPTY_DOC),
+    })
 
-  if (error) return { ok: false, error: error.message }
+    if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/', 'layout')
-  return { ok: true, blockKey }
+    revalidatePath('/', 'layout')
+    return { ok: true, blockKey }
+  } catch (err) {
+    return { ok: false, error: unexpectedError(err) }
+  }
 }
 
 /**
@@ -72,31 +87,35 @@ export async function addListItemBlock(listPrefix: string, section: string, lang
  * single delete with no resequencing.
  */
 export async function removeListItemBlock(blockKey: string, lang: Lang): Promise<RemoveResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You are not signed in.' }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
 
-  const { data: portfolio } = await supabase
-    .from('portfolios')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
 
-  const { error } = await supabase
-    .from('portfolio_blocks')
-    .delete()
-    .eq('portfolio_id', portfolio.id)
-    .eq('block_key', blockKey)
-    .eq('lang', lang)
+    const { error } = await supabase
+      .from('portfolio_blocks')
+      .delete()
+      .eq('portfolio_id', portfolio.id)
+      .eq('block_key', blockKey)
+      .eq('lang', lang)
 
-  if (error) return { ok: false, error: error.message }
+    if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/', 'layout')
-  return { ok: true }
+    revalidatePath('/', 'layout')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: unexpectedError(err) }
+  }
 }
 
 /**
@@ -112,35 +131,39 @@ export async function removeListItemBlock(blockKey: string, lang: Lang): Promise
  * tags, a handful of items).
  */
 export async function reorderListItemBlocks(orderedBlockKeys: string[], lang: Lang): Promise<ReorderResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You are not signed in.' }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
 
-  const { data: portfolio } = await supabase
-    .from('portfolios')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
 
-  const results = await Promise.all(
-    orderedBlockKeys.map((blockKey, index) =>
-      supabase
-        .from('portfolio_blocks')
-        .update({ sort_order: index })
-        .eq('portfolio_id', portfolio.id)
-        .eq('block_key', blockKey)
-        .eq('lang', lang)
+    const results = await Promise.all(
+      orderedBlockKeys.map((blockKey, index) =>
+        supabase
+          .from('portfolio_blocks')
+          .update({ sort_order: index })
+          .eq('portfolio_id', portfolio.id)
+          .eq('block_key', blockKey)
+          .eq('lang', lang)
+      )
     )
-  )
-  const failed = results.find((r) => r.error)
-  if (failed?.error) return { ok: false, error: failed.error.message }
+    const failed = results.find((r) => r.error)
+    if (failed?.error) return { ok: false, error: failed.error.message }
 
-  revalidatePath('/', 'layout')
-  return { ok: true }
+    revalidatePath('/', 'layout')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: unexpectedError(err) }
+  }
 }
 
 type AddPairedResult = { ok: true; itemId: string } | { ok: false; error: string }
@@ -162,49 +185,53 @@ export async function addPairedListItemBlock(
   section: string,
   lang: Lang
 ): Promise<AddPairedResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You are not signed in.' }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
 
-  const { data: portfolio } = await supabase
-    .from('portfolios')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
 
-  const { data: last } = await supabase
-    .from('portfolio_blocks')
-    .select('sort_order')
-    .eq('portfolio_id', portfolio.id)
-    .eq('lang', lang)
-    .like('block_key', `${listPrefix}.%`)
-    .order('sort_order', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+    const { data: last } = await supabase
+      .from('portfolio_blocks')
+      .select('sort_order')
+      .eq('portfolio_id', portfolio.id)
+      .eq('lang', lang)
+      .like('block_key', `${listPrefix}.%`)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-  const itemId = randomId()
-  const sortOrder = (last?.sort_order ?? -1) + 1
+    const itemId = randomId()
+    const sortOrder = (last?.sort_order ?? -1) + 1
 
-  const { error } = await supabase.from('portfolio_blocks').insert(
-    fields.map((field) => ({
-      portfolio_id: portfolio.id,
-      block_key: `${listPrefix}.${itemId}.${field}`,
-      lang,
-      section,
-      sort_order: sortOrder,
-      content_json: EMPTY_DOC,
-      content_html: renderBlockHtml(EMPTY_DOC),
-    }))
-  )
+    const { error } = await supabase.from('portfolio_blocks').insert(
+      fields.map((field) => ({
+        portfolio_id: portfolio.id,
+        block_key: `${listPrefix}.${itemId}.${field}`,
+        lang,
+        section,
+        sort_order: sortOrder,
+        content_json: EMPTY_DOC,
+        content_html: renderBlockHtml(EMPTY_DOC),
+      }))
+    )
 
-  if (error) return { ok: false, error: error.message }
+    if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/', 'layout')
-  return { ok: true, itemId }
+    revalidatePath('/', 'layout')
+    return { ok: true, itemId }
+  } catch (err) {
+    return { ok: false, error: unexpectedError(err) }
+  }
 }
 
 /**
@@ -218,29 +245,33 @@ export async function removePairedListItemBlock(
   itemId: string,
   lang: Lang
 ): Promise<RemoveResult> {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false, error: 'You are not signed in.' }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
 
-  const { data: portfolio } = await supabase
-    .from('portfolios')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-  if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
 
-  const { error } = await supabase
-    .from('portfolio_blocks')
-    .delete()
-    .eq('portfolio_id', portfolio.id)
-    .eq('lang', lang)
-    .like('block_key', `${listPrefix}.${itemId}.%`)
+    const { error } = await supabase
+      .from('portfolio_blocks')
+      .delete()
+      .eq('portfolio_id', portfolio.id)
+      .eq('lang', lang)
+      .like('block_key', `${listPrefix}.${itemId}.%`)
 
-  if (error) return { ok: false, error: error.message }
+    if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/', 'layout')
-  return { ok: true }
+    revalidatePath('/', 'layout')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: unexpectedError(err) }
+  }
 }
