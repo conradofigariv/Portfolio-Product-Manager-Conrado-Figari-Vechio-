@@ -63,10 +63,7 @@ export default function Navbar() {
 
           {editing && (
             <form action="/auth/signout" method="post">
-              <button
-                type="submit"
-                className="px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
-              >
+              <button type="submit" className="text-dark-300 hover:text-dark-50 transition text-sm">
                 Cerrar sesión
               </button>
             </form>
@@ -93,7 +90,7 @@ export default function Navbar() {
           <BackgroundPicker />
           {editing && (
             <form action="/auth/signout" method="post">
-              <button type="submit" className="text-dark-300 hover:text-dark-50 transition text-xs font-mono">
+              <button type="submit" className="text-dark-300 hover:text-dark-50 transition text-sm">
                 Cerrar sesión
               </button>
             </form>

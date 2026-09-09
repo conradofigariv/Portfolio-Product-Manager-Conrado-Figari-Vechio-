@@ -39,40 +39,42 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
 
   return (
     <>
-      <header className="relative z-[3] grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 sm:px-9 lg:px-[72px] py-6">
-        <div className="justify-self-start">
-          <button
-            onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-[13px] font-mono text-[#a1a1aa] hover:text-white hover:border-white/30 transition-colors"
-            aria-label="Cambiar idioma / Toggle language"
-          >
-            <span className={lang === 'es' ? 'text-white font-semibold' : ''}>🇪🇸 ES</span>
-            <span className="text-white/20">/</span>
-            <span className={lang === 'en' ? 'text-white font-semibold' : ''}>🇺🇸 EN</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2.5 justify-self-center">
+      <header className="relative z-[3] flex items-center justify-end gap-4 px-5 sm:px-9 lg:px-[72px] py-6">
+        {/* Absolutely centered so it stays dead-center regardless of how
+            wide the right-side cluster below gets — a flex/grid split would
+            need the left side to carry matching weight, and there's nothing
+            to put there now that the lang toggle moved to the right, next to
+            Iniciar sesión/Empieza gratis, matching the portfolio Navbar's own
+            layout (lang toggle grouped with the other header actions). */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5">
           <div className="w-[26px] h-[26px] rounded-[7px] bg-[#d8ff3e] flex items-center justify-center text-[15px] font-semibold text-[#08080a] tracking-[-0.03em]">
             P
           </div>
           <span className="text-[17px] font-semibold tracking-[-0.02em]">Portfolio App</span>
         </div>
 
-        <div className="flex items-center gap-4 justify-self-end">
-          <GoogleSignInButton
-            showIcon={false}
-            label={t.signIn}
-            pendingLabel={t.redirecting}
-            className="text-[14.5px] text-[#d4d4d8] hover:text-white transition-colors disabled:opacity-60"
-          />
-          <GoogleSignInButton
-            showIcon={false}
-            label={t.startFree}
-            pendingLabel={t.redirecting}
-            className="inline-flex items-center h-10 px-5 rounded-full bg-[#d8ff3e] text-[#08080a] text-[14.5px] font-semibold tracking-[-0.01em] transition-[filter] hover:brightness-110 disabled:opacity-60"
-          />
-        </div>
+        <button
+          onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-[13px] font-mono text-[#a1a1aa] hover:text-white hover:border-white/30 transition-colors"
+          aria-label="Cambiar idioma / Toggle language"
+        >
+          <span className={lang === 'en' ? 'text-white font-semibold' : ''}>🇺🇸 EN</span>
+          <span className="text-white/20">/</span>
+          <span className={lang === 'es' ? 'text-white font-semibold' : ''}>🇪🇸 ES</span>
+        </button>
+
+        <GoogleSignInButton
+          showIcon={false}
+          label={t.signIn}
+          pendingLabel={t.redirecting}
+          className="text-[14.5px] text-[#d4d4d8] hover:text-white transition-colors disabled:opacity-60"
+        />
+        <GoogleSignInButton
+          showIcon={false}
+          label={t.startFree}
+          pendingLabel={t.redirecting}
+          className="inline-flex items-center h-10 px-5 rounded-full bg-[#d8ff3e] text-[#08080a] text-[14.5px] font-semibold tracking-[-0.01em] transition-[filter] hover:brightness-110 disabled:opacity-60"
+        />
       </header>
 
       <div className="relative z-[3] flex-1 flex items-center px-5 sm:px-9 lg:px-[72px] py-12 sm:py-16 lg:py-20">
