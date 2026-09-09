@@ -50,7 +50,19 @@ export function useBlockPersistence({
       notifyBlockSavingStart()
 
       try {
-        const result = await upsertBlock(blockKey, lang, section, json, updatedAtRef.current)
+        // ProseMirror/Tiptap builds each node's `attrs` via Object.create(null)
+        // internally — editor.getJSON() hands those objects back as-is, with
+        // no Object.prototype. React's server-action argument serialization
+        // doesn't treat that as plain data; it substitutes an opaque
+        // "temporary client reference" instead, which the server side then
+        // can't read properties off of at all (surfaced as: "Cannot access
+        // textAlign on the server... you can only pass the value through to
+        // the client" — textAlign being a paragraph-level attr from the
+        // alignment extension, the first attrs object hit). A JSON
+        // round-trip rebuilds the whole tree out of ordinary object/array
+        // literals, which serializes normally.
+        const plainJson = JSON.parse(JSON.stringify(json)) as JSONContent
+        const result = await upsertBlock(blockKey, lang, section, plainJson, updatedAtRef.current)
         if (result.ok) {
           updatedAtRef.current = result.updatedAt
           setStatus('saved')
