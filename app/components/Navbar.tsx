@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
@@ -34,7 +34,23 @@ export default function Navbar({ showLanguageHint = false }: { showLanguageHint?
   // rather than treating any dismissal as "never show again".
   const [hintDismissed, setHintDismissed] = useState(false)
   const [rememberHint, setRememberHint] = useState(false)
-  const hintVisible = showLanguageHint && !hintDismissed
+
+  // The page itself renders instantly either way — this only delays the
+  // callout, so the owner sees their own content first and the guide starts
+  // a beat later rather than competing with it for attention the moment the
+  // page appears. setState inside a setTimeout callback (as opposed to
+  // synchronously in the effect body) is exactly what the render-time
+  // comparison workaround elsewhere in this app (see EditBar's "Saved!"
+  // flash) exists to avoid needing — this rule only flags the synchronous
+  // case, so a plain effect is fine here.
+  const [hintReady, setHintReady] = useState(false)
+  useEffect(() => {
+    if (!showLanguageHint) return
+    const timer = setTimeout(() => setHintReady(true), 2000)
+    return () => clearTimeout(timer)
+  }, [showLanguageHint])
+
+  const hintVisible = showLanguageHint && hintReady && !hintDismissed
 
   // The CV modal's own portal below never needs this — isCVOpen always starts
   // false, so its first (server) render never reaches document.body. This
