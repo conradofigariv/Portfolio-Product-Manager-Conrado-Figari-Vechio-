@@ -132,10 +132,12 @@ export async function loadPortfolio(
       published: boolean
       ownerId: string
       portfolioId: string
-      // Whether the owner has permanently dismissed the language-toggle
-      // callout (LanguageHint.tsx). Meaningless for anyone but the owner —
-      // the page only ever reads it behind an isOwner check.
-      languageHintSeen: boolean
+      // Onboarding tour state (see OnboardingTour.tsx) — meaningless for
+      // anyone but the owner; the page only ever reads these behind an
+      // isOwner check. tourSeen permanently dismissed; tourStep is where to
+      // resume if the owner closed early ("Salir") without dismissing it.
+      tourSeen: boolean
+      tourStep: number
     })
   | null
 > {
@@ -149,7 +151,7 @@ export async function loadPortfolio(
 
   const { data: portfolio } = await supabase
     .from('portfolios')
-    .select('id, content, published, language_hint_seen')
+    .select('id, content, published, onboarding_tour_seen, onboarding_tour_step')
     .eq('user_id', profile.id)
     .maybeSingle()
 
@@ -178,7 +180,8 @@ export async function loadPortfolio(
     published: !!portfolio.published,
     ownerId: profile.id,
     portfolioId: portfolio.id,
-    languageHintSeen: !!portfolio.language_hint_seen,
+    tourSeen: !!portfolio.onboarding_tour_seen,
+    tourStep: typeof portfolio.onboarding_tour_step === 'number' ? portfolio.onboarding_tour_step : 0,
   }
 }
 

@@ -12,14 +12,29 @@ export const translations = {
       downloadCVAction: 'Download CV',
       closeCV: 'Close',
     },
-    // Interface-only copy for the one-time callout that points at the
-    // language toggle — see Navbar.tsx's LanguageHint. Same category as
-    // `nav` above: identical for every portfolio, not part of anyone's
-    // content, so it belongs here rather than in portfolio.ts.
-    languageHint: {
-      title: 'Two languages, one portfolio',
-      body: 'Switch between English and Spanish right here, and fill in each one separately — you can have a full resume in both.',
-      confirm: 'Got it',
+    // Interface-only copy for the onboarding tour — see OnboardingTour.tsx.
+    // Same category as `nav` above: identical for every portfolio, not part
+    // of anyone's content, so it belongs here rather than in portfolio.ts.
+    // `steps` must stay index-aligned with the structural TOUR_STEPS array
+    // in app/lib/onboarding-tour.ts (step 0's copy here goes with step 0's
+    // target there, and so on) — nothing enforces that at the type level,
+    // so keep them in sync by hand when adding a step to either.
+    tour: {
+      steps: [
+        {
+          title: 'Two languages, one portfolio',
+          body: 'Switch between English and Spanish right here, and fill in each one separately — you can have a full resume in both.',
+        },
+        {
+          title: 'Click and type',
+          body: 'This is your name, but the same works for any text on your portfolio. Select a word and a toolbar pops up to make it bold, change its color, size or font.',
+        },
+      ],
+      back: 'Back',
+      next: 'Next',
+      finish: 'Got it',
+      skip: 'Skip tour',
+      close: 'Close for now',
       dontShowAgain: "Don't show this again",
     },
     hero: {
@@ -305,10 +320,22 @@ export const translations = {
       downloadCVAction: 'Descargar CV',
       closeCV: 'Cerrar',
     },
-    languageHint: {
-      title: 'Dos idiomas, un solo portfolio',
-      body: 'Cambiá entre español e inglés acá mismo, y completá cada uno por separado — podés tener tu currículum entero en los dos idiomas.',
-      confirm: 'Entendido',
+    tour: {
+      steps: [
+        {
+          title: 'Dos idiomas, un solo portfolio',
+          body: 'Cambiá entre español e inglés acá mismo, y completá cada uno por separado — podés tener tu currículum entero en los dos idiomas.',
+        },
+        {
+          title: 'Hacé click y escribí',
+          body: 'Este es tu nombre, pero lo mismo funciona con cualquier texto del portfolio. Seleccioná una palabra y aparece una barrita para ponerla en negrita, cambiarle el color, el tamaño o la tipografía.',
+        },
+      ],
+      back: 'Atrás',
+      next: 'Siguiente',
+      finish: 'Entendido',
+      skip: 'Saltear tour',
+      close: 'Cerrar por ahora',
       dontShowAgain: 'No volver a mostrar esto',
     },
     hero: {

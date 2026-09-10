@@ -1,9 +1,11 @@
 'use client'
 
-import { createContext, useCallback, useContext, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
 import { Portfolio, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
 import { setAtPath } from '../lib/content-path'
+import { TOUR_STEPS } from '../lib/onboarding-tour'
+import { finishOnboardingTour, pauseOnboardingTour } from '../lib/portfolio-actions'
 
 interface LanguageContextType {
   lang: Lang
@@ -47,6 +49,35 @@ interface LanguageContextType {
   // documents have to keep matching ids.
   updateBoth: (update: (content: PortfolioContent, lang: Lang) => PortfolioContent) => void
   markSaved: () => void
+  // Onboarding tour (see OnboardingTour.tsx). `active` folds together every
+  // reason it might not be showing right now: not the owner's real editor
+  // view, already permanently dismissed, the 2s entrance delay hasn't
+  // elapsed yet, or it was closed (however) earlier this session.
+  tour: {
+    active: boolean
+    stepIndex: number
+    isFirst: boolean
+    isLast: boolean
+    next: () => void
+    back: () => void
+    // "Salir" (the small ×): close for now, remembering stepIndex so the
+    // tour resumes here next time — unless `remember` is ticked, in which
+    // case it behaves like `skipAll` instead. Never both un-persisted and
+    // un-resumable at once: it's either "come back to this exact step" or
+    // "don't come back at all".
+    pause: () => void
+    // "Saltear tour": ends it for good, from any step, regardless of
+    // `remember` — a one-click "I don't want this" that doesn't need the
+    // checkbox ticked first.
+    skipAll: () => void
+    // Reaching the end and clicking "Entendido": also ends it for good.
+    // Same server effect as skipAll, different UI trigger — completing the
+    // tour is its own reason to never show it again, independent of the
+    // checkbox (which only ever modifies what an early `pause` does).
+    finish: () => void
+    remember: boolean
+    setRemember: (value: boolean) => void
+  }
 }
 
 const LanguageContext = createContext<LanguageContextType | null>(null)
@@ -55,10 +86,19 @@ export function LanguageProvider({
   children,
   portfolio = defaultPortfolio,
   editing = false,
+  showTour = false,
+  initialTourStep = 0,
 }: {
   children: ReactNode
   portfolio?: Portfolio
   editing?: boolean
+  // Whether the tour is even eligible to appear at all — decided server-side
+  // (owner, not previewing, not already permanently dismissed). See
+  // app/[username]/page.tsx.
+  showTour?: boolean
+  // Which step to resume from, from a previous "Salir". Meaningless unless
+  // showTour is also true.
+  initialTourStep?: number
 }) {
   const [lang, setLang] = useState<Lang>('en')
   const [draft, setDraft] = useState(portfolio.content)
@@ -94,6 +134,49 @@ export function LanguageProvider({
     updateActive((current) => setAtPath(current, path, value))
   }
 
+  // --- Onboarding tour ---
+  const [tourClosed, setTourClosed] = useState(false)
+  const [stepIndex, setStepIndex] = useState(initialTourStep)
+  const [remember, setRemember] = useState(false)
+
+  // The page itself renders instantly either way — this only delays the
+  // tour's first appearance, so the owner sees their own content first and
+  // the guide starts a beat later rather than competing with it for
+  // attention the moment the page appears. setState inside a setTimeout
+  // callback (as opposed to synchronously in the effect body) is what makes
+  // a plain effect fine here rather than needing the useSyncExternalStore
+  // workaround OnboardingTour.tsx uses for its document.body access — that
+  // rule only flags a synchronous call in the effect body itself.
+  const [tourReady, setTourReady] = useState(false)
+  useEffect(() => {
+    if (!showTour) return
+    const timer = setTimeout(() => setTourReady(true), 2000)
+    return () => clearTimeout(timer)
+  }, [showTour])
+
+  const tourActive = showTour && tourReady && !tourClosed
+  const isLastStep = stepIndex >= TOUR_STEPS.length - 1
+
+  function tourNext() {
+    setStepIndex((i) => Math.min(i + 1, TOUR_STEPS.length - 1))
+  }
+  function tourBack() {
+    setStepIndex((i) => Math.max(i - 1, 0))
+  }
+  function tourPause() {
+    setTourClosed(true)
+    if (remember) void finishOnboardingTour()
+    else void pauseOnboardingTour(stepIndex)
+  }
+  function tourSkipAll() {
+    setTourClosed(true)
+    void finishOnboardingTour()
+  }
+  function tourFinish() {
+    setTourClosed(true)
+    void finishOnboardingTour()
+  }
+
   return (
     <LanguageContext.Provider
       value={{
@@ -115,6 +198,19 @@ export function LanguageProvider({
         blockSaving: savingCount > 0,
         notifyBlockSavingStart,
         notifyBlockSavingEnd,
+        tour: {
+          active: tourActive,
+          stepIndex,
+          isFirst: stepIndex === 0,
+          isLast: isLastStep,
+          next: tourNext,
+          back: tourBack,
+          pause: tourPause,
+          skipAll: tourSkipAll,
+          finish: tourFinish,
+          remember,
+          setRemember,
+        },
       }}
     >
       {children}

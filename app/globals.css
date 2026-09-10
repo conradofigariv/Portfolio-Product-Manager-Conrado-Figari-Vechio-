@@ -74,4 +74,19 @@
   .rich-field:has(.ProseMirror) .rich-field-fallback {
     display: none;
   }
+
+  /* Applied by OnboardingTour.tsx, imperatively, to whichever real element
+     the current step's data-tour-target attribute resolves to — a lime glow
+     ring, the same "look here" accent EditBar's own "Saved!" flash uses,
+     rather than a new highlight style. position:relative is what lets
+     z-index apply at all (most tour targets don't already have a positioned
+     ancestor of their own); the z-index itself only needs to clear the dim
+     overlay's z-40 — see OnboardingTour.tsx's own comment on why a plain
+     z-index here is enough even though the target could be anywhere on the
+     page, unlike the navbar-only version this replaced. */
+  .tour-spotlight {
+    position: relative;
+    z-index: 45;
+    box-shadow: 0 0 0 3px rgba(216, 255, 62, 0.35);
+  }
 }
