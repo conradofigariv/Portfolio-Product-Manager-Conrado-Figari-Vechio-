@@ -29,6 +29,10 @@ export const translations = {
           title: 'Click and type',
           body: 'This is your name, but the same works for any text on your portfolio. Select a word and a toolbar pops up to make it bold, change its color, size or font.',
         },
+        {
+          title: 'Drag to reorder',
+          body: "Grab any chapter's handle and drag it up or down to change your story's chronological order.",
+        },
       ],
       back: 'Back',
       next: 'Next',
@@ -329,6 +333,10 @@ export const translations = {
         {
           title: 'Hacé click y escribí',
           body: 'Este es tu nombre, pero lo mismo funciona con cualquier texto del portfolio. Seleccioná una palabra y aparece una barrita para ponerla en negrita, cambiarle el color, el tamaño o la tipografía.',
+        },
+        {
+          title: 'Arrastrá para reordenar',
+          body: 'Tomá el asa de cualquier capítulo y arrastralo arriba o abajo para cambiar el orden cronológico de tu historia.',
         },
       ],
       back: 'Atrás',

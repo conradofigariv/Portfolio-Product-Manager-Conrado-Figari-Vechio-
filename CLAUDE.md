@@ -132,7 +132,7 @@ Rotation (optional `storagePath`/`onRotated` props on `PhotoCropModal`, threaded
 
 ## Onboarding: the multi-step tour
 
-Started as a single callout pointing at the language toggle; grew into a proper multi-step tour where each step can point at a *different* element anywhere on the page (today: the language toggle, then the hero name field — more get added by appending to two parallel arrays, see below). Shown only to the owner. Explicit design, worked out over several rounds:
+Started as a single callout pointing at the language toggle; grew into a proper multi-step tour where each step can point at a *different* element anywhere on the page (today: the language toggle, then the hero name field, then a Story chapter's drag handle — more get added by appending to two parallel arrays, see below). Shown only to the owner. Explicit design, worked out over several rounds:
 
 - **Back/Next** navigate; Back hidden on the first step; the primary button reads "Next" until the last step, where it becomes "Entendido"/"Got it".
 - **A small "×" in the corner ("Salir")** closes for now without dismissing anything — it remembers which step the owner was on, so the tour resumes there next time rather than restarting at step 0.

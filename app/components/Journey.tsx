@@ -153,7 +153,13 @@ export default function Journey() {
                         </div>
 
                         {editing && (
-                          <div className="flex items-center gap-1 flex-shrink-0">
+                          // data-tour-target: the onboarding tour's "drag to
+                          // reorder" step points here — see
+                          // app/lib/onboarding-tour.ts. Only the first
+                          // chapter's handle is ever findVisibleTarget's
+                          // match (all chapters render one), same as the
+                          // language toggle existing twice for desktop/mobile.
+                          <div data-tour-target="story-reorder" className="flex items-center gap-1 flex-shrink-0">
                             <DragHandle
                               onDragStart={() => setDragId(chapter.id)}
                               onDragEnd={() => {
