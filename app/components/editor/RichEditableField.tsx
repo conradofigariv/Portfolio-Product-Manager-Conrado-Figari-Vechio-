@@ -4,10 +4,8 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
 import { TextStyle, FontSize, FontFamily, Color } from '@tiptap/extension-text-style'
 import Highlight from '@tiptap/extension-highlight'
-import Link from '@tiptap/extension-link'
 import TextAlign from '@tiptap/extension-text-align'
 import Placeholder from '@tiptap/extension-placeholder'
 import FloatingToolbar from './FloatingToolbar'
@@ -50,8 +48,18 @@ export default function RichEditableField({
         code: false,
         horizontalRule: false,
         hardBreak: false,
+        // StarterKit v3 bundles Link and Underline itself, so registering
+        // either one again alongside it duplicates the extension name —
+        // Tiptap warns "Duplicate extension names found: ['link','underline']"
+        // and says it can misbehave. Configured through StarterKit instead of
+        // added separately, which is the same registration either way.
+        underline: {},
+        link: {
+          openOnClick: false,
+          autolink: false,
+          protocols: ['http', 'https', 'mailto'],
+        },
       }),
-      Underline,
       TextStyle,
       FontSize,
       FontFamily,
@@ -59,11 +67,6 @@ export default function RichEditableField({
       // Single fixed color rather than multicolor — see HIGHLIGHT_STYLE's
       // own comment for why the edit and public-read views share it.
       Highlight.configure({ HTMLAttributes: { style: HIGHLIGHT_STYLE } }),
-      Link.configure({
-        openOnClick: false,
-        autolink: false,
-        protocols: ['http', 'https', 'mailto'],
-      }),
       TextAlign.configure({ types: ['paragraph'] }),
       Placeholder.configure({ placeholder: placeholder ?? '' }),
     ],
@@ -84,7 +87,16 @@ export default function RichEditableField({
         return false
       },
     },
-    immediatelyRender: false,
+    // Renders the editor's content on the very first pass instead of leaving
+    // EditorContent empty until the instance initialises. The usual reason to
+    // set this false is Tiptap's SSR warning, which cannot apply here: this
+    // module is only ever reached through next/dynamic(..., { ssr: false }),
+    // so it never runs on the server at all. Leaving it false cost a visible
+    // ~300ms of blank fields every time an editor mounted — invisible in the
+    // real editor (the owner is already on their page when it happens) but
+    // very visible on the landing demo, where the card emptied out and
+    // refilled as it scrolled into view.
+    immediatelyRender: true,
   })
 
   const { status, error } = useBlockPersistence({
