@@ -8,6 +8,7 @@ import Skills from './Skills'
 import Contact from './Contact'
 import Footer from './Footer'
 import EditBar from './EditBar'
+import OnboardingTour from './OnboardingTour'
 
 // A whole portfolio, rendered from one person's data. The same components serve
 // the public page and the editor — editing happens in place, so there is no
@@ -16,17 +17,24 @@ export default function PortfolioShell({
   portfolio,
   editing = false,
   previewing = false,
-  showLanguageHint = false,
+  showTour = false,
+  initialTourStep = 0,
 }: {
   portfolio: Portfolio
   editing?: boolean
   previewing?: boolean
-  // One-time callout pointing at the language toggle — see Navbar.tsx.
+  // Onboarding tour — see OnboardingTour.tsx and LanguageContext's `tour`.
   // Decided server-side (owner + not previewing + not dismissed yet).
-  showLanguageHint?: boolean
+  showTour?: boolean
+  initialTourStep?: number
 }) {
   return (
-    <LanguageProvider portfolio={portfolio} editing={editing}>
+    <LanguageProvider
+      portfolio={portfolio}
+      editing={editing}
+      showTour={showTour}
+      initialTourStep={initialTourStep}
+    >
       {previewing && (
         <div className="sticky top-0 z-[95] flex items-center justify-center gap-3 bg-dark-50 text-dark-900 text-xs font-medium py-2 px-4 text-center">
           <span>Vista previa — así se ve tu portfolio para cualquiera.</span>
@@ -35,7 +43,7 @@ export default function PortfolioShell({
           </a>
         </div>
       )}
-      <Navbar showLanguageHint={showLanguageHint} />
+      <Navbar />
       <main>
         <Hero />
         <Journey />
@@ -45,6 +53,11 @@ export default function PortfolioShell({
       </main>
       <Footer />
       <EditBar username={portfolio.username} />
+      {/* Reads its own target/state from context, so it can render nothing
+          (owner not showing it) or point at anything on this page (the
+          language toggle in Navbar above, the name in Hero, ...) without
+          needing to be threaded through each of those components. */}
+      <OnboardingTour />
     </LanguageProvider>
   )
 }

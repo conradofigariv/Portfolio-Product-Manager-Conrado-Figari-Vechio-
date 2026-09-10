@@ -69,7 +69,12 @@ export default function Hero() {
             <div className="text-dark-400 font-mono tracking-widest uppercase text-xs md:text-sm mb-2 md:mb-3">
               <RichText blockKey="hero.greeting" section="hero" placeholder="Greeting" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight text-dark-50">
+            {/* data-tour-target: the onboarding tour's "click and type" step
+                points here — see app/lib/onboarding-tour.ts. */}
+            <h1
+              data-tour-target="hero-name"
+              className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight text-dark-50"
+            >
               <RichText blockKey="hero.name" section="hero" placeholder="Your name" />
             </h1>
             <div className="text-xl md:text-3xl text-dark-200 mb-4 md:mb-6 leading-tight font-light">

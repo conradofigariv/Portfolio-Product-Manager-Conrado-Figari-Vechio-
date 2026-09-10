@@ -628,19 +628,19 @@ export async function saveMediaPosition(
 }
 
 /**
- * Permanently dismisses the one-time language-toggle callout (see
- * LanguageHint.tsx). Only called when the owner ticks "no volver a mostrar
- * esto" before closing it — closing it without ticking the box hides it for
- * this visit only (plain client state) and it comes back next time the
- * editor loads, which is the point of having a separate checkbox at all.
+ * Permanently ends the onboarding tour (see OnboardingTour.tsx) — the owner
+ * will never see it again. Called two ways: reaching the last step and
+ * clicking "Entendido"/"Finalizar" (you saw all of it), or clicking
+ * "Saltear tour" from any step (you don't want to see the rest either).
+ * Both mean the same thing to the database; only the UI trigger differs.
  *
  * Wrapped in try/catch like the autosave-path actions even though this one
  * is not on that path: a failure here has no error UI of its own (the
- * callout has already closed client-side by the time this is called), so an
+ * card has already closed client-side by the time this is called), so an
  * uncaught throw would fail silently either way — catching just keeps that
  * failure from ever reaching the caller as a rejected promise.
  */
-export async function dismissLanguageHint(): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function finishOnboardingTour(): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     const supabase = await createClient()
 
@@ -651,7 +651,38 @@ export async function dismissLanguageHint(): Promise<{ ok: true } | { ok: false;
 
     const { error } = await supabase
       .from('portfolios')
-      .update({ language_hint_seen: true })
+      .update({ onboarding_tour_seen: true })
+      .eq('user_id', user.id)
+    if (error) return { ok: false, error: error.message }
+
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error.' }
+  }
+}
+
+/**
+ * Closes the tour for now without dismissing it — the small "X" ("Salir"),
+ * as opposed to "Saltear" (finishOnboardingTour). Remembers which step the
+ * owner was on, so the next time they load the editor the tour resumes
+ * there instead of restarting at step 0. Never sets onboarding_tour_seen —
+ * that would make "Salir" indistinguishable from "Saltear", which is exactly
+ * the distinction the owner asked for between the two.
+ */
+export async function pauseOnboardingTour(
+  step: number
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
+
+    const { error } = await supabase
+      .from('portfolios')
+      .update({ onboarding_tour_step: Math.max(0, Math.trunc(step)) })
       .eq('user_id', user.id)
     if (error) return { ok: false, error: error.message }
 

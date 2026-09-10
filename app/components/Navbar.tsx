@@ -1,74 +1,16 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
 import BackgroundPicker from './BackgroundPicker'
-import LanguageHint from './LanguageHint'
 import { FlagES, FlagUS } from './FlagIcon'
-import { dismissLanguageHint } from '../lib/portfolio-actions'
 
-// Nothing ever subscribes to this — it exists only so useSyncExternalStore
-// below has a no-op to call, which is the point: this is the officially
-// documented zero-effect way to detect "hydration has finished, we're
-// genuinely client-side now" (getServerSnapshot runs during SSR *and* during
-// the initial client render that has to match it, getSnapshot only takes over
-// after that). A `useEffect(() => setMounted(true), [])` does the same thing
-// but calling setState synchronously inside a bare effect body is exactly
-// what this project's react-hooks/set-state-in-effect rule flags (the same
-// rule Hero.tsx already has a known, unfixed instance of) — this sidesteps
-// it by never calling setState at all.
-const noopSubscribe = () => () => {}
-
-export default function Navbar({ showLanguageHint = false }: { showLanguageHint?: boolean }) {
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isCVOpen, setIsCVOpen] = useState(false)
   const { t, lang, toggleLang, content, media, editing } = useLang()
-
-  // Closing with "Entendido" always hides the callout for the rest of this
-  // visit — hintDismissed is plain client state, not persisted. Only ticking
-  // the checkbox first makes that permanent (see dismissLanguageHint): if the
-  // owner just clicks through without checking it, the hint comes back next
-  // time they load the editor, which is the point of having a separate box
-  // rather than treating any dismissal as "never show again".
-  const [hintDismissed, setHintDismissed] = useState(false)
-  const [rememberHint, setRememberHint] = useState(false)
-
-  // The page itself renders instantly either way — this only delays the
-  // callout, so the owner sees their own content first and the guide starts
-  // a beat later rather than competing with it for attention the moment the
-  // page appears. setState inside a setTimeout callback (as opposed to
-  // synchronously in the effect body) is exactly what the render-time
-  // comparison workaround elsewhere in this app (see EditBar's "Saved!"
-  // flash) exists to avoid needing — this rule only flags the synchronous
-  // case, so a plain effect is fine here.
-  const [hintReady, setHintReady] = useState(false)
-  useEffect(() => {
-    if (!showLanguageHint) return
-    const timer = setTimeout(() => setHintReady(true), 2000)
-    return () => clearTimeout(timer)
-  }, [showLanguageHint])
-
-  const hintVisible = showLanguageHint && hintReady && !hintDismissed
-
-  // The CV modal's own portal below never needs this — isCVOpen always starts
-  // false, so its first (server) render never reaches document.body. This
-  // one's visibility comes straight from a server-computed prop, so it can be
-  // true on that very first render, and `document` does not exist there.
-  // false during SSR and through the client's initial (hydration-matching)
-  // render, true from the next client render on — see noopSubscribe above.
-  const mounted = useSyncExternalStore(
-    noopSubscribe,
-    () => true,
-    () => false
-  )
-
-  function confirmHint() {
-    setHintDismissed(true)
-    if (rememberHint) void dismissLanguageHint()
-  }
 
   const initials = content.hero.name
     .split(' ')
@@ -107,34 +49,23 @@ export default function Navbar({ showLanguageHint = false }: { showLanguageHint?
 
         {/* Right side: Lang toggle + CV */}
         <div className="hidden md:flex items-center gap-3">
-          {/* Language toggle — relative wrapper so the callout below can
-              anchor to it, same convention as BackgroundPicker's own
-              dropdown right below. */}
-          <div className="relative">
-            <button
-              onClick={toggleLang}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono ${
-                hintVisible ? 'shadow-[0_0_0_3px_rgba(216,255,62,0.35)]' : ''
-              }`}
-              aria-label="Toggle language"
-            >
-              <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-dark-50 font-bold' : ''}`}>
-                <FlagUS /> EN
-              </span>
-              <span className="text-dark-600">/</span>
-              <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-dark-50 font-bold' : ''}`}>
-                <FlagES /> ES
-              </span>
-            </button>
-            {hintVisible && (
-              <LanguageHint
-                t={t.languageHint}
-                remember={rememberHint}
-                onToggleRemember={setRememberHint}
-                onConfirm={confirmHint}
-              />
-            )}
-          </div>
+          {/* data-tour-target: the onboarding tour's language step points at
+              this exact attribute — see app/lib/onboarding-tour.ts. Nothing
+              else about this button needs to know the tour exists. */}
+          <button
+            data-tour-target="language-toggle"
+            onClick={toggleLang}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
+            aria-label="Toggle language"
+          >
+            <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-dark-50 font-bold' : ''}`}>
+              <FlagUS /> EN
+            </span>
+            <span className="text-dark-600">/</span>
+            <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-dark-50 font-bold' : ''}`}>
+              <FlagES /> ES
+            </span>
+          </button>
 
           <BackgroundPicker />
 
@@ -158,32 +89,21 @@ export default function Navbar({ showLanguageHint = false }: { showLanguageHint?
 
         {/* Mobile: lang toggle + hamburger */}
         <div className="md:hidden flex items-center gap-3">
-          <div className="relative">
-            <button
-              onClick={toggleLang}
-              className={`flex items-center gap-1 text-dark-300 hover:text-dark-50 transition text-xs font-mono rounded ${
-                hintVisible ? 'shadow-[0_0_0_3px_rgba(216,255,62,0.35)]' : ''
-              }`}
-            >
-              {lang === 'en' ? (
-                <>
-                  <FlagES /> ES
-                </>
-              ) : (
-                <>
-                  <FlagUS /> EN
-                </>
-              )}
-            </button>
-            {hintVisible && (
-              <LanguageHint
-                t={t.languageHint}
-                remember={rememberHint}
-                onToggleRemember={setRememberHint}
-                onConfirm={confirmHint}
-              />
+          <button
+            data-tour-target="language-toggle"
+            onClick={toggleLang}
+            className="flex items-center gap-1 text-dark-300 hover:text-dark-50 transition text-xs font-mono rounded"
+          >
+            {lang === 'en' ? (
+              <>
+                <FlagES /> ES
+              </>
+            ) : (
+              <>
+                <FlagUS /> EN
+              </>
             )}
-          </div>
+          </button>
           <BackgroundPicker />
           {editing && (
             <form action="/auth/signout" method="post">
@@ -236,31 +156,6 @@ export default function Navbar({ showLanguageHint = false }: { showLanguageHint?
           </div>
         </div>
       )}
-
-      {/* Dims the rest of the page while the callout is up. Portalled to
-          body with a z-index *below* nav's own z-50 rather than above it —
-          nav establishes its own stacking context (sticky + z-index), so
-          everything inside it, including this callout, already paints above
-          any lower-z sibling of nav regardless of where in the DOM that
-          sibling lives. Putting the overlay above nav's z-index instead would
-          also dim the toggle it's supposed to be spotlighting.
-          pointer-events-none: this is a visual cue, not a click-trap — the
-          rest of the page stays fully usable while it's up, and the callout
-          only ever closes via its own "Entendido" button. Fades in over the
-          same 1s as the callout below, so the dim and the callout arrive as
-          one motion rather than the dim snapping in a beat ahead of it. */}
-      {mounted &&
-        hintVisible &&
-        createPortal(
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="fixed inset-0 z-40 bg-black/50 pointer-events-none"
-            aria-hidden="true"
-          />,
-          document.body
-        )}
 
       {isCVOpen &&
         media.cv &&
