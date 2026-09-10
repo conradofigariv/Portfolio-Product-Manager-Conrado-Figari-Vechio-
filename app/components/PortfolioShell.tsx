@@ -16,10 +16,14 @@ export default function PortfolioShell({
   portfolio,
   editing = false,
   previewing = false,
+  showLanguageHint = false,
 }: {
   portfolio: Portfolio
   editing?: boolean
   previewing?: boolean
+  // One-time callout pointing at the language toggle — see Navbar.tsx.
+  // Decided server-side (owner + not previewing + not dismissed yet).
+  showLanguageHint?: boolean
 }) {
   return (
     <LanguageProvider portfolio={portfolio} editing={editing}>
@@ -31,7 +35,7 @@ export default function PortfolioShell({
           </a>
         </div>
       )}
-      <Navbar />
+      <Navbar showLanguageHint={showLanguageHint} />
       <main>
         <Hero />
         <Journey />

@@ -130,6 +130,20 @@ Frame math in `PhotoCropModal.tsx`:
 
 Rotation (optional `storagePath`/`onRotated` props on `PhotoCropModal`, threaded through `PositionPicker`): `rotateImage()` in `image-upload.ts` fetches the current photo, redraws it onto a canvas rotated 90°/180°/270° (swapping width/height for 90°/270°), and re-encodes to WebP. The caller's `onRotated(newStoragePath, newPublicUrl)` uploads-and-persists the replacement (`savePortrait`/`saveChapterPhoto` for portrait/chapter — they already delete-old-then-insert-new; `replaceProjectPhoto` for gallery photos, which updates the row in place to preserve `sort_order`). The crop position resets to center since the old frame no longer matches the rotated dimensions.
 
+## Onboarding: the language-toggle hint
+
+A one-time callout, shown only to the owner, pointing at the language toggle right after they start editing — "podés crear tu currículum en inglés y en español". Explicit ask: dim the background a little, point at the toggle, an "Entendido" button, and a **separate** checkbox to stop it from ever coming back. The checkbox is deliberately not the same thing as the button: closing with "Entendido" alone hides it for the rest of this visit only (plain client state), and it comes back the next time the editor loads unless the box was ticked first.
+
+- **`portfolios.language_hint_seen`** (migration 0013, boolean, default `false`) is the only thing that makes the dismissal permanent. Every existing account gets `false` too, same as a brand-new one — there is no way to tell "just signed up" from "signed up a while ago but never dismissed this", and both should see the hint until they do. Needs running by hand in the Supabase SQL editor, same as every migration here.
+- **`loadPortfolio`** selects it and returns `languageHintSeen: boolean` alongside `published`/`ownerId`/`portfolioId`. `app/[username]/page.tsx` turns that into `showLanguageHint = isOwner && !previewing && !portfolio.languageHintSeen`, passed down through `PortfolioShell` to `Navbar`.
+- **`dismissLanguageHint()`** (`portfolio-actions.ts`) is the only thing that ever sets the column to `true`. `Navbar` calls it exactly once, only when the checkbox was ticked at the moment "Entendido" was clicked — not called at all otherwise, so an unchecked dismissal never touches the server. No `revalidatePath`: the callout has already closed client-side by the time this resolves, and nothing else on the page depends on the new value being reflected immediately.
+- **`app/components/LanguageHint.tsx`** — the callout itself, purely presentational (no state of its own). `Navbar` renders the language toggle *twice* (desktop cluster and mobile cluster, switched by CSS media query, both always mounted), so the dismissed/remember state has to live in `Navbar`, not in `LanguageHint` — if each instance held its own state, dismissing on whichever one is currently visible would leave the other stale, and it would reappear on the next viewport resize.
+- **The toggle gets a lime glow ring when the hint is showing** (`shadow-[0_0_0_3px_rgba(216,255,62,0.35)]`) — reusing EditBar's own "look here" accent (see its "Saved!" flash) rather than inventing a new highlight style. Lime otherwise appears only on the landing page, never inside the actual editor chrome, so this is the one deliberate exception, chosen specifically because the project already uses that exact glow for "this changed, look here."
+- **The callout is anchored `left-0`, not `right-0`** — `BackgroundPicker`'s own dropdown (the only other navbar-anchored popover in the app) uses `right-0` because it sits further right in the row, so growing leftward from it stays on screen. The language toggle is the *first* item in both the desktop and mobile clusters, close to the left edge on a phone — reproducing `right-0` there put a 288px box growing leftward off a trigger around x≈60–100px, overflowing the left edge of the viewport entirely on mobile. Confirmed both broken (`right-0`) and fixed (`left-0`, `w-64` to match `BackgroundPicker`'s own width) with a real screenshot at 390px before shipping.
+- **The dim overlay's `document.body` access must not run on the very first render.** `createPortal(..., document.body)` already exists elsewhere in this file (the CV modal), but that one's `isCVOpen` always starts `false`, so its first — server-side — render never reaches the portal call. This callout's visibility comes straight from a server-computed prop, so it can be `true` on that very first render, and `document` does not exist there: `ReferenceError: document is not defined`, caught immediately by `npm run build` trying to prerender a debug harness route (any real load with `showLanguageHint` true would have hit the same crash). Fixed with a `mounted` flag that's `false` during SSR and through React's client-side hydration render (which must match the server output) and only `true` from the next client render on — gating the portal on `mounted && hintVisible`.
+- **That `mounted` flag is `useSyncExternalStore`, not `useEffect(() => setMounted(true), [])`.** The effect version is the obvious way to write "detect we're on the client", but calling `setState` synchronously inside a bare effect body is exactly what this project's `react-hooks/set-state-in-effect` rule flags — the same rule `Hero.tsx` already has one unfixed instance of (see EditBar's own comment on the same rule, for the render-time-comparison workaround used there instead). `useSyncExternalStore(subscribe, () => true, () => false)` is the documented zero-effect way to do this: `getServerSnapshot` (`() => false`) runs during SSR *and* during the client's hydration-matching render, and only the real `getSnapshot` (`() => true`) takes over after that — same effective timing as the effect version, no lint violation, and no unfixed instance added alongside Hero.tsx's.
+- **The overlay is `pointer-events-none`.** It is a visual cue, not a click-trap — the rest of the page stays fully interactive while the callout is up, and the only way to close it is its own "Entendido" button, matching the literal ask (no click-outside-to-dismiss was requested, so none was added).
+
 ## Important components
 
 | File | Role |
@@ -145,6 +159,7 @@ Rotation (optional `storagePath`/`onRotated` props on `PhotoCropModal`, threaded
 | `app/components/PositionPicker.tsx` | Trigger button → opens PhotoCropModal |
 | `app/components/PhotoCropModal.tsx` | Full-photo view with draggable crop frame (portalled to body) |
 | `app/components/BackgroundPicker.tsx` | Owner picks hero background video |
+| `app/components/LanguageHint.tsx` | One-time callout pointing at the language toggle — see "Onboarding" above |
 
 ## Key server actions (`app/lib/portfolio-actions.ts`)
 - `savePortfolio({ content })` — always writes `published: true`
@@ -155,10 +170,11 @@ Rotation (optional `storagePath`/`onRotated` props on `PhotoCropModal`, threaded
 - `addProjectPhoto(projectId, storagePath, title)` — inserts new media row
 - `saveChapterPhoto(chapterId, storagePath, heading)` — upserts chapter photo
 - `savePortrait(storagePath, altText)` — upserts portrait
+- `dismissLanguageHint()` — permanently sets `language_hint_seen`; only called when the owner ticks the "don't show again" checkbox, see "Onboarding" above
 
 ## Database (Supabase Postgres)
 Key tables:
-- `portfolios` — one row per user. JSONB `content` column holds all text. `published boolean default true`.
+- `portfolios` — one row per user. JSONB `content` column holds all text. `published boolean default true`. `language_hint_seen boolean default false` — see "Onboarding" above.
 - `portfolio_media` — one row per uploaded image. Columns: `storage_path text`, `public_url text`, `alt text`, `position text`, `type text` (portrait/chapter/project-photo), `entity_id text`, `sort_order int`.
 - `portfolio_blocks` — one row per migrated rich text field per language. Columns: `portfolio_id uuid`, `section text`, `block_key text` (the same dot-path content-path.ts uses, e.g. `"hero.name"`), `lang text` (`en`/`es`), `content_json jsonb`, `content_html text`, `sort_order int`, `updated_at timestamptz`. Unique on `(portfolio_id, block_key, lang)`. Keyed by `portfolio_id` rather than `user_id`, matching `portfolio_media`'s pattern.
 
