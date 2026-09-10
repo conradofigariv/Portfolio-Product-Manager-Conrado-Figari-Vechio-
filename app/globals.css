@@ -62,17 +62,6 @@
     height: 0;
   }
 
-  /* The landing page's try-it-out demo shows its edit outlines at rest, unlike
-     the real editor, which keeps them transparent until hover. The owner
-     already knows the page is editable — they clicked into edit mode to get
-     there. A visitor seeing the demo for the first time has no such context,
-     and an unmarked field reads as a static screenshot they never think to
-     click, which defeats the whole point of the section.
-
-     :not(:hover):not(:focus) so the ordinary hover/focus states still take
-     over on interaction — it also lifts specificity above Tailwind's own
-     hover:/focus: outline utilities on the same element, which would
-     otherwise win or lose depending purely on stylesheet order. */
   /* See EditableText: the read-only copy of a field's text stays in the DOM
      until the Tiptap editor beside it actually exists, so a field never
      renders as an empty box while the editor chunk loads and initialises.
@@ -84,9 +73,5 @@
 
   .rich-field:has(.ProseMirror) .rich-field-fallback {
     display: none;
-  }
-
-  .demo-stage .ProseMirror:not(:hover):not(:focus) {
-    outline-color: theme('colors.dark.500' / 45%);
   }
 }

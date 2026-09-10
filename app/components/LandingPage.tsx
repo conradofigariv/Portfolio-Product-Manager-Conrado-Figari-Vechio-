@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import GoogleSignInButton from './GoogleSignInButton'
-import DemoStage from './DemoStage'
 import { FlagES, FlagUS } from './FlagIcon'
 
 // The landing page has its own small EN/ES copy table rather than reusing
@@ -20,31 +19,6 @@ const COPY = {
     subheading:
       'Creá tu espacio profesional para contar tu historia, mostrar tus proyectos y conectar con nuevas oportunidades.',
     errorTitle: 'Algo salió mal al iniciar sesión.',
-    howNav: 'Probalo',
-    howTitle: 'Probalo acá mismo',
-    howSubtitle:
-      'Esto no es una captura: es el editor de verdad. Hacé click en cualquier texto y escribí encima, sumá líneas, cambiá el orden. Así se edita tu portfolio, sobre el diseño final y sin formularios.',
-    howHints: [
-      {
-        title: 'Click y escribís',
-        body: 'En cualquier texto. Seleccioná algo y aparece la barrita: negrita, tamaño, tipografía, color.',
-      },
-      {
-        title: 'Sumá y sacá',
-        body: 'Agregá líneas y tags con los botones punteados, o sacá los que no van con la ×.',
-      },
-      {
-        title: 'Arrastrá para ordenar',
-        body: 'Tomá cualquier línea o tag del asa de la izquierda y movela de lugar.',
-      },
-    ],
-    demoChrome: 'demo — no se guarda',
-    demoDisclaimer:
-      'Es una demo: nada de lo que escribas acá se guarda. Creá tu cuenta para tener el tuyo de verdad.',
-    howCtaTitle: 'Empezá el tuyo ahora',
-    howCtaBody: 'Entrás con Google y ya estás editando. Tu portfolio queda online desde el primer minuto.',
-    howCtaButton: 'Crear mi portfolio gratis',
-    howCtaFoot: 'Gratis. Sin tarjeta.',
   },
   en: {
     signIn: 'Sign in',
@@ -55,31 +29,6 @@ const COPY = {
     subheading:
       'Create your professional space to tell your story, showcase your projects, and connect with new opportunities.',
     errorTitle: 'Something went wrong signing in.',
-    howNav: 'Try it',
-    howTitle: 'Try it right here',
-    howSubtitle:
-      'This is not a screenshot — it is the real editor. Click any text and type over it, add lines, change the order. This is how you edit your portfolio: on the finished design, with no forms.',
-    howHints: [
-      {
-        title: 'Click and type',
-        body: 'On any text. Select something and the toolbar appears: bold, size, font, color.',
-      },
-      {
-        title: 'Add and remove',
-        body: 'Add lines and tags with the dashed buttons, or drop the ones you do not want with the ×.',
-      },
-      {
-        title: 'Drag to reorder',
-        body: 'Grab any line or tag by the handle on its left and move it.',
-      },
-    ],
-    demoChrome: 'demo — nothing is saved',
-    demoDisclaimer:
-      'This is a demo: nothing you type here is saved. Create your account to get one for real.',
-    howCtaTitle: 'Start yours now',
-    howCtaBody: 'Sign in with Google and you are already editing. Your portfolio is online from minute one.',
-    howCtaButton: 'Create my portfolio — free',
-    howCtaFoot: 'Free. No card.',
   },
 } as const
 
@@ -118,9 +67,6 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
             <span className="text-[17px] font-semibold tracking-[-0.02em]">Portfolio App</span>
           </div>
 
-          <a href="#como" className="text-[14.5px] text-[#d4d4d8] hover:text-white transition-colors">
-            {t.howNav}
-          </a>
 
           <button
             onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
@@ -185,64 +131,6 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
         </div>
       </section>
 
-      <section id="como" className="px-5 sm:px-9 lg:px-[72px] py-16 sm:py-24 lg:py-[140px] border-t border-white/[0.08]">
-        <div className="max-w-[1180px] mx-auto">
-          <h2 className="m-0 max-w-[560px] text-[28px] sm:text-[36px] lg:text-[46px] leading-[1.06] tracking-[-0.03em] font-medium">
-            {t.howTitle}
-          </h2>
-          <p className="mt-4 max-w-[560px] text-[15.5px] sm:text-base text-[#a1a1aa] leading-relaxed">
-            {t.howSubtitle}
-          </p>
-
-          {/* What each hint points at is right there to be tried, so these stay
-              short — they're a nudge toward the first click, not a manual. */}
-          <div className="mt-10 flex flex-wrap gap-x-8 gap-y-5">
-            {t.howHints.map((hint) => (
-              <div key={hint.title} className="flex gap-3 flex-1 min-w-[200px] max-w-[300px]">
-                <span className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#d8ff3e]" />
-                <div>
-                  <p className="m-0 text-[14.5px] font-semibold">{hint.title}</p>
-                  <p className="m-0 mt-1 text-[13.5px] text-[#a1a1aa] leading-relaxed">{hint.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 sm:mt-12 rounded-2xl overflow-hidden border border-white/10">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.08] bg-[#0c0c0f]">
-              <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-              <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-              <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-              <span className="ml-2 text-[12px] text-[#71717a] font-mono">{t.demoChrome}</span>
-            </div>
-            <DemoStage lang={lang} />
-          </div>
-
-          {/* Stated plainly and right under the thing itself: someone who types
-              their real experience in here and closes the tab loses it, and
-              finding that out afterwards would be entirely our fault. */}
-          <p className="mt-4 text-[13px] text-[#71717a] text-center">{t.demoDisclaimer}</p>
-
-          {/* The whole section exists to end here — trying it is the argument,
-              this is the ask. */}
-          <div className="mt-16 sm:mt-24 rounded-2xl border border-white/10 bg-[#0c0c0f] px-6 sm:px-10 py-10 sm:py-12 text-center">
-            <h3 className="m-0 text-[24px] sm:text-[32px] font-medium tracking-[-0.03em] [text-wrap:balance]">
-              {t.howCtaTitle}
-            </h3>
-            <p className="mt-3 mx-auto max-w-[460px] text-[15.5px] text-[#a1a1aa] leading-relaxed [text-wrap:balance]">
-              {t.howCtaBody}
-            </p>
-            <div className="flex justify-center mt-7">
-              <GoogleSignInButton
-                label={t.howCtaButton}
-                pendingLabel={t.redirecting}
-                className="inline-flex items-center justify-center gap-2.5 h-[52px] px-8 rounded-full bg-[#d8ff3e] text-[#08080a] text-base font-semibold tracking-[-0.01em] transition-[filter] hover:brightness-110 disabled:opacity-60"
-              />
-            </div>
-            <p className="mt-3 text-[13px] text-[#71717a]">{t.howCtaFoot}</p>
-          </div>
-        </div>
-      </section>
     </>
   )
 }

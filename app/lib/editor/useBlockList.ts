@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { addListItemBlock, removeListItemBlock, reorderListItemBlocks } from '../block-list-actions'
 import { useLang } from '../../context/LanguageContext'
 import { moveBeforeId } from '../reorder'
-import { EMPTY_DOC } from './render-html'
 
 export type BlockListItem = { blockKey: string }
 
@@ -18,7 +17,7 @@ export type BlockListItem = { blockKey: string }
  * actions, so this exposes a busy flag instead of a save status.
  */
 export function useBlockList({ prefix, section }: { prefix: string; section: string }) {
-  const { lang, blocks, demo, mutateBlocks } = useLang()
+  const { lang, blocks } = useLang()
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,29 +32,6 @@ export function useBlockList({ prefix, section }: { prefix: string; section: str
     .map(({ blockKey }) => ({ blockKey }))
 
   async function add() {
-    // Landing-page demo: no database, so a new item is just another entry in
-    // the context's own blocks map. Same shape the server would have written
-    // (fresh random id under this prefix, sort_order past the current last),
-    // so everything downstream — ordering, remove, reorder — is unchanged.
-    if (demo) {
-      const lastSort = items.reduce(
-        (max, item) => Math.max(max, blocks[item.blockKey]?.[lang]?.sortOrder ?? 0),
-        0
-      )
-      mutateBlocks((prev) => ({
-        ...prev,
-        [`${prefix}.${Math.random().toString(36).slice(2, 10)}`]: {
-          [lang]: {
-            json: EMPTY_DOC,
-            html: '',
-            updatedAt: new Date().toISOString(),
-            sortOrder: lastSort + 1,
-          },
-        },
-      }))
-      return
-    }
-
     setBusy(true)
     setError(null)
     const result = await addListItemBlock(prefix, section, lang)
@@ -65,15 +41,6 @@ export function useBlockList({ prefix, section }: { prefix: string; section: str
   }
 
   async function remove(blockKey: string) {
-    if (demo) {
-      mutateBlocks((prev) => {
-        const next = { ...prev }
-        delete next[blockKey]
-        return next
-      })
-      return
-    }
-
     setBusy(true)
     setError(null)
     const result = await removeListItemBlock(blockKey, lang)
@@ -92,20 +59,6 @@ export function useBlockList({ prefix, section }: { prefix: string; section: str
       movedBlockKey,
       targetBlockKey
     )
-
-    // Same resequencing reorderListItemBlocks does server-side (every item's
-    // sort_order set to its index in the new order), applied to the local map.
-    if (demo) {
-      mutateBlocks((prev) => {
-        const next = { ...prev }
-        reordered.forEach((item, i) => {
-          const block = next[item.id]?.[lang]
-          if (block) next[item.id] = { ...next[item.id], [lang]: { ...block, sortOrder: i } }
-        })
-        return next
-      })
-      return
-    }
 
     setBusy(true)
     setError(null)
