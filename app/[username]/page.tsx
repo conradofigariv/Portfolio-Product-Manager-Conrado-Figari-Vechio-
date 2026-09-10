@@ -62,6 +62,10 @@ export default async function UserPortfolioPage({
       portfolio={portfolio}
       editing={isOwner && !previewing}
       previewing={previewing}
+      // Only ever true for the owner, in the real (non-preview) editor — a
+      // visitor or the owner's own preview view never has anything to
+      // dismiss, so there is nothing for them to see here.
+      showLanguageHint={isOwner && !previewing && !portfolio.languageHintSeen}
     />
   )
 }

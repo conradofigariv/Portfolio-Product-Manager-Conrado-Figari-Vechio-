@@ -626,3 +626,37 @@ export async function saveMediaPosition(
   revalidatePath('/', 'layout')
   return { ok: true }
 }
+
+/**
+ * Permanently dismisses the one-time language-toggle callout (see
+ * LanguageHint.tsx). Only called when the owner ticks "no volver a mostrar
+ * esto" before closing it — closing it without ticking the box hides it for
+ * this visit only (plain client state) and it comes back next time the
+ * editor loads, which is the point of having a separate checkbox at all.
+ *
+ * Wrapped in try/catch like the autosave-path actions even though this one
+ * is not on that path: a failure here has no error UI of its own (the
+ * callout has already closed client-side by the time this is called), so an
+ * uncaught throw would fail silently either way — catching just keeps that
+ * failure from ever reaching the caller as a rejected promise.
+ */
+export async function dismissLanguageHint(): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
+
+    const { error } = await supabase
+      .from('portfolios')
+      .update({ language_hint_seen: true })
+      .eq('user_id', user.id)
+    if (error) return { ok: false, error: error.message }
+
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error.' }
+  }
+}

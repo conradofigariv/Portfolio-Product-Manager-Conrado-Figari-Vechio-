@@ -127,7 +127,18 @@ function buildMedia(rows: MediaRow[], publicUrl: (path: string) => string): Port
 export async function loadPortfolio(
   supabase: SupabaseClient,
   username: string
-): Promise<(Portfolio & { published: boolean; ownerId: string; portfolioId: string }) | null> {
+): Promise<
+  | (Portfolio & {
+      published: boolean
+      ownerId: string
+      portfolioId: string
+      // Whether the owner has permanently dismissed the language-toggle
+      // callout (LanguageHint.tsx). Meaningless for anyone but the owner —
+      // the page only ever reads it behind an isOwner check.
+      languageHintSeen: boolean
+    })
+  | null
+> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, username')
@@ -138,7 +149,7 @@ export async function loadPortfolio(
 
   const { data: portfolio } = await supabase
     .from('portfolios')
-    .select('id, content, published')
+    .select('id, content, published, language_hint_seen')
     .eq('user_id', profile.id)
     .maybeSingle()
 
@@ -167,6 +178,7 @@ export async function loadPortfolio(
     published: !!portfolio.published,
     ownerId: profile.id,
     portfolioId: portfolio.id,
+    languageHintSeen: !!portfolio.language_hint_seen,
   }
 }
 
