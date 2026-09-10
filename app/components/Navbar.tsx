@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
 import BackgroundPicker from './BackgroundPicker'
@@ -245,11 +246,19 @@ export default function Navbar({ showLanguageHint = false }: { showLanguageHint?
           also dim the toggle it's supposed to be spotlighting.
           pointer-events-none: this is a visual cue, not a click-trap — the
           rest of the page stays fully usable while it's up, and the callout
-          only ever closes via its own "Entendido" button. */}
+          only ever closes via its own "Entendido" button. Fades in over the
+          same 1s as the callout below, so the dim and the callout arrive as
+          one motion rather than the dim snapping in a beat ahead of it. */}
       {mounted &&
         hintVisible &&
         createPortal(
-          <div className="fixed inset-0 z-40 bg-black/50 pointer-events-none" aria-hidden="true" />,
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="fixed inset-0 z-40 bg-black/50 pointer-events-none"
+            aria-hidden="true"
+          />,
           document.body
         )}
 
