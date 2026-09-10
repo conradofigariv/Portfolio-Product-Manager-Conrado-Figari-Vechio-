@@ -1,5 +1,7 @@
 'use client'
 
+import { motion } from 'framer-motion'
+
 // The one-time callout that points at the language toggle. Purely
 // presentational — Navbar owns the open/remember state and passes it down,
 // because Navbar renders its language toggle twice (once for the desktop
@@ -34,7 +36,14 @@ export default function LanguageHint({
   onConfirm: () => void
 }) {
   return (
-    <div
+    // No AnimatePresence — only an entrance was asked for. This element is
+    // conditionally rendered by the caller (hintVisible), and initial/animate
+    // alone already runs on that first mount; there's no exit to animate
+    // since dismissal just unmounts it.
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
       role="dialog"
       aria-label={t.title}
       className="absolute left-0 top-full mt-2 z-10 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-dark-600 bg-dark-900/95 backdrop-blur p-4 shadow-xl text-left"
@@ -59,6 +68,6 @@ export default function LanguageHint({
       >
         {t.confirm}
       </button>
-    </div>
+    </motion.div>
   )
 }
