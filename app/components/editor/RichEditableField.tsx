@@ -92,10 +92,8 @@ export default function RichEditableField({
     // set this false is Tiptap's SSR warning, which cannot apply here: this
     // module is only ever reached through next/dynamic(..., { ssr: false }),
     // so it never runs on the server at all. Leaving it false cost a visible
-    // ~300ms of blank fields every time an editor mounted — invisible in the
-    // real editor (the owner is already on their page when it happens) but
-    // very visible on the landing demo, where the card emptied out and
-    // refilled as it scrolled into view.
+    // stretch of blank fields every time an editor mounted — see the
+    // .rich-field fallback in EditableText, which covers the rest of that gap.
     immediatelyRender: true,
   })
 
