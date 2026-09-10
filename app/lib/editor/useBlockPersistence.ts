@@ -36,7 +36,8 @@ export function useBlockPersistence({
   const updatedAtRef = useRef(initialUpdatedAt)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRef = useRef<JSONContent | null>(null)
-  const { notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd } = useLang()
+  const { notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd, demo, mutateBlocks } =
+    useLang()
 
   const save = useCallback(
     async (json: JSONContent) => {
@@ -45,6 +46,32 @@ export function useBlockPersistence({
         timerRef.current = null
       }
       pendingRef.current = null
+
+      // Landing-page demo: there is no portfolio row to write to, so the
+      // edit just lands in the context's own copy of `blocks` and is gone on
+      // reload. Deliberately reuses the debounce/blur/unmount machinery above
+      // rather than short-circuiting earlier, so the demo behaves like the
+      // real editor in every way except actually persisting. No saving
+      // indicator either — nothing is saving, and claiming otherwise in a
+      // throwaway editor would be a lie the visitor acts on.
+      if (demo) {
+        const plainJson = JSON.parse(JSON.stringify(json)) as JSONContent
+        mutateBlocks((prev) => ({
+          ...prev,
+          [blockKey]: {
+            ...prev[blockKey],
+            [lang]: {
+              json: plainJson,
+              html: '',
+              updatedAt: new Date().toISOString(),
+              sortOrder: prev[blockKey]?.[lang]?.sortOrder ?? 0,
+            },
+          },
+        }))
+        setStatus('saved')
+        return
+      }
+
       setStatus('saving')
       setError(null)
       notifyBlockSavingStart()
@@ -99,7 +126,17 @@ export function useBlockPersistence({
         notifyBlockSavingEnd()
       }
     },
-    [blockKey, lang, section, editor, notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd]
+    [
+      blockKey,
+      lang,
+      section,
+      editor,
+      notifyBlockSaved,
+      notifyBlockSavingStart,
+      notifyBlockSavingEnd,
+      demo,
+      mutateBlocks,
+    ]
   )
 
   const scheduleSave = useCallback(

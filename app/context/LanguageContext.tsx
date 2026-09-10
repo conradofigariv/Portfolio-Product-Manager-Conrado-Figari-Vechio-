@@ -38,6 +38,16 @@ interface LanguageContextType {
   blockSaving: boolean
   notifyBlockSavingStart: () => void
   notifyBlockSavingEnd: () => void
+  // Throwaway editor mode, used only by the landing page's try-it-out
+  // skeleton (see DemoStage.tsx). Nothing here belongs to a signed-in user:
+  // there is no portfolio row, no portfolio_blocks row and no storage, so
+  // every write that would normally hit a server action instead goes through
+  // mutateBlocks below and dies with the tab. The real editor never sets
+  // this, and every branch guarded by it is a no-op for the owner.
+  demo: boolean
+  // The only way a demo edit persists anywhere. Stable across renders (see
+  // notifyBlockSaved's comment for why that matters here too).
+  mutateBlocks: (update: (blocks: PortfolioBlocks) => PortfolioBlocks) => void
   // Structural edits (add/remove list items) that only ever touch the language
   // being viewed — used for narrative lines, tags, skills, categories, certs
   // and contact items, none of which anything else is keyed to.
@@ -55,13 +65,26 @@ export function LanguageProvider({
   children,
   portfolio = defaultPortfolio,
   editing = false,
+  demo = false,
+  initialLang = 'en',
 }: {
   children: ReactNode
   portfolio?: Portfolio
   editing?: boolean
+  demo?: boolean
+  initialLang?: Lang
 }) {
-  const [lang, setLang] = useState<Lang>('en')
+  const [lang, setLang] = useState<Lang>(initialLang)
   const [draft, setDraft] = useState(portfolio.content)
+  // Only ever read in demo mode. In the real editor `blocks` is the committed
+  // server value and never lives in React state — a field's edits stay inside
+  // its own Tiptap instance until autosave writes them to the database, which
+  // is what keeps this context from re-rendering the whole page per keystroke.
+  const [demoBlocks, setDemoBlocks] = useState(portfolio.blocks)
+  const mutateBlocks = useCallback(
+    (update: (blocks: PortfolioBlocks) => PortfolioBlocks) => setDemoBlocks(update),
+    []
+  )
   const [dirty, setDirty] = useState(false)
   const [lastBlockSavedAt, setLastBlockSavedAt] = useState<number | null>(null)
   const [savingCount, setSavingCount] = useState(0)
@@ -101,7 +124,7 @@ export function LanguageProvider({
         t: translations[lang],
         content: draft[lang],
         media: portfolio.media,
-        blocks: portfolio.blocks,
+        blocks: demo ? demoBlocks : portfolio.blocks,
         toggleLang,
         editing,
         dirty,
@@ -115,6 +138,8 @@ export function LanguageProvider({
         blockSaving: savingCount > 0,
         notifyBlockSavingStart,
         notifyBlockSavingEnd,
+        demo,
+        mutateBlocks,
       }}
     >
       {children}
