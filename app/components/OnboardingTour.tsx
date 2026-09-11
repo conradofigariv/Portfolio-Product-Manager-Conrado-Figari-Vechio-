@@ -36,7 +36,7 @@ const noopSubscribe = () => () => {}
  * turns that state into DOM.
  */
 export default function OnboardingTour() {
-  const { t, tour } = useLang()
+  const { uiT, tour } = useLang()
 
   // The CV modal's own portal in Navbar never needed this — its open state
   // always starts false, so its first (server) render never reaches
@@ -99,7 +99,7 @@ export default function OnboardingTour() {
 
   if (!mounted || !tour.active || !target) return null
 
-  const copy = t.tour.steps[tour.stepIndex]
+  const copy = uiT.tour.steps[tour.stepIndex]
 
   return createPortal(
     <>
@@ -143,8 +143,8 @@ export default function OnboardingTour() {
           <button
             type="button"
             onClick={tour.pause}
-            aria-label={t.tour.close}
-            title={t.tour.close}
+            aria-label={uiT.tour.close}
+            title={uiT.tour.close}
             className="flex-shrink-0 -m-1 p-1 rounded text-dark-400 hover:text-dark-50 transition"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@ export default function OnboardingTour() {
               onClick={tour.back}
               className="button-secondary text-xs py-1.5 px-3 flex-1"
             >
-              {t.tour.back}
+              {uiT.tour.back}
             </button>
           )}
           <button
@@ -170,7 +170,7 @@ export default function OnboardingTour() {
             onClick={tour.isLast ? tour.finish : tour.next}
             className="button-primary text-xs py-1.5 px-3 flex-1"
           >
-            {tour.isLast ? t.tour.finish : t.tour.next}
+            {tour.isLast ? uiT.tour.finish : uiT.tour.next}
           </button>
         </div>
 
@@ -186,7 +186,7 @@ export default function OnboardingTour() {
             onChange={(e) => tour.setRemember(e.target.checked)}
             className="w-3.5 h-3.5 rounded border-dark-500 accent-[#d8ff3e]"
           />
-          {t.tour.dontShowAgain}
+          {uiT.tour.dontShowAgain}
         </label>
 
         <button
@@ -194,7 +194,7 @@ export default function OnboardingTour() {
           onClick={tour.skipAll}
           className="mt-3 block w-full text-center text-[11px] text-dark-500 hover:text-dark-300 transition"
         >
-          {t.tour.skip}
+          {uiT.tour.skip}
         </button>
       </motion.div>
     </>,
