@@ -36,7 +36,12 @@ export function useBlockPersistence({
   const updatedAtRef = useRef(initialUpdatedAt)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRef = useRef<JSONContent | null>(null)
-  const { notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd } = useLang()
+  const { blocks, updateBlock, notifyBlockSaved, notifyBlockSavingStart, notifyBlockSavingEnd } = useLang()
+  // sortOrder is meaningless for a scalar field (nothing sorts it against
+  // siblings) but still part of the PortfolioBlock shape updateBlock writes —
+  // carried through from whatever this block already had rather than reset
+  // to 0, in case this is ever reused for something that does care.
+  const sortOrderRef = useRef(blocks[blockKey]?.[lang]?.sortOrder ?? 0)
 
   const save = useCallback(
     async (json: JSONContent) => {
@@ -68,6 +73,16 @@ export function useBlockPersistence({
           updatedAtRef.current = result.updatedAt
           setStatus('saved')
           notifyBlockSaved()
+          // Keeps LanguageContext's `blocks` in sync with what was actually
+          // just persisted — nothing else does this for a scalar field (see
+          // updateBlock's own comment for why that matters now that
+          // EditableText remounts the field on every language switch).
+          updateBlock(blockKey, lang, {
+            json: result.json,
+            html: result.html,
+            updatedAt: result.updatedAt,
+            sortOrder: sortOrderRef.current,
+          })
           return
         }
 
@@ -78,6 +93,12 @@ export function useBlockPersistence({
           // Someone/something else just overwrote this field — show that
           // instead of silently discarding it under what's on screen.
           editor?.commands.setContent(result.latest.json, { emitUpdate: false })
+          updateBlock(blockKey, lang, {
+            json: result.latest.json,
+            html: result.latest.html,
+            updatedAt: result.latest.updatedAt,
+            sortOrder: sortOrderRef.current,
+          })
           return
         }
 
@@ -105,6 +126,7 @@ export function useBlockPersistence({
       lang,
       section,
       editor,
+      updateBlock,
       notifyBlockSaved,
       notifyBlockSavingStart,
       notifyBlockSavingEnd,
