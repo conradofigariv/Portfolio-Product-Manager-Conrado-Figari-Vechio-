@@ -89,4 +89,25 @@
     z-index: 45;
     box-shadow: 0 0 0 3px rgba(216, 255, 62, 0.35);
   }
+
+  /* A spotlighted target's drag handle / remove button default to
+     EditControls.tsx's muted `text-dark-500` — deliberately inconspicuous
+     everywhere else, but exactly wrong while the tour is pointing straight
+     at one and explaining what it does. Reported live as the controls
+     feeling "lost"/unusable during the story-reorder step, even though
+     drag-to-reorder and remove both keep working perfectly fine underneath
+     (confirmed directly) — nothing was actually broken, they just read as
+     too dim to register as "the thing being explained." `!important` is
+     required, not stylistic: Tailwind's `text-dark-500`/`hover:text-*`
+     utilities live in the later `utilities` layer, which always beats a
+     plain (non-important) rule in this earlier `components` layer
+     regardless of selector specificity — the same layer-order gotcha
+     `section-padding`'s override deals with elsewhere (see Journey.tsx).
+     Matched by role/aria-label rather than by which step this is, so any
+     future tour step landing on some other drag handle or remove button
+     (projects, tags, contact items, ...) gets the same fix for free. */
+  .tour-spotlight [aria-label='Reorder'],
+  .tour-spotlight [aria-label^='Remove'] {
+    color: #d8ff3e !important;
+  }
 }
