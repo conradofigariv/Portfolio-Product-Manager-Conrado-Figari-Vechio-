@@ -363,7 +363,9 @@ export default function ProjectTimeline() {
         </div>
 
         {editing && (
-          <div className="mt-8 max-w-md mx-auto">
+          // data-tour-target: the onboarding tour's "add your projects" step
+          // points here — see app/lib/onboarding-tour.ts.
+          <div data-tour-target="add-project" className="mt-8 max-w-md mx-auto">
             <AddButton label="Add project" onClick={addProject} />
           </div>
         )}
