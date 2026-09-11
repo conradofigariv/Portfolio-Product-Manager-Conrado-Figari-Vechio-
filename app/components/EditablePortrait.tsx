@@ -78,11 +78,11 @@ export default function EditablePortrait() {
     // Below `md`, this box is no longer next to a sibling column to stretch
     // against (the grid collapses to one column), so `h-full` alone would
     // resolve against a row with no intrinsic height and the photo would
-    // render at 0 height — a fixed `aspect-[4/3]` gives it a real height of
+    // render at 0 height — a fixed `aspect-square` gives it a real height of
     // its own instead, sized off its own (now close to full-width) width.
     // From `md` up, unchanged: a fixed w-72 stretched to the text column's
     // height via the grid's items-stretch.
-    <div className="relative w-full md:w-72 aspect-[4/3] md:aspect-auto md:h-full md:min-h-80">
+    <div className="relative w-full md:w-72 aspect-square md:aspect-auto md:h-full md:min-h-80">
       {/* Subtle glow */}
       <div className="absolute inset-0 bg-dark-50/5 rounded-2xl blur-2xl scale-110" />
 
