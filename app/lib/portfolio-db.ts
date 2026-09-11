@@ -132,11 +132,15 @@ export async function loadPortfolio(
       published: boolean
       ownerId: string
       portfolioId: string
-      // Onboarding tour state (see OnboardingTour.tsx) — meaningless for
-      // anyone but the owner; the page only ever reads these behind an
-      // isOwner check. tourSeen permanently dismissed; tourStep is where to
-      // resume if the owner closed early ("Salir") without dismissing it.
-      tourSeen: boolean
+      // Onboarding tour progress (see OnboardingTour.tsx) — meaningless for
+      // anyone but the owner; the page only ever reads this behind an
+      // isOwner check. How many steps the owner has gotten through, either
+      // by pausing mid-tour ("Salir", resumes exactly here) or by finishing
+      // ("Entendido"/"Saltear", set to however many steps existed at that
+      // moment — see finishOnboardingTour). The caller compares this against
+      // the *current* TOUR_STEPS.length to decide whether to show the tour
+      // at all, so a step added later automatically resurfaces it for anyone
+      // who'd already finished a shorter version.
       tourStep: number
     })
   | null
@@ -151,7 +155,7 @@ export async function loadPortfolio(
 
   const { data: portfolio } = await supabase
     .from('portfolios')
-    .select('id, content, published, onboarding_tour_seen, onboarding_tour_step')
+    .select('id, content, published, onboarding_tour_step')
     .eq('user_id', profile.id)
     .maybeSingle()
 
@@ -180,7 +184,6 @@ export async function loadPortfolio(
     published: !!portfolio.published,
     ownerId: profile.id,
     portfolioId: portfolio.id,
-    tourSeen: !!portfolio.onboarding_tour_seen,
     tourStep: typeof portfolio.onboarding_tour_step === 'number' ? portfolio.onboarding_tour_step : 0,
   }
 }

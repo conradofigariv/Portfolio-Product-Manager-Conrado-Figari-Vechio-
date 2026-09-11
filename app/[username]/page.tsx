@@ -4,6 +4,7 @@ import PortfolioShell from '../components/PortfolioShell'
 import { createClient } from '../lib/supabase/server'
 import { loadPortfolio } from '../lib/portfolio-db'
 import { adoptDeploymentMedia } from '../lib/deployment-owner'
+import { TOUR_STEPS } from '../lib/onboarding-tour'
 
 export async function generateMetadata({
   params,
@@ -64,8 +65,11 @@ export default async function UserPortfolioPage({
       previewing={previewing}
       // Only ever true for the owner, in the real (non-preview) editor — a
       // visitor or the owner's own preview view never has anything to
-      // dismiss, so there is nothing for them to see here.
-      showTour={isOwner && !previewing && !portfolio.tourSeen}
+      // dismiss, so there is nothing for them to see here. Comparing against
+      // the *current* TOUR_STEPS.length (not a stored "seen" flag) is what
+      // makes a step added later resurface the tour for someone who'd
+      // already finished a shorter version of it — see migration 0015.
+      showTour={isOwner && !previewing && portfolio.tourStep < TOUR_STEPS.length}
       initialTourStep={portfolio.tourStep}
     />
   )
