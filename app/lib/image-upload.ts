@@ -1,5 +1,5 @@
 const MAX_EDGE = 1920
-const TARGET_BYTES = 1.5 * 1024 * 1024
+const TARGET_BYTES = 3 * 1024 * 1024
 
 /**
  * Resizes and re-encodes an image in the browser, so what reaches storage is
@@ -7,16 +7,19 @@ const TARGET_BYTES = 1.5 * 1024 * 1024
  * screenshot) produced. Shared by every photo upload on the site (portrait,
  * chapter, project).
  *
- * Quality never drops below .78: screenshots (sharp text, flat UI edges)
- * show visible blocking at the lower steps this used to fall back to, far
+ * Quality never drops below .85 (raised from an original floor of .78 after
+ * a report that project preview photos still looked a bit soft) — screenshots
+ * (sharp text, flat UI edges) show visible blocking at lower settings far
  * more than a photo does at the same setting. Missing the byte target by
- * keeping quality high is the better trade for this kind of image.
+ * keeping quality high is the better trade for this kind of image; the byte
+ * target itself was raised alongside it (1.5MB -> 3MB) so the higher-quality
+ * steps actually have room to be picked instead of always falling through.
  */
 // Step the quality down rather than ever falling back to the original file,
 // so a stored photo has a predictable ceiling.
 async function canvasToWebp(canvas: HTMLCanvasElement): Promise<Blob> {
   let best: Blob | null = null
-  for (const quality of [0.92, 0.85, 0.78]) {
+  for (const quality of [0.95, 0.9, 0.85]) {
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/webp', quality)
     )
