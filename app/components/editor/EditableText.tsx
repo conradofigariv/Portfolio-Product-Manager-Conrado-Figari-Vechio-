@@ -49,7 +49,26 @@ export default function EditableText({
       {readOnlyHtml && (
         <span className="rich-field-fallback" dangerouslySetInnerHTML={{ __html: readOnlyHtml }} />
       )}
+      {/* key={blockKey+lang}: `useEditor`'s `content` option only seeds the
+          Tiptap document once, at creation — it is not reactively synced on
+          later renders. Toggling the content-language pill re-renders this
+          component with a new `initial` (the other language's block), but
+          without a key tied to `lang`, React just re-renders the *same*
+          RichEditableField/editor instance in place, so the field kept
+          showing/editing whichever language's content it happened to load
+          at mount — reported live as "hice el portfolio en español y ahora
+          tampoco cambia a ingles" (autosave itself was never broken: `lang`
+          is passed fresh to useBlockPersistence on every render and always
+          wrote to the correct block row underneath — only the *display*
+          was stuck). Changing `key` forces a full remount on every language
+          switch, so the editor is always rebuilt fresh from the correct
+          language's `initial` content. The `.rich-field-fallback` read-only
+          HTML above (recomputed fresh from `blocks[blockKey][lang]` on
+          every render, independent of any editor instance) already exists
+          to cover exactly this kind of remount gap, so there's no new
+          flash-of-emptiness this introduces. */}
       <RichEditableField
+        key={`${blockKey}:${lang}`}
         blockKey={blockKey}
         section={section}
         placeholder={placeholder}
