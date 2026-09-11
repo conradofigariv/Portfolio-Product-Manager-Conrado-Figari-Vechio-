@@ -79,10 +79,14 @@ export default function EditablePortrait() {
     // against (the grid collapses to one column), so `h-full` alone would
     // resolve against a row with no intrinsic height and the photo would
     // render at 0 height — a fixed `aspect-square` gives it a real height of
-    // its own instead, sized off its own (now close to full-width) width.
+    // its own instead, sized off its own width. That width was originally
+    // `w-full` (edge-to-edge), which pushed the name/tagline/description
+    // below the fold on a phone screenshot — shrunk 30% to `w-[70%]`
+    // (still centered by Hero's own `flex justify-center` wrapper) so more
+    // of the text column is visible without scrolling.
     // From `md` up, unchanged: a fixed w-72 stretched to the text column's
     // height via the grid's items-stretch.
-    <div className="relative w-full md:w-72 aspect-square md:aspect-auto md:h-full md:min-h-80">
+    <div className="relative w-[70%] md:w-72 aspect-square md:aspect-auto md:h-full md:min-h-80">
       {/* Subtle glow */}
       <div className="absolute inset-0 bg-dark-50/5 rounded-2xl blur-2xl scale-110" />
 
