@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
 import { Portfolio, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
 import { setAtPath } from '../lib/content-path'
@@ -8,8 +8,23 @@ import { TOUR_STEPS } from '../lib/onboarding-tour'
 import { finishOnboardingTour, pauseOnboardingTour } from '../lib/portfolio-actions'
 
 interface LanguageContextType {
+  // Which language the portfolio's own CONTENT is shown/edited in — unrelated
+  // to `uiLang` below. Kept as a separate concept on purpose: an owner (or a
+  // visitor) building/reading a portfolio in English doesn't necessarily want
+  // Spanish as their own base language, or vice versa — see `uiLang`.
   lang: Lang
-  // Interface labels, identical for every portfolio.
+  // Which language the app's own CHROME is shown in (nav labels, the tour,
+  // EditBar's button text, the CV modal, ...) — i.e. `t` below. Deliberately
+  // independent of `lang`: switching which language version of the portfolio
+  // you're viewing/editing should never also silently change the language of
+  // your own tools. Detected once from the browser on mount and persisted to
+  // localStorage from then on (per-device, not tied to any account — see
+  // `setUiLang`); changeable any time via the dropdown under the initials
+  // icon in Navbar.
+  uiLang: Lang
+  setUiLang: (lang: Lang) => void
+  // Interface labels, identical for every portfolio, driven by `uiLang` (not
+  // `lang`) — see above.
   t: (typeof translations)['en']
   // The content of the portfolio being displayed, in the active language.
   content: PortfolioContent
@@ -90,6 +105,19 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | null>(null)
 
+const UI_LANG_KEY = 'portfolio-app:ui-lang'
+
+// Same zero-effect "are we genuinely client-side yet" trick OnboardingTour.tsx
+// already uses for its own `mounted` flag (see that file's own comment) —
+// `getServerSnapshot` covers SSR and the hydration-matching first client
+// render, so `localStorage`/`navigator` are never touched before it's safe.
+const noopSubscribe = () => () => {}
+
+function detectBrowserLang(): Lang {
+  if (typeof navigator === 'undefined') return 'en'
+  return navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en'
+}
+
 export function LanguageProvider({
   children,
   portfolio = defaultPortfolio,
@@ -109,6 +137,46 @@ export function LanguageProvider({
   initialTourStep?: number
 }) {
   const [lang, setLang] = useState<Lang>('en')
+
+  // uiLang: detected once from the browser, then persisted to localStorage —
+  // completely separate from `lang` above (content language). `mounted`
+  // gates the one-time hydration so it only ever runs once this is safe to
+  // read (never during SSR or the hydration-matching first client render).
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false)
+  const [uiLang, setUiLangState] = useState<Lang>('en')
+  // Guards the hydration below to only ever run once — a plain useState
+  // rather than a ref, since react-hooks/refs (this project's stricter lint
+  // config) flags reading/writing a ref's `.current` during render outside
+  // its one sanctioned `if (ref.current == null)` lazy-init shape. Calling
+  // setState conditionally *during* render (not inside a bare useEffect) is
+  // React's own sanctioned way to adjust state in response to something
+  // becoming available — the same render-time-comparison pattern EditBar's
+  // `justSaved` flash already uses; setting two state pieces from the same
+  // conditional block is still just that one pattern applied twice.
+  const [uiLangHydrated, setUiLangHydrated] = useState(false)
+  if (mounted && !uiLangHydrated) {
+    setUiLangHydrated(true)
+    let stored: string | null = null
+    try {
+      stored = window.localStorage.getItem(UI_LANG_KEY)
+    } catch {
+      // Storage can throw (private browsing, blocked cookies) — falls back
+      // to browser detection below, same as never having a stored value.
+    }
+    const initial: Lang = stored === 'en' || stored === 'es' ? stored : detectBrowserLang()
+    if (initial !== uiLang) setUiLangState(initial)
+  }
+
+  function setUiLang(next: Lang) {
+    setUiLangState(next)
+    try {
+      window.localStorage.setItem(UI_LANG_KEY, next)
+    } catch {
+      // Best-effort persistence — a viewer with storage blocked still gets
+      // the change for the rest of this session, just not remembered.
+    }
+  }
+
   const [draft, setDraft] = useState(portfolio.content)
   const [dirty, setDirty] = useState(false)
   // Mirrors `draft` so markSaved can compare against the *latest* draft
@@ -196,7 +264,9 @@ export function LanguageProvider({
     <LanguageContext.Provider
       value={{
         lang,
-        t: translations[lang],
+        uiLang,
+        setUiLang,
+        t: translations[uiLang],
         content: draft[lang],
         media: portfolio.media,
         blocks: portfolio.blocks,

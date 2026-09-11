@@ -14,7 +14,7 @@ const FLASH_MS = 1600
 // Floats above the portfolio while its owner is editing. Everyone else never
 // renders this, and the page they see is unchanged.
 export default function EditBar({ username }: { username: string }) {
-  const { editing, dirty, draft, markSaved, lastBlockSavedAt, blockSaving, lang } = useLang()
+  const { editing, dirty, draft, markSaved, lastBlockSavedAt, blockSaving, uiLang } = useLang()
   const [state, setState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [justSaved, setJustSaved] = useState(false)
@@ -116,7 +116,7 @@ export default function EditBar({ username }: { username: string }) {
                   Saving…
                 </>
               ) : justSaved ? (
-                lang === 'es' ? (
+                uiLang === 'es' ? (
                   '¡Guardado!'
                 ) : (
                   'Saved!'
