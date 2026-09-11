@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
 import { Portfolio, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
 import { setAtPath } from '../lib/content-path'
@@ -48,7 +48,15 @@ interface LanguageContextType {
   // chapter and project ids are what photos attach to and the two language
   // documents have to keep matching ids.
   updateBoth: (update: (content: PortfolioContent, lang: Lang) => PortfolioContent) => void
-  markSaved: () => void
+  // `savedDraft` is whatever draft object the caller actually persisted (the
+  // one it sent to savePortfolio), not "the current one." Only clears `dirty`
+  // if the draft hasn't changed since that request went out — if the owner
+  // made another edit while the save was still in flight, that edit only
+  // ever touched local draft state and was never sent, so clearing `dirty`
+  // here would tell the owner (and the beforeunload guard) everything's
+  // saved when it isn't. Left `dirty` in that case so Save stays enabled and
+  // a follow-up click actually sends the newer edit.
+  markSaved: (savedDraft: Record<Lang, PortfolioContent>) => void
   // Onboarding tour (see OnboardingTour.tsx). `active` folds together every
   // reason it might not be showing right now: not the owner's real editor
   // view, already permanently dismissed, the 2s entrance delay hasn't
@@ -103,6 +111,13 @@ export function LanguageProvider({
   const [lang, setLang] = useState<Lang>('en')
   const [draft, setDraft] = useState(portfolio.content)
   const [dirty, setDirty] = useState(false)
+  // Mirrors `draft` so markSaved can compare against the *latest* draft
+  // (as of the most recent render) from inside an async callback, without
+  // that callback needing its own stale closure over `draft`.
+  const draftRef = useRef(draft)
+  useEffect(() => {
+    draftRef.current = draft
+  }, [draft])
   const [lastBlockSavedAt, setLastBlockSavedAt] = useState<number | null>(null)
   const [savingCount, setSavingCount] = useState(0)
   // Stable across renders (unlike an inline arrow in the provider value
@@ -192,7 +207,9 @@ export function LanguageProvider({
         setField,
         updateActive,
         updateBoth,
-        markSaved: () => setDirty(false),
+        markSaved: (savedDraft) => {
+          if (draftRef.current === savedDraft) setDirty(false)
+        },
         lastBlockSavedAt,
         notifyBlockSaved,
         blockSaving: savingCount > 0,

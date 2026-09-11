@@ -5,6 +5,7 @@ import { usePairedBlockList } from '../lib/editor/usePairedBlockList'
 import RichText from './editor/EditableText'
 import SkillCategoryCard from './SkillCategoryCard'
 import { AddButton, RemoveButton } from './EditControls'
+import { deleteSkillCategoryData } from '../lib/portfolio-actions'
 
 const CERT_FIELDS = ['title', 'issuer'] as const
 
@@ -13,7 +14,7 @@ function newSkillCategoryId() {
 }
 
 export default function Skills() {
-  const { t, content, editing, updateActive } = useLang()
+  const { t, content, editing, updateActive, lang } = useLang()
   const s = content.skills
   const {
     items: certs,
@@ -38,7 +39,7 @@ export default function Skills() {
             <SkillCategoryCard
               key={cat.id}
               category={cat}
-              onRemove={() =>
+              onRemove={() => {
                 updateActive((c) => ({
                   ...c,
                   skills: {
@@ -46,7 +47,14 @@ export default function Skills() {
                     categories: c.skills.categories.filter((cc) => cc.id !== cat.id),
                   },
                 }))
-              }
+                // Same reasoning as removeProject/removeChapter: the array
+                // removal above only persists on the next Save, but this
+                // category's migrated name field and nested skills live in a
+                // table Save never touches — clean them up now. Only the
+                // active language's blocks, matching updateActive's own
+                // scope above (categories aren't synced across languages).
+                void deleteSkillCategoryData(cat.id, lang)
+              }}
             />
           ))}
 

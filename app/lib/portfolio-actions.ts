@@ -629,6 +629,159 @@ export async function saveMediaPosition(
 }
 
 /**
+ * Deletes every migrated rich-text block belonging to a project, in both
+ * languages, plus its gallery photos (portfolio_media rows + storage files).
+ * Called immediately when the owner removes a project (ProjectTimeline.tsx),
+ * not deferred to Save — the project's own removal from the array is still
+ * only persisted by the next Save (old draft system), but portfolio_blocks
+ * and portfolio_media are separate tables that system never touches at all,
+ * so without this call every one of a removed project's fields and photos
+ * stayed orphaned forever, keyed by an id nothing could ever reference
+ * again. Both languages' blocks are deleted since removeProject always
+ * removes the project from both languages' arrays at once (updateBoth) —
+ * the id is meant to be shared across languages, unlike a plain block list.
+ */
+export async function deleteProjectData(
+  projectId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
+
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+    const { error: blocksError } = await supabase
+      .from('portfolio_blocks')
+      .delete()
+      .eq('portfolio_id', portfolio.id)
+      .like('block_key', `projects.items.${projectId}.%`)
+    if (blocksError) return { ok: false, error: blocksError.message }
+
+    const { data: mediaRows } = await supabase
+      .from('portfolio_media')
+      .select('id, storage_path')
+      .eq('portfolio_id', portfolio.id)
+      .eq('kind', 'project')
+      .eq('target_id', projectId)
+
+    if (mediaRows?.length) {
+      await supabase.from('portfolio_media').delete().in('id', mediaRows.map((row) => row.id))
+      const owned = mediaRows.map((row) => row.storage_path).filter((path) => !path.startsWith('/'))
+      if (owned.length) await supabase.storage.from(BUCKET).remove(owned)
+    }
+
+    revalidatePath('/', 'layout')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error deleting project data.' }
+  }
+}
+
+/**
+ * Same cleanup as deleteProjectData, for a journey chapter: every migrated
+ * block under journey.chapters.<id>.* in both languages, plus the chapter's
+ * single photo (mirrors removeChapterPhoto's own media/storage cleanup).
+ * Called immediately when the owner removes a chapter (Journey.tsx).
+ */
+export async function deleteChapterData(
+  chapterId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
+
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+    const { error: blocksError } = await supabase
+      .from('portfolio_blocks')
+      .delete()
+      .eq('portfolio_id', portfolio.id)
+      .like('block_key', `journey.chapters.${chapterId}.%`)
+    if (blocksError) return { ok: false, error: blocksError.message }
+
+    const { data: mediaRows } = await supabase
+      .from('portfolio_media')
+      .select('id, storage_path')
+      .eq('portfolio_id', portfolio.id)
+      .eq('kind', 'chapter')
+      .eq('target_id', chapterId)
+
+    if (mediaRows?.length) {
+      await supabase.from('portfolio_media').delete().in('id', mediaRows.map((row) => row.id))
+      const owned = mediaRows.map((row) => row.storage_path).filter((path) => !path.startsWith('/'))
+      if (owned.length) await supabase.storage.from(BUCKET).remove(owned)
+    }
+
+    revalidatePath('/', 'layout')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error deleting chapter data.' }
+  }
+}
+
+/**
+ * Deletes a skill category's migrated blocks — its `category` name field and
+ * every skill in its nested list — under skills.categories.<id>.*. Unlike
+ * project/chapter removal, Skills.tsx removes a category with `updateActive`
+ * (only the language being viewed), so only that language's blocks are
+ * deleted here too: deleting both would risk wiping the other language's
+ * still-referenced category if its own array hasn't had the same removal
+ * applied (categories aren't synced across languages the way projects and
+ * chapters are — see LanguageContext's updateActive vs updateBoth).
+ */
+export async function deleteSkillCategoryData(
+  categoryId: string,
+  lang: Lang
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'You are not signed in.' }
+
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!portfolio) return { ok: false, error: 'Your portfolio is still being set up.' }
+
+    const { error } = await supabase
+      .from('portfolio_blocks')
+      .delete()
+      .eq('portfolio_id', portfolio.id)
+      .eq('lang', lang)
+      .like('block_key', `skills.categories.${categoryId}.%`)
+    if (error) return { ok: false, error: error.message }
+
+    revalidatePath('/', 'layout')
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error deleting category data.' }
+  }
+}
+
+/**
  * Ends the onboarding tour for now (see OnboardingTour.tsx) — called two
  * ways: reaching the last step and clicking "Entendido"/"Finalizar" (you saw
  * all of it), or clicking "Saltear tour" from any step (you don't want to

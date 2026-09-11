@@ -60,7 +60,11 @@ export default function EditBar({ username }: { username: string }) {
 
     const result = await savePortfolio({ content: draft })
     if (result.ok) {
-      markSaved()
+      // Pass the exact snapshot that was actually sent — if the owner made
+      // another edit while this request was in flight, `draft` will have
+      // moved on since, and markSaved knows not to clear `dirty` for a
+      // change that was never persisted. See its own comment for why.
+      markSaved(draft)
       setState('idle')
       router.refresh()
     } else {

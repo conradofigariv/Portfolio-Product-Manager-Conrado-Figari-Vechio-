@@ -6,6 +6,7 @@ import { moveBeforeId } from '../lib/reorder'
 import RichText from './editor/EditableText'
 import EditableChapterPhoto from './EditableChapterPhoto'
 import { AddButton, DragHandle, RemoveButton } from './EditControls'
+import { deleteChapterData } from '../lib/portfolio-actions'
 
 function newChapterId() {
   return `chapter-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
@@ -51,6 +52,11 @@ export default function Journey() {
       ...c,
       journey: { ...c.journey, chapters: c.journey.chapters.filter((ch) => ch.id !== id) },
     }))
+    // Same reasoning as ProjectTimeline's removeProject: the array removal
+    // only persists on the next Save, but this chapter's migrated fields and
+    // photo live in tables that Save never touches — clean them up now, or
+    // they're orphaned forever.
+    void deleteChapterData(id)
   }
 
   function dropChapter(targetId: string) {
