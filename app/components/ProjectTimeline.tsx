@@ -10,6 +10,7 @@ import EditableProjectGallery from './EditableProjectGallery'
 import ProjectNarrative from './ProjectNarrative'
 import ProjectTags from './ProjectTags'
 import { AddButton, DragHandle, RemoveButton } from './EditControls'
+import { deleteProjectData } from '../lib/portfolio-actions'
 
 // Alternating sides; index into this by position, not by project identity.
 const poses: Array<'left' | 'right'> = ['right', 'left']
@@ -108,6 +109,12 @@ export default function ProjectTimeline() {
       ...c,
       projects: { ...c.projects, items: c.projects.items.filter((item) => item.id !== id) },
     }))
+    // The array removal above only lands in the DB on the next Save (old
+    // draft system) — but this project's migrated fields/photos live in
+    // separate tables that system never touches, so they'd otherwise stay
+    // orphaned forever. Fired immediately, independent of Save/dirty, same
+    // as the block-list system's own add/remove.
+    void deleteProjectData(id)
   }
 
   function dropProject(targetId: string) {
