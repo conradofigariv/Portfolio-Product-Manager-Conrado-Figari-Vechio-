@@ -99,10 +99,17 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right: Real photo */}
+          {/* Right: Real photo. Was `hidden` below `md` entirely — reported
+              live as the portrait not showing on mobile at all. Now shown
+              there too, `order-first` so it renders like a cover photo above
+              the text column instead of after it (DOM order — and therefore
+              default grid/flex order — has text first, photo second, which
+              is already the right order for the two-column desktop layout,
+              so only mobile needs an override; `md:order-none` drops back to
+              that natural order from `md` up). */}
           {(media.portrait || editing) && (
             <div
-              className={`hidden md:flex justify-center transition-all duration-1000 delay-300 ${
+              className={`order-first md:order-none flex justify-center mb-6 md:mb-0 transition-all duration-1000 delay-300 ${
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
