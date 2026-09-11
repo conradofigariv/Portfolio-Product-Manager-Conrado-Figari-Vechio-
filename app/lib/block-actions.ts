@@ -13,7 +13,11 @@ import type { Lang } from './portfolio'
 const MAX_BLOCK_LENGTH = 2000
 
 type UpsertResult =
-  | { ok: true; updatedAt: string }
+  // json/html echo back the *sanitized* version actually stored (sanitizeDoc
+  // can strip things the client sent) — the caller uses these to keep its
+  // own local copy of `blocks` in sync with the server, since nothing here
+  // triggers a client-side refetch on its own (see useBlockPersistence).
+  | { ok: true; updatedAt: string; json: JSONContent; html: string }
   | { ok: false; error: string; conflict?: true; latest?: { json: JSONContent; html: string; updatedAt: string } }
 
 /**
@@ -95,7 +99,7 @@ export async function upsertBlock(
     if (error) return { ok: false, error: error.message }
 
     revalidatePath('/', 'layout')
-    return { ok: true, updatedAt: saved.updated_at }
+    return { ok: true, updatedAt: saved.updated_at, json: safeJson, html }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Unexpected error saving this field.' }
   }

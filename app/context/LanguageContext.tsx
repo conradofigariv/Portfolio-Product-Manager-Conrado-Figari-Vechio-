@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, ReactNode } from 'react'
 import { translations, Lang } from '../lib/translations'
-import { Portfolio, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
+import { Portfolio, PortfolioBlock, PortfolioBlocks, PortfolioContent, PortfolioMedia, defaultPortfolio } from '../lib/portfolio'
 import { setAtPath } from '../lib/content-path'
 import { TOUR_STEPS } from '../lib/onboarding-tour'
 import { finishOnboardingTour, pauseOnboardingTour } from '../lib/portfolio-actions'
@@ -46,10 +46,31 @@ interface LanguageContextType {
   // The content of the portfolio being displayed, in the active language.
   content: PortfolioContent
   media: PortfolioMedia
-  // Rich text fields migrated to portfolio_blocks. Unlike content, these are
-  // not part of the draft — each field autosaves itself independently (see
-  // useBlockPersistence), so this is always the committed server value.
+  // Rich text fields migrated to portfolio_blocks. Unlike content, these
+  // aren't part of the draft/Save flow — each field autosaves itself
+  // independently (see useBlockPersistence). Starts as whatever the server
+  // sent on page load, then updated locally via `updateBlock` as each
+  // field's own autosave actually completes — see that function's comment
+  // for why this can't just be left as a static passthrough of server data.
   blocks: PortfolioBlocks
+  // Called by useBlockPersistence right after a block's autosave succeeds,
+  // so `blocks` (and therefore what a remounted RichEditableField reloads —
+  // see EditableText.tsx's per-language `key`) reflects what was *just*
+  // saved, not only what the page happened to load with at the start of the
+  // session. Nothing about the scalar-field autosave path ever calls
+  // router.refresh()/revalidates the client's own data — deliberately, so
+  // typing doesn't risk a mid-edit remount elsewhere on the page — so
+  // without this, `blocks` would only ever reflect the very first page
+  // load. That was invisible before RichEditableField was keyed by
+  // language (the same stale-but-present in-memory editor just kept
+  // showing whatever the owner had typed, regardless of what `blocks` said)
+  // but became a real, visible regression once toggling languages forces a
+  // remount: without this, a field's own just-saved content vanishes back
+  // to its pre-session value the moment the owner toggles away from its
+  // language and back — confirmed directly (type into a field, toggle
+  // away, toggle back: content reverted to the stale pre-edit value) while
+  // investigating a report of unpredictable cross-language content changes.
+  updateBlock: (blockKey: string, lang: Lang, block: PortfolioBlock) => void
   toggleLang: () => void
   // Editing, only ever true for the portfolio's owner.
   editing: boolean
@@ -196,6 +217,31 @@ export function LanguageProvider({
 
   const [draft, setDraft] = useState(portfolio.content)
   const [dirty, setDirty] = useState(false)
+  const [blocksState, setBlocksState] = useState(portfolio.blocks)
+  // Resyncs blocksState from scratch whenever the `portfolio` prop's own
+  // `blocks` genuinely changes — i.e. after a real server refresh (a block
+  // list's add/remove/reorder already calls router.refresh() on success;
+  // navigating to this page fresh does too). Without this, blocksState —
+  // needed so a single field's own autosave can update local state without
+  // the disruptive full-page refresh a list action uses (see `updateBlock`
+  // below) — would otherwise never learn about changes made any other way.
+  // Comparing the incoming prop against a state value held from last render
+  // and adjusting state conditionally *during* render (not inside a bare
+  // useEffect, which react-hooks/set-state-in-effect flags) is the same
+  // pattern already used for `uiLangHydrated` above and EditBar's `justSaved`
+  // flash.
+  const [syncedBlocksSource, setSyncedBlocksSource] = useState(portfolio.blocks)
+  if (portfolio.blocks !== syncedBlocksSource) {
+    setSyncedBlocksSource(portfolio.blocks)
+    setBlocksState(portfolio.blocks)
+  }
+  // Stable reference for the same reason notifyBlockSaved below is — passed
+  // into every mounted useBlockPersistence's own useCallback deps, and an
+  // unstable function here would tear down/re-attach every editor's
+  // update/blur listeners on every keystroke elsewhere on the page.
+  const updateBlock = useCallback((blockKey: string, lang: Lang, block: PortfolioBlock) => {
+    setBlocksState((prev) => ({ ...prev, [blockKey]: { ...prev[blockKey], [lang]: block } }))
+  }, [])
   // Mirrors `draft` so markSaved can compare against the *latest* draft
   // (as of the most recent render) from inside an async callback, without
   // that callback needing its own stale closure over `draft`.
@@ -287,7 +333,8 @@ export function LanguageProvider({
         t: translations[lang],
         content: draft[lang],
         media: portfolio.media,
-        blocks: portfolio.blocks,
+        blocks: blocksState,
+        updateBlock,
         toggleLang,
         editing,
         dirty,
