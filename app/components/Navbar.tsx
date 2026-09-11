@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import Link from 'next/link'
 import { useLang } from '../context/LanguageContext'
 import BackgroundPicker from './BackgroundPicker'
+import AppLanguagePicker from './AppLanguagePicker'
 import { FlagES, FlagUS } from './FlagIcon'
 
 export default function Navbar() {
@@ -30,9 +30,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-dark-900/95 backdrop-blur border-b border-dark-700">
       <div className="container-main flex items-center justify-between h-16">
-        <Link href="/" className="text-xl font-bold hover:text-dark-100 transition tracking-tight">
-          {initials}
-        </Link>
+        <AppLanguagePicker initials={initials} />
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex gap-8">

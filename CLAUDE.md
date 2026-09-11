@@ -34,8 +34,21 @@ The single source of truth for all client-side state. Key fields:
 - `updateActive(path, value)` — updates the active language only
 - `updateBoth(path, value)` — updates both EN and ES
 - `markSaved(savedDraft)` — clears `dirty`, but only if `savedDraft` (the exact draft object the caller actually sent to `savePortfolio`) is still the current draft. See "Save race: an edit made while a save is in flight" below for why this isn't unconditional.
+- `lang` — which language the portfolio's own **content** is shown/edited in (the EN/ES pill toggle in `Navbar`, `toggleLang`). Unrelated to `uiLang` below.
+- `uiLang` / `setUiLang(lang)` — which language the **app's own chrome** is shown in (`t`: nav labels, the tour, EditBar, the CV modal). See "App language vs. content language" below.
 
 Content paths are resolved by `app/lib/content-path.ts`.
+
+### App language vs. content language
+`lang` and `uiLang` used to be the same single state variable (`t: translations[lang]`, `content: draft[lang]`) — one toggle switched both the portfolio's content *and* every button/label around it at once. Raised as a real product gap, not a bug report: someone building a portfolio worldwide might want its content in English for an international audience without that also forcing their own editing tools into English, or vice versa — "su idioma base no es necesariamente español." The two are now fully independent:
+
+- **`lang`** (content language) still works exactly as before — the EN/ES pill toggle next to the app-language dropdown in `Navbar`, `toggleLang()`, driving `content`/`draft[lang]`. Nothing about its own behavior changed; every existing call site that reads `lang` from context (`Skills.tsx`'s `deleteSkillCategoryData(cat.id, lang)`, `updateActive`/`updateBoth` internally) still means exactly what it meant before.
+- **`uiLang`** (app chrome language) is new, and is what `t` is derived from now — so nav labels, the onboarding tour's copy, EditBar's button text, and the CV modal all follow `uiLang`, not `lang`. `EditBar`'s "Saved!"/"¡Guardado!" flash switched from checking `lang` to checking `uiLang` for exactly this reason — it's chrome text, not content.
+- **Detected once from the browser, not tied to any account**: `detectBrowserLang()` reads `navigator.language`; the very first hydration on mount picks a stored `localStorage` value if one exists, otherwise this browser detection. This is a per-device preference, not a profile setting — no migration, no server round trip, works identically for a signed-out visitor and the owner alike (each gets their *own* browser's/device's default, which is the actual "a nivel mundial" case: a Portuguese visitor reading an English-content portfolio still gets nav chrome in whatever their own browser prefers, decoupled from which content language they happen to be reading).
+- **Only an explicit pick persists** — the auto-detected value updates React state but is deliberately *not* written to `localStorage` until the owner/visitor actually opens the dropdown and picks a language themselves (`setUiLang`, which does both). Auto-detection is idempotent (same browser → same result every time), so there's nothing to "remember" about it; persisting only an explicit override is what lets a later browser-locale change still take effect for someone who never touched the dropdown, while a deliberate choice sticks.
+- **`app/components/AppLanguagePicker.tsx`** — the dropdown itself, hanging off what used to be a plain `<Link href="/">{initials}</Link>` logo in `Navbar` (now a button; the implicit "click the logo to go home" behavior was traded away for this). Same open/close-on-outside-click/Escape shape as `BackgroundPicker.tsx`. Shows `FlagUS`/`FlagES` + "English"/"Español", highlighting whichever `uiLang` is currently active.
+- **The one-time browser-locale hydration is a `useState` boolean guard, not a `useRef`** — reading/writing a ref's `.current` during render (outside the one sanctioned `if (ref.current == null)` lazy-init shape) is exactly what this project's `react-hooks/refs` lint config flags; a second `useState` toggled inside the same render-time conditional (the same pattern already used for `mounted` below and EditBar's `justSaved` flash) sidesteps it without needing an effect at all.
+- Verified live (Playwright, temporary harness): a page loaded with the browser locale set to `es-AR` renders nav labels in Spanish with no interaction; opening the dropdown and picking a different app language changes nav labels immediately, persists across a reload via `localStorage`, and — critically — clicking the *content*-language toggle afterward leaves the app language exactly where it was, confirming the two are fully decoupled.
 
 ### EditableText (`app/components/EditableText.tsx`)
 A `contentEditable` span. Empty fields must have `data-placeholder` and the CSS class `editable-field` so they get a visible placeholder (see `app/globals.css`). Without this, empty `contentEditable` collapses to zero height and becomes unclickable.
@@ -197,6 +210,7 @@ One instance, rendered once from `PortfolioShell` (a sibling of `Navbar`/`main`/
 | `app/components/PositionPicker.tsx` | Trigger button → opens PhotoCropModal |
 | `app/components/PhotoCropModal.tsx` | Full-photo view with draggable crop frame (portalled to body) |
 | `app/components/BackgroundPicker.tsx` | Owner picks hero background video |
+| `app/components/AppLanguagePicker.tsx` | Dropdown under Navbar's initials — picks `uiLang` (app chrome), separate from the EN/ES content toggle — see "App language vs. content language" above |
 | `app/components/OnboardingTour.tsx` | Multi-step tour engine, one target per step anywhere on the page — see "Onboarding" above |
 
 ## Key server actions (`app/lib/portfolio-actions.ts`)

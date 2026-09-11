@@ -12,6 +12,12 @@ export const translations = {
       downloadCVAction: 'Download CV',
       closeCV: 'Close',
     },
+    // The app-language dropdown under Navbar's initials icon (see
+    // uiLang/setUiLang in LanguageContext) — controls this `t` object itself,
+    // independent of the content-language toggle (`lang`) right next to it.
+    appLanguage: {
+      label: 'App language',
+    },
     // Interface-only copy for the onboarding tour — see OnboardingTour.tsx.
     // Same category as `nav` above: identical for every portfolio, not part
     // of anyone's content, so it belongs here rather than in portfolio.ts.
@@ -327,6 +333,9 @@ export const translations = {
       viewCV: 'CV',
       downloadCVAction: 'Descargar CV',
       closeCV: 'Cerrar',
+    },
+    appLanguage: {
+      label: 'Idioma de la app',
     },
     tour: {
       steps: [
