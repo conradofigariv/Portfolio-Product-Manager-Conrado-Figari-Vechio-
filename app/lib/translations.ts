@@ -33,6 +33,10 @@ export const translations = {
           title: 'Drag to reorder',
           body: "Grab any chapter's handle and drag it up or down to change your story's chronological order.",
         },
+        {
+          title: 'Add your projects',
+          body: 'Add as many projects as you want to showcase your work — each with its own title, year, category, narrative and metrics.',
+        },
       ],
       back: 'Back',
       next: 'Next',
@@ -337,6 +341,10 @@ export const translations = {
         {
           title: 'Arrastrá para reordenar',
           body: 'Tomá el asa de cualquier capítulo y arrastralo arriba o abajo para cambiar el orden cronológico de tu historia.',
+        },
+        {
+          title: 'Agregá tus proyectos',
+          body: 'Sumá tantos proyectos como quieras para mostrar tu trabajo — cada uno con su propio título, año, categoría, narrativa y métricas.',
         },
       ],
       back: 'Atrás',

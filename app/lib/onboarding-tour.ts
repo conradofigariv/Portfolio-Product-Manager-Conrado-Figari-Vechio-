@@ -14,6 +14,7 @@ export const TOUR_STEPS = [
   { id: 'language', target: '[data-tour-target="language-toggle"]' },
   { id: 'name', target: '[data-tour-target="hero-name"]' },
   { id: 'story-reorder', target: '[data-tour-target="story-reorder"]' },
+  { id: 'add-project', target: '[data-tour-target="add-project"]' },
 ] as const
 
 /**
