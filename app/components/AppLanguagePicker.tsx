@@ -5,20 +5,18 @@ import { useLang } from '../context/LanguageContext'
 import { FlagES, FlagUS } from './FlagIcon'
 
 /**
- * The dropdown under Navbar's initials icon — picks `uiLang` (the app's own
- * chrome language: nav labels, the tour, EditBar, the CV modal, ...), not
- * `lang` (which portfolio content is shown — that's the separate EN/ES pill
- * toggle right next to this one). Deliberately not the same control: an
- * owner or visitor viewing/editing the portfolio in one language doesn't
- * necessarily want the app's own tools in that same language — see
- * LanguageContext's `uiLang` for the full reasoning.
+ * The dropdown under Navbar's initials icon — picks `uiLang` (the owner's
+ * own private tools: the tour, and this dropdown's own label — see
+ * LanguageContext's `uiLang` comment), not `lang` (which portfolio content —
+ * and everything presented alongside it, like nav labels — is shown in;
+ * that's the separate EN/ES pill toggle right next to this one).
  *
  * Same open/close-on-outside-click/Escape shape as BackgroundPicker.tsx.
  * Replaces what used to be a plain `<Link href="/">{initials}</Link>` — the
  * initials button is now this dropdown's trigger instead of a home link.
  */
 export default function AppLanguagePicker({ initials }: { initials: string }) {
-  const { t, uiLang, setUiLang } = useLang()
+  const { uiT, uiLang, setUiLang } = useLang()
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -48,7 +46,7 @@ export default function AppLanguagePicker({ initials }: { initials: string }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={t.appLanguage.label}
+        aria-label={uiT.appLanguage.label}
         aria-expanded={open}
         className="text-xl font-bold hover:text-dark-100 transition tracking-tight"
       >
@@ -57,7 +55,7 @@ export default function AppLanguagePicker({ initials }: { initials: string }) {
 
       {open && (
         <div className="absolute left-0 top-full mt-2 z-10 w-48 rounded-xl border border-dark-600 bg-dark-900/95 backdrop-blur p-3 space-y-2 shadow-xl">
-          <p className="text-xs text-dark-400">{t.appLanguage.label}</p>
+          <p className="text-xs text-dark-400">{uiT.appLanguage.label}</p>
 
           <button
             type="button"

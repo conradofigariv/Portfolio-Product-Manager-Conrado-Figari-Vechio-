@@ -13,18 +13,35 @@ interface LanguageContextType {
   // visitor) building/reading a portfolio in English doesn't necessarily want
   // Spanish as their own base language, or vice versa — see `uiLang`.
   lang: Lang
-  // Which language the app's own CHROME is shown in (nav labels, the tour,
-  // EditBar's button text, the CV modal, ...) — i.e. `t` below. Deliberately
+  // Which language the OWNER's own private editing tools are shown in — the
+  // onboarding tour, and the app-language dropdown's own label. Deliberately
   // independent of `lang`: switching which language version of the portfolio
-  // you're viewing/editing should never also silently change the language of
-  // your own tools. Detected once from the browser on mount and persisted to
+  // you're editing should never silently change the language of your own
+  // tools. Detected once from the browser on mount and persisted to
   // localStorage from then on (per-device, not tied to any account — see
   // `setUiLang`); changeable any time via the dropdown under the initials
-  // icon in Navbar.
+  // icon in Navbar. Deliberately does NOT cover anything a visitor sees as
+  // part of the portfolio itself (nav labels, the CV modal, Contact/Footer/
+  // Skills/Projects section headers) — those are part of the page's own
+  // bilingual *content* and must track `lang`, not a personal preference of
+  // whoever's currently looking at the page. An earlier version of this
+  // split put nav/section-header copy under `uiLang` too, which broke the
+  // content-language toggle for everything but the raw text fields —
+  // reported live as "muchas partes de mi portfolio no pasan a ingles a
+  // español." `uiT` below is the fix: a second, narrower interface-copy
+  // object, used only by the handful of things that are genuinely the
+  // owner's own tooling rather than page content.
   uiLang: Lang
   setUiLang: (lang: Lang) => void
-  // Interface labels, identical for every portfolio, driven by `uiLang` (not
-  // `lang`) — see above.
+  // Interface copy for the owner's own private tools (the tour, and the
+  // app-language dropdown's own label) — driven by `uiLang`. NOT used for
+  // anything a visitor sees as part of the portfolio; see `uiLang`'s comment.
+  uiT: (typeof translations)['en']
+  // Interface copy that's part of the portfolio's own bilingual presentation
+  // — nav labels, the CV modal, and every other section's own static
+  // headings (Contact/Footer/Skills/Projects) — driven by `lang`, exactly
+  // like `content` below, so it always matches whichever language version of
+  // the page is currently showing.
   t: (typeof translations)['en']
   // The content of the portfolio being displayed, in the active language.
   content: PortfolioContent
@@ -266,7 +283,8 @@ export function LanguageProvider({
         lang,
         uiLang,
         setUiLang,
-        t: translations[uiLang],
+        uiT: translations[uiLang],
+        t: translations[lang],
         content: draft[lang],
         media: portfolio.media,
         blocks: portfolio.blocks,
