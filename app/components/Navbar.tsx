@@ -53,14 +53,27 @@ export default function Navbar() {
           <button
             data-tour-target="language-toggle"
             onClick={toggleLang}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-400/40 text-dark-300 hover:text-dark-50 hover:border-dark-200 transition text-xs font-mono"
+            className="flex items-center gap-1 p-1 rounded-lg border border-dark-400/40 text-xs font-mono"
             aria-label="Toggle language"
+            aria-pressed={lang === 'es'}
           >
-            <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-dark-50 font-bold' : ''}`}>
+            {/* A solid pill behind whichever language is active, not just a
+                bolder text color — reported as "no se ve claramente cual
+                esta seleccionado": bold-on-dark-50 next to plain-on-dark-300
+                was too subtle a contrast to register as "this one, not that
+                one" at this size. */}
+            <span
+              className={`flex items-center gap-1 px-2 py-1 rounded-md transition ${
+                lang === 'en' ? 'bg-dark-50 text-dark-900 font-bold' : 'text-dark-400'
+              }`}
+            >
               <FlagUS /> EN
             </span>
-            <span className="text-dark-600">/</span>
-            <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-dark-50 font-bold' : ''}`}>
+            <span
+              className={`flex items-center gap-1 px-2 py-1 rounded-md transition ${
+                lang === 'es' ? 'bg-dark-50 text-dark-900 font-bold' : 'text-dark-400'
+              }`}
+            >
               <FlagES /> ES
             </span>
           </button>
@@ -90,17 +103,29 @@ export default function Navbar() {
           <button
             data-tour-target="language-toggle"
             onClick={toggleLang}
-            className="flex items-center gap-1 text-dark-300 hover:text-dark-50 transition text-xs font-mono rounded"
+            className="flex items-center gap-1 p-1 rounded-lg border border-dark-400/40 text-xs font-mono"
+            aria-label="Toggle language"
+            aria-pressed={lang === 'es'}
           >
-            {lang === 'en' ? (
-              <>
-                <FlagES /> ES
-              </>
-            ) : (
-              <>
-                <FlagUS /> EN
-              </>
-            )}
+            {/* Used to show only the language you'd switch *to*, with no
+                indication of the current one at all — on mobile there was
+                nothing to even look "unclear," the current state simply
+                wasn't shown. Same solid-pill treatment as the desktop
+                version now, for the same reason. */}
+            <span
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition ${
+                lang === 'en' ? 'bg-dark-50 text-dark-900 font-bold' : 'text-dark-400'
+              }`}
+            >
+              <FlagUS /> EN
+            </span>
+            <span
+              className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md transition ${
+                lang === 'es' ? 'bg-dark-50 text-dark-900 font-bold' : 'text-dark-400'
+              }`}
+            >
+              <FlagES /> ES
+            </span>
           </button>
           <BackgroundPicker />
           {editing && (
