@@ -151,7 +151,7 @@ export function storagePathFromPublicUrl(url: string): string | null {
 Use `uniqueUploadName()` from `app/lib/image-upload.ts` → `${Date.now()}-${Math.random().toString(36).slice(2,8)}`. Prevents collisions if the user uploads the same filename twice.
 
 ### Compression (`app/lib/image-upload.ts`)
-Canvas → WebP. Max edge 1920px. Target ≤ 1.5MB. Quality steps: `[0.92, 0.85, 0.78]`.
+Canvas → WebP. Max edge 1920px. Target ≤ 3MB. Quality steps: `[0.95, 0.9, 0.85]` (raised from `[0.92, 0.85, 0.78]`/1.5MB after a report that project preview photos still looked a bit soft — the old 1.5MB target rarely left room for the higher-quality steps to actually get picked). Verified with a synthetic worst-case (random-noise, near-incompressible) 1600×1600 image: still lands under the new 3MB ceiling.
 
 ### Focal point / crop position
 Stored as `"62% 35%"` string in `portfolio_media.position` column. Applied as CSS `objectPosition`. Edited via `PositionPicker` → `PhotoCropModal` (draggable crop frame over the full photo).
