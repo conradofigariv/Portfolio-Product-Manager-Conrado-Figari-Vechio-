@@ -53,47 +53,67 @@ export default function LandingPage({ error, reason }: { error?: string; reason?
         <div className="absolute inset-0 z-[2] pointer-events-none bg-[linear-gradient(100deg,rgba(8,8,10,0.94)_0%,rgba(8,8,10,0.82)_34%,rgba(8,8,10,0.35)_62%,rgba(8,8,10,0.55)_100%)]" />
         <div className="absolute left-0 right-0 bottom-0 h-[200px] z-[2] pointer-events-none bg-[linear-gradient(to_bottom,rgba(8,8,10,0)_0%,#08080a_96%)]" />
 
-        <header className="relative z-[3] flex items-center justify-end gap-4 px-5 sm:px-9 lg:px-[72px] py-6">
-          {/* Absolutely centered so it stays dead-center regardless of how
-              wide the right-side cluster below gets — a flex/grid split would
-              need the left side to carry matching weight, and there's nothing
-              to put there now that the lang toggle moved to the right, next to
-              Iniciar sesión/Empieza gratis, matching the portfolio Navbar's own
-              layout (lang toggle grouped with the other header actions). */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5">
-            <div className="w-[26px] h-[26px] rounded-[7px] bg-[#d8ff3e] flex items-center justify-center text-[15px] font-semibold text-[#08080a] tracking-[-0.03em]">
+        <header className="relative z-[3] flex items-center justify-between sm:justify-end gap-4 px-5 sm:px-9 lg:px-[72px] py-6">
+          {/* Absolutely centered from `sm` up, so it stays dead-center
+              regardless of how wide the right-side cluster gets — a flex/grid
+              split would need the left side to carry matching weight, and
+              there's nothing to put there now that the lang toggle moved to
+              the right, next to Iniciar sesión/Empieza gratis, matching the
+              portfolio Navbar's own layout (lang toggle grouped with the
+              other header actions).
+
+              Below `sm`, `static` instead: the header's own justify-between
+              puts this first child on the left and the right-side cluster on
+              the right, in normal flex flow rather than layered independently
+              — reported live as an overlapping mess at mobile widths
+              ("EN/ES" toggle, the logo, "Iniciar sesión", and "Empieza
+              gratis" all stacked on top of each other), since an
+              always-absolute-centered logo and a `justify-end` cluster don't
+              coordinate with each other about how much space either one
+              actually needs; on a narrow screen the cluster's natural width
+              alone exceeds half the viewport, so it runs straight through the
+              centered logo's fixed position regardless of its own width. The
+              "Portfolio App" wordmark is also dropped below `sm` (icon only)
+              to free up enough width for the toggle + CTA to fit without
+              wrapping. */}
+          <div className="static sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 flex items-center gap-2.5">
+            <div className="w-[26px] h-[26px] rounded-[7px] bg-[#d8ff3e] flex items-center justify-center text-[15px] font-semibold text-[#08080a] tracking-[-0.03em] flex-shrink-0">
               P
             </div>
-            <span className="text-[17px] font-semibold tracking-[-0.02em]">Portfolio App</span>
+            <span className="hidden sm:inline text-[17px] font-semibold tracking-[-0.02em]">Portfolio App</span>
           </div>
 
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-[13px] font-mono text-[#a1a1aa] hover:text-white hover:border-white/30 transition-colors"
+              aria-label="Cambiar idioma / Toggle language"
+            >
+              <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-white font-semibold' : ''}`}>
+                <FlagUS /> EN
+              </span>
+              <span className="text-white/20">/</span>
+              <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-white font-semibold' : ''}`}>
+                <FlagES /> ES
+              </span>
+            </button>
 
-          <button
-            onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 text-[13px] font-mono text-[#a1a1aa] hover:text-white hover:border-white/30 transition-colors"
-            aria-label="Cambiar idioma / Toggle language"
-          >
-            <span className={`flex items-center gap-1 ${lang === 'en' ? 'text-white font-semibold' : ''}`}>
-              <FlagUS /> EN
-            </span>
-            <span className="text-white/20">/</span>
-            <span className={`flex items-center gap-1 ${lang === 'es' ? 'text-white font-semibold' : ''}`}>
-              <FlagES /> ES
-            </span>
-          </button>
-
-          <GoogleSignInButton
-            showIcon={false}
-            label={t.signIn}
-            pendingLabel={t.redirecting}
-            className="text-[14.5px] text-[#d4d4d8] hover:text-white transition-colors disabled:opacity-60"
-          />
-          <GoogleSignInButton
-            showIcon={false}
-            label={t.startFree}
-            pendingLabel={t.redirecting}
-            className="inline-flex items-center h-10 px-5 rounded-full bg-[#d8ff3e] text-[#08080a] text-[14.5px] font-semibold tracking-[-0.01em] transition-[filter] hover:brightness-110 disabled:opacity-60"
-          />
+            {/* Redundant with "Empieza gratis" right next to it (both start
+                the same Google sign-in) — dropped below `sm` purely to make
+                room; kept from `sm` up, where there's space for both. */}
+            <GoogleSignInButton
+              showIcon={false}
+              label={t.signIn}
+              pendingLabel={t.redirecting}
+              className="hidden sm:inline-flex text-[14.5px] text-[#d4d4d8] hover:text-white transition-colors disabled:opacity-60"
+            />
+            <GoogleSignInButton
+              showIcon={false}
+              label={t.startFree}
+              pendingLabel={t.redirecting}
+              className="inline-flex items-center h-10 px-5 rounded-full bg-[#d8ff3e] text-[#08080a] text-[14.5px] font-semibold tracking-[-0.01em] transition-[filter] hover:brightness-110 disabled:opacity-60 flex-shrink-0"
+            />
+          </div>
         </header>
 
         <div className="relative z-[3] flex-1 flex items-center px-5 sm:px-9 lg:px-[72px] py-12 sm:py-16 lg:py-20">
