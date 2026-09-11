@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from './supabase/server'
 import type { Lang, PortfolioContent } from './portfolio'
 import { MAX_BACKGROUND_VIDEOS, isPresetVideo } from './preset-media'
+import { TOUR_STEPS } from './onboarding-tour'
 
 // Caps exist so a malformed or hostile payload cannot store an unbounded
 // document. They are generous enough that no real portfolio hits them.
@@ -628,11 +629,20 @@ export async function saveMediaPosition(
 }
 
 /**
- * Permanently ends the onboarding tour (see OnboardingTour.tsx) — the owner
- * will never see it again. Called two ways: reaching the last step and
- * clicking "Entendido"/"Finalizar" (you saw all of it), or clicking
- * "Saltear tour" from any step (you don't want to see the rest either).
- * Both mean the same thing to the database; only the UI trigger differs.
+ * Ends the onboarding tour for now (see OnboardingTour.tsx) — called two
+ * ways: reaching the last step and clicking "Entendido"/"Finalizar" (you saw
+ * all of it), or clicking "Saltear tour" from any step (you don't want to
+ * see the rest either). Both mean the same thing to the database; only the
+ * UI trigger differs.
+ *
+ * "For now" rather than "forever": this sets onboarding_tour_step to however
+ * many steps exist *right now* (TOUR_STEPS.length) rather than a separate
+ * seen/not-seen flag, which is what lets a step added later automatically
+ * resurface the tour for someone who already finished it — see migration
+ * 0015 for the bug this fixes and why a boolean couldn't. Reaching the end
+ * of a longer tour later naturally raises this same number further; there's
+ * no going back down except by an owner explicitly pausing mid-tour (see
+ * pauseOnboardingTour), which is a strictly earlier position anyway.
  *
  * Wrapped in try/catch like the autosave-path actions even though this one
  * is not on that path: a failure here has no error UI of its own (the
@@ -651,7 +661,7 @@ export async function finishOnboardingTour(): Promise<{ ok: true } | { ok: false
 
     const { error } = await supabase
       .from('portfolios')
-      .update({ onboarding_tour_seen: true })
+      .update({ onboarding_tour_step: TOUR_STEPS.length })
       .eq('user_id', user.id)
     if (error) return { ok: false, error: error.message }
 
@@ -662,12 +672,13 @@ export async function finishOnboardingTour(): Promise<{ ok: true } | { ok: false
 }
 
 /**
- * Closes the tour for now without dismissing it — the small "X" ("Salir"),
+ * Closes the tour for now without finishing it — the small "X" ("Salir"),
  * as opposed to "Saltear" (finishOnboardingTour). Remembers which step the
  * owner was on, so the next time they load the editor the tour resumes
- * there instead of restarting at step 0. Never sets onboarding_tour_seen —
- * that would make "Salir" indistinguishable from "Saltear", which is exactly
- * the distinction the owner asked for between the two.
+ * there instead of restarting at step 0. Never advances the step count past
+ * where the owner actually is — that would make "Salir" indistinguishable
+ * from "Saltear", which is exactly the distinction the owner asked for
+ * between the two.
  */
 export async function pauseOnboardingTour(
   step: number
